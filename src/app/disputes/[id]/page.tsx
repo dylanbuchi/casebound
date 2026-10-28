@@ -15,6 +15,7 @@ import { getAnalysis, getAudit } from "@/lib/records";
 import { isPractice, source } from "@/lib/source";
 import { ResetPractice } from "@/components/reset-practice";
 import { PRODUCT } from "@/lib/brand";
+import type { AnalysisResult } from "@/lib/agent";
 
 export const dynamic = "force-dynamic";
 
@@ -328,6 +329,8 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
             </Card>
           )}
 
+          {analysis?.grounding && <GroundingNote g={analysis.grounding} />}
+
           {a && (actionable || history.length === 0) && (
             <ApprovePanel
               disputeId={id}
@@ -379,6 +382,49 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         </section>
       </div>
     </div>
+  );
+}
+
+const fieldLabel: Record<string, string> = {
+  summary: "Summary",
+  win_probability_reasoning: "Odds reasoning",
+  action_reasoning: "Why",
+  evidence_notes: "Response to PayPal",
+  buyer_message: "Message to the buyer",
+};
+
+// The code-side source check: what the agent had to rewrite, and what was cut because no record backs it.
+function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
+  if (g.removed.length === 0) {
+    return (
+      <p className="rise flex items-start gap-2 rounded-lg border border-rule bg-card px-4 py-3 text-sm text-ink-2">
+        <span className="font-mono text-accept" aria-hidden>✓</span>
+        <span>
+          Every claim checked against its source.
+          {g.sentBack > 0 && ` The agent rewrote ${g.sentBack} that claimed more than the records show.`}
+        </span>
+      </p>
+    );
+  }
+  return (
+    <section aria-label="Removed claims" className="rise rounded-lg border-2 border-offer bg-card p-5">
+      <p className="font-semibold text-offer">
+        Removed {g.removed.length} claim{g.removed.length === 1 ? "" : "s"} no record backs
+      </p>
+      <p className="mt-1 text-sm text-ink-2">
+        {g.sentBack > 0 ? "The agent was asked to fix these once and did not. " : ""}They are not in the drafts below.
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {g.removed.map((r, i) => (
+          <li key={i} className="border-l-2 border-offer/50 pl-3">
+            <p className="text-ink-3 line-through decoration-offer/60">“{r.text}”</p>
+            <p className="text-ink-2">
+              <span className="font-mono text-[11px] uppercase text-ink-3">{fieldLabel[r.where] ?? "Evidence list"}</span> · {r.reason}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

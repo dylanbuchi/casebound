@@ -135,6 +135,7 @@ export function VerdictCard({
                   <div className="md:col-start-2">
                     <OddsSplit
                       win={p}
+                      said={analysis.calibration && analysis.calibration.modelEstimate > p ? analysis.calibration.modelEstimate : undefined}
                       breakEven={analysis.breakEven}
                       ifWin={fmtUsd(keepIfWin, currency)}
                       ifLose={fmtUsd(keepIfLose, currency)}
@@ -170,6 +171,7 @@ export function VerdictCard({
               </>
             )}
           </p>
+          {analysis.calibration && <OddsBasis c={analysis.calibration} />}
           {(overridesMath || offerOverride) && (
             <p className="rounded-md border border-offer/40 bg-paper px-3 py-2">
               <strong className="text-offer">Not the cheapest option.</strong> The agent chose this on fairness or the customer
@@ -230,7 +232,57 @@ function KeepBar({
   );
 }
 
-function OddsSplit({ win, breakEven, ifWin, ifLose }: { win: number; breakEven: number; ifWin: string; ifLose: string }) {
+// Where the win odds come from, so a number never looks more certain than its evidence.
+function OddsBasis({ c }: { c: NonNullable<AnalysisResult["calibration"]> }) {
+  const lowered = c.calibrated < c.modelEstimate;
+  const weak = c.basis.filter((b) => b.effect > 0);
+  return (
+    <div className={`rounded-md border px-3 py-2 ${lowered ? "border-offer/50 bg-paper" : "border-rule"}`}>
+      <p>
+        {lowered ? (
+          <>
+            <strong className="text-offer">Odds lowered to {pct(c.calibrated)}.</strong> The agent said {pct(c.modelEstimate)}, but{" "}
+            {weak.length === 1 ? "one key fact rests" : `${weak.length} key facts rest`} on your own records or {weak.length === 1 ? "is" : "are"} unconfirmed, so
+            the code caps it at {pct(c.cap)}.
+          </>
+        ) : (
+          <>
+            <strong className="text-ink">{pct(c.calibrated)} win odds</strong>, within the {pct(c.cap)} the evidence on file supports.
+          </>
+        )}
+      </p>
+      <details className="mt-1">
+        <summary className="cursor-pointer text-ink-3">Based on</summary>
+        <ul className="mt-1 space-y-0.5">
+          {c.basis.map((b) => (
+            <li key={b.label} className="flex justify-between gap-3">
+              <span>
+                {b.label} <span className="text-ink-3">· {b.why}</span>
+              </span>
+              <span className={`font-mono tabular-nums ${b.effect > 0 ? "text-offer" : "text-accept"}`}>
+                {b.effect > 0 ? `−${Math.round(b.effect * 100)}` : "✓"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </div>
+  );
+}
+
+function OddsSplit({
+  win,
+  said,
+  breakEven,
+  ifWin,
+  ifLose,
+}: {
+  win: number;
+  said?: number;
+  breakEven: number;
+  ifWin: string;
+  ifLose: string;
+}) {
   const pays = win >= breakEven;
   return (
     <div className="text-xs text-ink-2">
@@ -240,11 +292,19 @@ function OddsSplit({ win, breakEven, ifWin, ifLose }: { win: number; breakEven: 
         aria-label={`Win odds ${pct(win)}, break-even ${pct(breakEven)}: fighting ${pays ? "pays off" : "does not pay off"}`}
       >
         <div className={`h-full rounded-l-full ${pays ? "bg-accept" : "bg-fight/70"}`} style={{ width: `${Math.max(1, win * 100)}%` }} />
+        {/* What the agent claimed before the evidence cap, drawn as an empty dashed stretch. */}
+        {said !== undefined && (
+          <div
+            className="absolute inset-y-0 rounded-r-full border border-dashed border-ink-3"
+            style={{ left: `${win * 100}%`, width: `${(said - win) * 100}%` }}
+            aria-hidden
+          />
+        )}
         <div className="absolute -top-1 -bottom-1 w-0.5 bg-ink" style={{ left: `${breakEven * 100}%` }} aria-hidden />
       </div>
       <p className="mt-1.5 flex flex-wrap justify-between gap-x-4 gap-y-0.5">
         <span>
-          <strong className="font-mono text-ink">{pct(win)}</strong> win: keep {ifWin}
+          <strong className="font-mono text-ink">{pct(win)}</strong> win{said !== undefined && <span className="text-ink-3"> (agent said {pct(said)})</span>}: keep {ifWin}
         </span>
         <span className="text-ink-3">break-even {pct(breakEven)}</span>
         <span>
