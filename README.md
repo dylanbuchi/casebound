@@ -42,7 +42,7 @@ A small demo store (Lumen & Loom, a fictional shop) creates real sandbox payment
 
 ## AI
 
-- Model: set by `AI_MODEL`. The demo runs Claude Opus 5.5 (`claude-opus-5-5`); development uses Claude Haiku 5.5. Calls go through the Anthropic TypeScript SDK tool runner with adaptive thinking, prompt caching, and server-side refusal fallback where the model supports it.
+- Model: set by `AI_MODEL`, default `claude-haiku-5-5`. Local development, the saved analyses in `seed/` and the eval all use Claude Haiku 5.5. For the hosted demo, set `AI_MODEL=claude-opus-5-5` on the host to use Claude Opus 5.5. Every analysis records the model that made it, and the case page shows it. Calls go through the Anthropic TypeScript SDK tool runner with adaptive thinking, prompt caching, and server-side refusal fallback where the model supports it.
 - Cost guard: `AI_DAILY_CAP` limits analyses per day, and saved analyses are reused.
 - Tools: eight read-only investigation tools (including the evidence checklist and an economics calculator) plus one strict-schema `record_assessment` tool. The agent cannot move money; actions are built on the server from the seller's approval.
 - Buyer messages are treated as untrusted data in the system prompt.
