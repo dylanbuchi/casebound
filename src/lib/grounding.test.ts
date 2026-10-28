@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Assessment } from "./agent";
 import type { CheckItem } from "./checklist";
 import type { FulfillmentRecord } from "./fulfillment";
-import { calibrate, enforceGrounding, findUnsupported, problemWith, type Facts } from "./grounding";
+import { calibrate, enforceGrounding, findUnsupported, leakIn, problemWith, type Facts } from "./grounding";
 
 const record: FulfillmentRecord = {
   orderId: "DEMO-ORDER-7",
@@ -124,6 +124,27 @@ describe("enforceGrounding", () => {
 
   it("passes a fully confirmed case through untouched, except signature credited to tracking", () => {
     expect(findUnsupported(assessment(), confirmed).map((r) => r.where)).toEqual(["key_facts[0]"]);
+  });
+});
+
+describe("leakIn", () => {
+  const withNotes = { ...record, notes: ["Buyer has asked for refunds on three earlier orders, keep an eye on this account."] };
+
+  it("catches a staff note quoted to the buyer", () => {
+    expect(leakIn("We see you asked for refunds on three earlier orders, so no.", withNotes)).toMatch(/internal notes/);
+    expect(leakIn("Thanks for your order, we will look into it.", withNotes)).toBeNull();
+  });
+
+  it("catches the seller's cost model and odds", () => {
+    expect(leakIn("Fighting costs us the $15 dispute fee and our hourly rate.", record)).toMatch(/internal costs/);
+    expect(leakIn("Our win odds here are low.", record)).toMatch(/internal costs/);
+  });
+
+  it("cuts the leaking sentence from the buyer message only", () => {
+    const a = assessment({ buyer_message: "Hi Rosa, a refund is on its way. Our break-even here was 40%.", evidence_notes: "Win odds are 40%." });
+    const out = enforceGrounding(a, { ...confirmed, record: withNotes });
+    expect(out.assessment.buyer_message).toBe("Hi Rosa, a refund is on its way.");
+    expect(out.assessment.evidence_notes).toBe("Win odds are 40%.");
   });
 });
 

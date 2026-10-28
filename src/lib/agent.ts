@@ -278,7 +278,7 @@ export async function analyzeDispute(
               ok: false,
               rewrite: issues.map((i) => ({ field: i.where, sentence: i.text, problem: i.reason })),
               instruction:
-                "Not recorded. These sentences claim more than their source supports. Call record_assessment again with each one rewritten to name its true source, or removed.",
+                "Not recorded. These sentences claim more than their source supports. Call record_assessment again with each one rewritten to name its true source, or removed. The buyer message must never repeat internal notes, costs or odds.",
             };
           }
           recorded = input;

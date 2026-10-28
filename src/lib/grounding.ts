@@ -71,13 +71,29 @@ export function problemWith(sentence: string, facts: Facts, opts: { carrierSourc
   return null;
 }
 
+// The buyer must never see the shop's internal notes or the seller's cost model. Six words in a row from a
+// staff note count as quoting it; the cost terms below are the ones the economics and the prompt use.
+const INTERNAL =
+  /\b(hourly rate|per hour|an hour of (?:my|our) time|dispute fee|break-?even|win (?:odds|probability|chance)|chance of winning|expected cost|success fee|(?:staff|internal|shop) notes?|risk flags?)\b/i;
+const words = (s: string) => s.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+
+export function leakIn(sentence: string, record: FulfillmentRecord | null): string | null {
+  if (INTERNAL.test(sentence)) return "Mentions the seller's internal costs, odds or notes";
+  const said = ` ${words(sentence).join(" ")} `;
+  for (const note of record?.notes ?? []) {
+    const w = words(note);
+    for (let i = 0; i + 6 <= w.length; i++) if (said.includes(` ${w.slice(i, i + 6).join(" ")} `)) return "Quotes the shop's internal notes";
+  }
+  return null;
+}
+
 const TEXT_FIELDS = ["summary", "win_probability_reasoning", "action_reasoning", "evidence_notes", "buyer_message"] as const;
 
 export function findUnsupported(a: Assessment, facts: Facts): Unsupported[] {
   const out: Unsupported[] = [];
   for (const field of TEXT_FIELDS) {
     for (const text of sentences(a[field])) {
-      const reason = problemWith(text, facts);
+      const reason = problemWith(text, facts) ?? (field === "buyer_message" ? leakIn(text, facts.record) : null);
       if (reason) out.push({ where: field, text, reason });
     }
   }
