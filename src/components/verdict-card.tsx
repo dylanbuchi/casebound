@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { AnalysisResult } from "@/lib/agent";
 import { fmtUsd, verdictColor } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
@@ -111,10 +110,10 @@ export function VerdictCard({
           <Legend />
         </div>
         <ol className="space-y-4">
-          {options.map((o, i) => {
+          {options.map((o) => {
             const chosen = o.key === a.recommended_action;
             return (
-              <li key={o.key} className="ledger-row grid gap-x-5 gap-y-2 md:grid-cols-[8.75rem_1fr_8rem] md:items-center" style={{ "--i": i } as CSSProperties}>
+              <li key={o.key} className="grid gap-x-5 gap-y-2 md:grid-cols-[8.75rem_1fr_8rem] md:items-center">
                 <div className="flex items-baseline justify-between gap-3 md:block">
                   <p className={`flex items-center gap-2 font-medium whitespace-nowrap ${chosen ? "text-ink" : "text-ink-2"}`}>
                     {o.label}
@@ -251,7 +250,7 @@ function Trail({ hs, final }: { hs: NonNullable<AnalysisResult["hypotheses"]>; f
 
 function Figure({ o, chosen, currency, className = "" }: { o: Option; chosen: boolean; currency: string; className?: string }) {
   return (
-    <div className={`ledger-figure ${className}`}>
+    <div className={className}>
       <p className={`font-mono leading-none tabular-nums ${chosen ? "text-3xl font-bold" : "text-xl text-ink-2"} ${o.keep !== null && o.keep < 0 ? "text-fight" : ""}`}>
         {o.keep === null ? "item" : fmtUsd(o.keep, currency)}
       </p>
@@ -286,7 +285,7 @@ function KeepBar({
       {/* Hatched: the part of the payment that goes back to the buyer. */}
       <div className="lost-hatch absolute inset-y-0 rounded-r-sm" style={{ left: `${lostFrom}%`, width: `${at(amount) - lostFrom}%` }} />
       <div
-        className={`keep-fill absolute inset-y-0 ${keep >= 0 ? fill : "bg-fight"} ${keep >= 0 ? "rounded-r-sm" : "rounded-l-sm"}`}
+        className={`absolute inset-y-0 ${keep >= 0 ? fill : "bg-fight"} ${keep >= 0 ? "rounded-r-sm" : "rounded-l-sm"}`}
         style={{ left: `${kept.left}%`, width: `${Math.max(kept.width, keep === 0 ? 0 : 0.6)}%`, transformOrigin: keep >= 0 ? "left" : "right" }}
       />
       {/* Zero line, only when the scale reaches below it */}

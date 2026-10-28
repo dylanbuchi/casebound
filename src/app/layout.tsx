@@ -23,34 +23,47 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <header className="border-b border-rule">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4 sm:px-6">
-            <Link href="/" className="font-display text-2xl font-semibold tracking-tight">
+          {/* One line on a phone: short labels below the sm breakpoint, full ones above. */}
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:gap-x-6 sm:px-6 sm:py-4">
+            <Link href="/" className="font-display text-lg font-semibold tracking-tight sm:text-2xl">
               {PRODUCT}
             </Link>
-            <span className="text-sm text-ink-2">
+            <span className="hidden text-sm text-ink-2 sm:inline">
               for <span className="font-medium text-ink">{merchant.name}</span>
             </span>
-            <nav className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 whitespace-nowrap text-sm sm:ml-auto sm:w-auto">
+            <nav className="ml-auto flex flex-wrap items-center gap-x-2.5 gap-y-2 whitespace-nowrap text-sm sm:gap-x-4">
               <Link href="/" className="hover:underline">
                 Inbox
               </Link>
               <Link href="/store" className="hover:underline">
-                Demo store
+                <span className="sm:hidden">Store</span>
+                <span className="hidden sm:inline">Demo store</span>
               </Link>
               <Link href="/log" className="hover:underline">
-                Audit log
+                <span className="sm:hidden">Log</span>
+                <span className="hidden sm:inline">Audit log</span>
               </Link>
               <span
-                className={`rounded-full border px-2.5 py-0.5 font-mono text-xs ${
+                className={`rounded-full border px-2 py-0.5 font-mono text-[11px] sm:px-2.5 sm:text-xs ${
                   live ? "border-accept text-accept" : "border-offer text-offer"
                 }`}
                 title={live ? "Connected to the PayPal sandbox" : "No PayPal credentials: showing bundled demo disputes"}
               >
-                {live ? "PayPal sandbox" : "Demo data"}
+                {live ? (
+                  <>
+                    <span className="hidden sm:inline">PayPal </span>sandbox
+                  </>
+                ) : (
+                  "Demo data"
+                )}
               </span>
               {locked && (
-                <Link href="/unlock" className="font-mono text-xs underline">
-                  Locked
+                <Link href="/unlock" className="font-mono text-xs underline" title="Locked: enter the passcode to analyze and send">
+                  <svg viewBox="0 0 16 16" className="h-4 w-4 sm:hidden" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+                    <rect x="3" y="7" width="10" height="7" rx="1.5" />
+                    <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+                  </svg>
+                  <span className="sr-only sm:not-sr-only">Locked</span>
                 </Link>
               )}
             </nav>

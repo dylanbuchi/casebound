@@ -27,7 +27,7 @@ export function ApprovePanel(props: {
   }));
 
   return (
-    <form action={action} className="rise rounded-lg border-2 border-ink bg-card p-5" aria-label="Review and send">
+    <form action={action} className="rounded-lg border-2 border-ink bg-card p-5" aria-label="Review and send">
       <h2 className="font-display text-2xl font-semibold">Review and send</h2>
       <p className="mb-4 text-sm text-ink-2">Nothing goes out before you click.</p>
       <input type="hidden" name="disputeId" value={props.disputeId} />

@@ -81,7 +81,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       {analysis?.grounding && <GroundingNote g={analysis.grounding} />}
 
       {history.length > 0 && (
-        <section aria-label="Receipts" className="rise rounded-lg border-2 border-accept/60 bg-card p-5">
+        <section aria-label="Receipts" className="rounded-lg border-2 border-accept/60 bg-card p-5">
           <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Receipts: what was sent to PayPal</h2>
           <ul className="space-y-3">
             {history.map((h, i) => (
@@ -124,7 +124,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         <span aria-hidden>←</span> Inbox
       </Link>
 
-      <header className="rise border-b border-rule pb-5">
+      <header className="border-b border-rule pb-5">
         {isPractice(id) && (
           <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-offer bg-card px-4 py-2 text-sm">
             <span className="font-semibold text-offer">Practice case</span>
@@ -155,7 +155,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
 
       {/* A closed case leads with how it ended; the analysis below is history. */}
       {resolved && (
-        <section aria-label="Outcome" className="rise rounded-xl border-2 border-ink bg-card p-6 md:p-8">
+        <section aria-label="Outcome" className="rounded-xl border-2 border-ink bg-card p-6 md:p-8">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">Final outcome</p>
           <h2 className="mt-2 font-display text-3xl font-semibold md:text-4xl">
             {wonBySeller ? "Won: PayPal decided for you" : "Closed in the buyer's favour"}
@@ -180,7 +180,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           </section>
         </div>
       ) : quickCall && allowed.has("accept_claim") ? (
-        <section className="rise rounded-xl border-2 border-accept bg-card p-6 md:p-8" aria-label="Quick call">
+        <section className="rounded-xl border-2 border-accept bg-card p-6 md:p-8" aria-label="Quick call">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-accept">Quick call, no AI needed</p>
           <h2 className="mt-2 font-display text-3xl font-semibold">Refund it. Fighting can&apos;t pay off.</h2>
           <p className="mt-3 max-w-3xl text-lg leading-relaxed">
@@ -198,7 +198,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           </div>
         </section>
       ) : actionable ? (
-        <section className="rise rounded-xl border-2 border-ink bg-card p-6 md:p-8" aria-label="Investigate">
+        <section className="rounded-xl border-2 border-ink bg-card p-6 md:p-8" aria-label="Investigate">
           <h2 className="font-display text-3xl font-semibold">Should you fight this one?</h2>
           <p className="mt-2 max-w-2xl text-lg text-ink-2">
             {PRODUCT} reads the dispute, the payment, tracking and your shop records, works out your odds and the money at stake,
@@ -211,7 +211,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       ) : null}
 
       {conflicts.length > 0 && (
-        <details aria-label="Conflicting evidence" className="rise rounded-lg border-2 border-fight bg-card px-5 py-3">
+        <details aria-label="Conflicting evidence" className="rounded-lg border-2 border-fight bg-card px-5 py-3">
           <summary className="cursor-pointer font-semibold text-fight">
             The evidence disagrees on {conflicts.length} point{conflicts.length === 1 ? "" : "s"}. Verify before you send.
           </summary>
@@ -228,7 +228,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
         {/* Case file: everything the agent can see */}
         <section aria-label="Case file" className="min-w-0 space-y-4">
-          <details className={`rise rounded-lg border-2 bg-card px-5 py-4 ${urgent ? "border-fight" : "border-rule"}`} open={!a}>
+          <details className={`rounded-lg border-2 bg-card px-5 py-4 ${urgent ? "border-fight" : "border-rule"}`} open={!a}>
             <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
               Deadline and what a PayPal reviewer looks for
             </summary>
@@ -415,7 +415,7 @@ const fieldLabel: Record<string, string> = {
 function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
   if (g.removed.length === 0) {
     return (
-      <p className="rise flex items-start gap-2 rounded-lg border border-rule bg-card px-4 py-3 text-sm text-ink-2">
+      <p className="flex items-start gap-2 rounded-lg border border-rule bg-card px-4 py-3 text-sm text-ink-2">
         <span className="font-mono text-accept" aria-hidden>✓</span>
         <span>
           Every claim checked against its source.
@@ -425,7 +425,7 @@ function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
     );
   }
   return (
-    <details aria-label="Removed claims" className="rise rounded-lg border-2 border-offer bg-card px-5 py-3">
+    <details aria-label="Removed claims" className="rounded-lg border-2 border-offer bg-card px-5 py-3">
       <summary className="cursor-pointer font-semibold text-offer">
         Removed {g.removed.length} claim{g.removed.length === 1 ? "" : "s"} no record backs
       </summary>
@@ -459,14 +459,14 @@ function Pill({ tone, children }: { tone: "ink" | "muted" | "accept" | "fight"; 
 function Card({ title, folded = false, children }: { title: string; folded?: boolean; children: React.ReactNode }) {
   if (folded) {
     return (
-      <details className="rise rounded-lg border border-rule bg-card px-5 py-4 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
+      <details className="rounded-lg border border-rule bg-card px-5 py-4 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
         <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{title}</summary>
         <div className="mt-3">{children}</div>
       </details>
     );
   }
   return (
-    <div className="rise rounded-lg border border-rule bg-card p-5 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
+    <div className="rounded-lg border border-rule bg-card p-5 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
       <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{title}</h2>
       {children}
     </div>

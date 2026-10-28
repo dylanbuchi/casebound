@@ -98,28 +98,14 @@ body {
   }
 }
 
-/* The sheet takes the hit when the stamp lands. */
+/* The case page shows at once; only the stamp moves, and the sheet takes the hit when it lands. */
 .verdict-sheet {
-  animation: rise 500ms ease-out both, sheet-thud 260ms ease-out 540ms;
+  animation: sheet-thud 260ms ease-out 540ms;
 }
 
 @keyframes sheet-thud {
   30% {
     transform: translateY(2px) scale(0.997);
-  }
-}
-
-/* After the stamp, the money fills in, option by option. */
-.keep-fill {
-  animation: keep-fill 700ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(820ms + var(--i, 0) * 160ms) both;
-}
-.ledger-figure {
-  animation: rise 400ms ease-out calc(900ms + var(--i, 0) * 160ms) both;
-}
-
-@keyframes keep-fill {
-  from {
-    transform: scaleX(0);
   }
 }
 
@@ -306,8 +292,6 @@ body {
   .stamp-in,
   .rise,
   .verdict-sheet,
-  .keep-fill,
-  .ledger-figure,
   .skeleton {
     animation: none;
   }
