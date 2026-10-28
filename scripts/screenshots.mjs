@@ -20,6 +20,8 @@ const shots = [
   { name: "5-demo-store", path: "/store", fullPage: false },
   { name: "6-phone-inbox", path: "/", fullPage: true, viewport: { width: 390, height: 844 } },
   { name: "7-practice-case", path: "/disputes/PP-D-DEMO-1", fullPage: false },
+  { name: "8-verdict-sheet", path: "/disputes/PP-D-DEMO-1", crop: ["section[aria-label='Recommendation']"] },
+  { name: "9-phone-verdict", path: "/disputes/PP-D-DEMO-1", crop: ["section[aria-label='Recommendation']"], viewport: { width: 390, height: 844 } },
 ];
 
 await mkdir(out, { recursive: true });
@@ -37,8 +39,9 @@ for (const s of shots) {
     const boxes = await Promise.all(s.crop.map((sel) => page.locator(sel).boundingBox()));
     const top = Math.min(...boxes.map((b) => b.y)) - 24;
     const bottom = Math.max(...boxes.map((b) => b.y + b.height)) + 24;
-    const left = Math.min(...boxes.map((b) => b.x)) - 24;
-    const right = Math.max(...boxes.map((b) => b.x + b.width)) + 24;
+    const width = page.viewportSize().width;
+    const left = Math.max(0, Math.min(...boxes.map((b) => b.x)) - 24);
+    const right = Math.min(width, Math.max(...boxes.map((b) => b.x + b.width)) + 24);
     await page.screenshot({ path: `${out}/${s.name}.png`, fullPage: true, clip: { x: left, y: top, width: right - left, height: bottom - top } });
   } else {
     await page.screenshot({ path: `${out}/${s.name}.png`, fullPage: Boolean(s.fullPage) });
