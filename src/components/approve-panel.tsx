@@ -13,6 +13,8 @@ export function ApprovePanel(props: {
   unlocked: boolean;
   // Practice case: the send is simulated in the app and nothing reaches PayPal.
   simulated?: boolean;
+  // Why nothing can be sent, when the plan is empty for a reason other than PayPal's state.
+  blocked?: string;
   steps: PlannedStep[];
   evidenceNotes: string;
   buyerMessage: string;
@@ -38,8 +40,8 @@ export function ApprovePanel(props: {
         <p className="mb-4 rounded-md border border-fight bg-paper p-3 text-sm font-medium text-fight">{props.warning}</p>
       )}
       {props.steps.length === 0 ? (
-        <p className="mb-4 rounded-md border border-rule bg-paper p-3 text-sm text-ink-2">
-          PayPal is not accepting this kind of response on the dispute right now.
+        <p role={props.blocked ? "alert" : undefined} className={`mb-4 rounded-md border bg-paper p-3 text-sm ${props.blocked ? "border-fight font-medium text-fight" : "border-rule text-ink-2"}`}>
+          {props.blocked ?? "PayPal is not accepting this kind of response on the dispute right now."}
         </p>
       ) : (
         <ol className="mb-4 space-y-1.5" aria-label="What will happen">

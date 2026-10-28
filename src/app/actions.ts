@@ -10,7 +10,7 @@ import { clientIp, rateLimiter } from "@/lib/limits";
 import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
 import { PayPalError } from "@/lib/paypal/client";
 import { allowedActions } from "@/lib/dispute-state";
-import { describeRequest, planActions, withEdits, type PlannedStep } from "@/lib/plan";
+import { describeRequest, offerProblem, planActions, withEdits, type PlannedStep } from "@/lib/plan";
 import { appendAudit, deleteAnalysis, getAnalysis, type AuditEntry } from "@/lib/records";
 import { updateJson } from "@/lib/store";
 import { isPractice, modeOf, source, type Source } from "@/lib/source";
@@ -92,6 +92,8 @@ export async function executePlan(_prev: ActionState, form: FormData): Promise<A
   const fulfillment = await src.getFulfillment(dispute);
   const steps = planActions(dispute, analysis.assessment, fulfillment).map((s) => ({ ...s, action: withEdits(s.action, edits) }));
   if (steps.length === 0) {
+    const problem = offerProblem(dispute, analysis.assessment);
+    if (problem) return { ok: false, message: problem };
     return { ok: false, message: `PayPal is not accepting this response right now (status: ${dispute.status.toLowerCase().replaceAll("_", " ")}).` };
   }
   return runSteps(src, disputeId, steps, analysis.createdAt);

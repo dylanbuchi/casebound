@@ -21,6 +21,17 @@ export function carrierCode(name: string) {
 
 export type PlannedStep = { label: string; action: DisputeAction };
 
+// Why a recommended offer cannot be sent as it stands, or null. An offer never falls back to another action:
+// the verdict says OFFER, so Approve must not quietly send evidence instead.
+export function offerProblem(dispute: Dispute, a: Assessment, allowed: Set<ActionKind> = allowedActions(dispute)): string | null {
+  if (a.recommended_action !== "OFFER") return null;
+  if (!allowed.has("make_offer")) return "PayPal is not accepting an offer on this dispute right now, so there is nothing to send.";
+  if (!a.offer_type) return "The recommendation has no offer type, so it cannot be sent. Re-run the analysis or answer in PayPal.";
+  if (a.offer_type === "REPLACEMENT_WITHOUT_REFUND") return null;
+  if (!(Number(a.offer_amount) > 0)) return "The recommended offer has no amount above zero, so it cannot be sent. Re-run the analysis or answer in PayPal.";
+  return null;
+}
+
 export function planActions(
   dispute: Dispute,
   a: Assessment,
@@ -39,23 +50,22 @@ export function planActions(
     return steps;
   }
 
-  if (a.recommended_action === "OFFER" && a.offer_type && allowed.has("make_offer")) {
+  if (a.recommended_action === "OFFER") {
+    if (offerProblem(dispute, a, allowed) || !a.offer_type) return steps;
     const replacementOnly = a.offer_type === "REPLACEMENT_WITHOUT_REFUND";
     const capped = Math.max(0, Math.min(a.offer_amount ?? 0, Number(dispute.dispute_amount.value)));
-    if (replacementOnly || capped > 0) {
-      steps.push({
-        label: replacementOnly
-          ? "Offer a free replacement"
-          : `Offer ${capped.toFixed(2)} ${currency} (${a.offer_type.replaceAll("_", " ").toLowerCase()})`,
-        action: {
-          kind: "make_offer",
-          note: a.buyer_message.slice(0, 2000),
-          amount: replacementOnly ? null : { currency_code: currency, value: capped.toFixed(2) },
-          offerType: a.offer_type,
-        },
-      });
-      return steps;
-    }
+    steps.push({
+      label: replacementOnly
+        ? "Offer a free replacement"
+        : `Offer ${capped.toFixed(2)} ${currency} (${a.offer_type.replaceAll("_", " ").toLowerCase()})`,
+      action: {
+        kind: "make_offer",
+        note: a.buyer_message.slice(0, 2000),
+        amount: replacementOnly ? null : { currency_code: currency, value: capped.toFixed(2) },
+        offerType: a.offer_type,
+      },
+    });
+    return steps;
   }
 
   const evidence: EvidenceInput = { evidence_type: a.evidence_type ?? "OTHER", notes: a.evidence_notes.slice(0, 2000) };

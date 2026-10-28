@@ -10,7 +10,7 @@ import { conflictsIn, type CheckItem } from "@/lib/checklist";
 import { isUnlocked } from "@/lib/auth";
 import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, windowUsed } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
-import { planActions } from "@/lib/plan";
+import { offerProblem, planActions } from "@/lib/plan";
 import { getAnalysis, getAudit } from "@/lib/records";
 import { isPractice, source } from "@/lib/source";
 import { ResetPractice } from "@/components/reset-practice";
@@ -73,6 +73,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           warning={conflicts.length > 0 ? "Some evidence conflicts. Open “The evidence disagrees” and check it before approving." : undefined}
           unlocked={unlocked}
           simulated={isPractice(id)}
+          blocked={offerProblem(dispute, a) ?? undefined}
           steps={steps}
           evidenceNotes={a.evidence_notes}
           buyerMessage={a.buyer_message}

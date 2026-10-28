@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Assessment } from "./agent";
 import type { FulfillmentRecord } from "./fulfillment";
 import type { Dispute } from "./paypal/types";
-import { planActions } from "./plan";
+import { offerProblem, planActions } from "./plan";
 
 const dispute = {
   dispute_id: "PP-D-1",
@@ -67,6 +67,19 @@ describe("planActions", () => {
   it("caps an offer at the disputed amount", () => {
     const [offer] = planActions(dispute, { ...base, recommended_action: "OFFER", offer_amount: 500, offer_type: "REFUND" }, record);
     expect(offer.action).toMatchObject({ kind: "make_offer", amount: { value: "95.00" } });
+  });
+
+  it("never turns a broken offer into a fight", () => {
+    const offer = { ...base, recommended_action: "OFFER" as const, offer_type: "REFUND" as const };
+    for (const amount of [0, -5, null]) {
+      const a = { ...offer, offer_amount: amount };
+      expect(planActions(dispute, a, record)).toEqual([]);
+      expect(offerProblem(dispute, a)).toMatch(/no amount above zero/);
+    }
+    const noLink = planActions(dispute, { ...offer, offer_amount: 20 }, record, new Set(["provide_evidence", "send_message"]));
+    expect(noLink).toEqual([]);
+    expect(offerProblem(dispute, { ...offer, offer_amount: 20 }, new Set(["provide_evidence"]))).toMatch(/not accepting an offer/);
+    expect(offerProblem(dispute, { ...offer, offer_amount: 20 })).toBeNull();
   });
 
   it("accepting is a single refund step", () => {
