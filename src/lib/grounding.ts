@@ -40,7 +40,8 @@ export function problemWith(sentence: string, facts: Facts, opts: { carrierSourc
   const numbers = [...(sentence.match(/\b\d[\d ]{8,}\d\b/g) ?? []), ...(sentence.match(/\b[A-Z0-9]{10,}\b/g) ?? [])]
     .map(norm)
     .filter((n) => n.length >= 10 && (n.match(/\d/g)?.length ?? 0) >= 6);
-  const unknown = numbers.find((n) => !known.has(n));
+  // A digit run inside a known ID (such as the number in PP-D-123456789012) is that ID, not a new one.
+  const unknown = numbers.find((n) => !known.has(n) && ![...known].some((k) => k.includes(n)));
   if (unknown) return `Reference number ${unknown} is not in PayPal or the shop record`;
   if (HEDGED.test(sentence)) return null;
 

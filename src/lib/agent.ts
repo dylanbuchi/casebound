@@ -94,7 +94,7 @@ const toolLabels: Record<string, string> = {
   get_evidence_checklist: "Checking what evidence is on file",
   estimate_economics: "Running the money math",
   record_assessment: "Writing the recommendation",
-  grounding_check: "Checking every claim against its source",
+  grounding_check: "Checking delivery, signature and reference claims against their source",
 };
 
 const SYSTEM = `You are ${PRODUCT}, a dispute analyst for a small online shop that sells through PayPal.

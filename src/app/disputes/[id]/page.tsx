@@ -418,8 +418,8 @@ function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
       <p className="flex items-start gap-2 rounded-lg border border-rule bg-card px-4 py-3 text-sm text-ink-2">
         <span className="font-mono text-accept" aria-hidden>✓</span>
         <span>
-          Every claim checked against its source.
-          {g.sentBack > 0 && ` The agent rewrote ${g.sentBack} that claimed more than the records show.`}
+          Delivery, signature and reference-number claims in this reply match PayPal tracking or your shop record.
+          {g.sentBack > 0 && ` The agent rewrote ${g.sentBack} that claimed more than those records show.`} Other wording is not checked by code.
         </span>
       </p>
     );

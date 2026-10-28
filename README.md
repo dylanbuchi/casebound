@@ -46,6 +46,7 @@ A small demo store (Lumen & Loom, a fictional shop) creates real sandbox payment
 - Cost guard: `AI_DAILY_CAP` limits analyses per day, and saved analyses are reused.
 - Tools: eight read-only investigation tools (including the evidence checklist and an economics calculator) plus one strict-schema `record_assessment` tool. The agent cannot move money; actions are built on the server from the seller's approval.
 - Buyer messages are treated as untrusted data in the system prompt.
+- Source check (`src/lib/grounding.ts`): code checks three kinds of claim in the summary, the reasoning, both drafts and the evidence list. A delivery claim needs a delivery on file, and a carrier delivery claim needs a PayPal tracker marked DELIVERED. A signature needs a signer in the shop record and is never credited to the carrier. A reference number must appear in PayPal or the shop record. Hedged sentences are skipped. The agent gets one chance to rewrite; anything still unsupported is cut and shown to the seller. Other statements are not checked by code.
 
 ## Accuracy (synthetic eval, not a merchant pilot)
 
