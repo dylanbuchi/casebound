@@ -17,6 +17,7 @@ const shots = [
   { name: "2-verdict-fight", path: "/disputes/PP-R-ZIV-10194962", fullPage: false },
   { name: "3-send-and-receipt", path: "/disputes/PP-R-ZIV-10194962", crop: ["form[aria-label='Review and send']", "section[aria-label='Receipts']"] },
   { name: "4-offer-resolved", path: "/disputes/PP-R-GDD-10194963", fullPage: false },
+  { name: "5-demo-store", path: "/store", fullPage: false },
 ];
 
 await mkdir(out, { recursive: true });
@@ -27,6 +28,7 @@ const page = await context.newPage();
 
 for (const s of shots) {
   await page.goto(base + s.path, { waitUntil: "networkidle" });
+  await page.waitForTimeout(600);
   if (s.crop) {
     // Tight crop around the given elements, with a margin.
     const boxes = await Promise.all(s.crop.map((sel) => page.locator(sel).boundingBox()));

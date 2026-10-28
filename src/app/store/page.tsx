@@ -10,11 +10,13 @@ export const dynamic = "force-dynamic";
 export default function Store() {
   const live = isLive();
   return (
-    <div className="space-y-8">
-      <section>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-3">Demo store · PayPal sandbox</p>
-        <h1 className="mt-1 font-display text-4xl font-semibold">{merchant.name}</h1>
-        <p className="mt-2 max-w-2xl text-ink-2">
+    <div className="storefront space-y-8 p-6 sm:p-10">
+      <p className="rounded-full bg-[var(--shop-accent)] px-4 py-1.5 text-center text-xs font-medium text-white">
+        Demo shop on the PayPal sandbox. No real money moves.
+      </p>
+      <section className="text-center">
+        <h1 className="font-display text-5xl font-light italic tracking-tight">{merchant.name}</h1>
+        <p className="mx-auto mt-3 max-w-2xl text-[color:var(--shop-ink)]/80">
           {merchant.tagline}. This is the shop behind the disputes: buy here with a PayPal sandbox buyer account, then
           open a dispute from that account to see {PRODUCT} handle it.{" "}
           <Link href="/store/orders" className="underline">
@@ -31,7 +33,7 @@ export default function Store() {
 
       <ul className="grid gap-4 sm:grid-cols-2">
         {catalog.map((p) => (
-          <li key={p.sku} className="rounded-lg border border-rule bg-card p-5">
+          <li key={p.sku} className="rounded-2xl border border-black/10 bg-[#f7f9f7] p-6">
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="font-display text-xl font-semibold">{p.name}</h2>
               <p className="font-mono">${p.price}</p>
