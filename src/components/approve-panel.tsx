@@ -50,12 +50,43 @@ export function ApprovePanel(props: {
         </ol>
       )}
 
-      {/* What goes out, at a glance; the full wording and the raw request stay one click away. */}
+      {/* Exactly what goes out, in full, right above the button; editing and the raw request sit below it. */}
       <div className="space-y-3">
         {showEvidence && <Draft label="To PayPal" text={evidenceNotes} />}
         {showMessage && <Draft label="To the buyer" text={buyerMessage} />}
       </div>
 
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        {!props.unlocked ? (
+          <Link href="/unlock" className="btn btn-line">
+            Unlock to send
+          </Link>
+        ) : props.sent || state?.ok ? (
+          <span role="status" className="flex items-center gap-3">
+            <span className="stamp stamp-in text-base text-accept">Sent</span>
+            <span className="text-sm font-medium text-accept">PayPal has it. The receipt is below.</span>
+          </span>
+        ) : (
+          <button
+            type="submit"
+            disabled={pending || !props.actionable || props.steps.length === 0}
+            className="btn btn-ink px-6 py-3 text-base"
+          >
+            {pending && <span className="spinner" aria-hidden />}
+            {pending ? "Sending to PayPal…" : props.actionable ? "Approve and send" : "Already handled"}
+          </button>
+        )}
+        <span className="text-xs text-ink-3">Sent through the PayPal Disputes API. Every call is kept as a receipt.</span>
+      </div>
+
+      {state &&
+        (state.ok ? (
+          <p className="rise mt-3 text-sm text-ink-2">{state.message}</p>
+        ) : (
+          <p role="alert" className="rise mt-4 rounded-md border border-fight/50 bg-paper px-3 py-2 text-sm text-fight">
+            {state.message}
+          </p>
+        ))}
       <details className="mt-4 rounded-md border border-rule bg-paper">
         <summary className="px-3 py-2.5 text-sm font-medium">Edit the wording</summary>
         <div className="space-y-4 px-3 pb-3">
@@ -112,37 +143,6 @@ export function ApprovePanel(props: {
         </div>
       </details>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        {!props.unlocked ? (
-          <Link href="/unlock" className="btn btn-line">
-            Unlock to send
-          </Link>
-        ) : props.sent || state?.ok ? (
-          <span role="status" className="flex items-center gap-3">
-            <span className="stamp stamp-in text-base text-accept">Sent</span>
-            <span className="text-sm font-medium text-accept">PayPal has it. The receipt is below.</span>
-          </span>
-        ) : (
-          <button
-            type="submit"
-            disabled={pending || !props.actionable || props.steps.length === 0}
-            className="btn btn-ink px-6 py-3 text-base"
-          >
-            {pending && <span className="spinner" aria-hidden />}
-            {pending ? "Sending to PayPal…" : props.actionable ? "Approve and send" : "Already handled"}
-          </button>
-        )}
-        <span className="text-xs text-ink-3">Sent through the PayPal Disputes API. Every call is kept as a receipt.</span>
-      </div>
-
-      {state &&
-        (state.ok ? (
-          <p className="rise mt-3 text-sm text-ink-2">{state.message}</p>
-        ) : (
-          <p role="alert" className="rise mt-4 rounded-md border border-fight/50 bg-paper px-3 py-2 text-sm text-fight">
-            {state.message}
-          </p>
-        ))}
     </form>
   );
 }
@@ -151,7 +151,7 @@ function Draft({ label, text }: { label: string; text: string }) {
   return (
     <figure className="border-l-2 border-rule pl-3">
       <figcaption className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{label}</figcaption>
-      <blockquote className="mt-0.5 line-clamp-3 text-sm leading-relaxed text-ink-2">{text || "(empty)"}</blockquote>
+      <blockquote className="mt-0.5 text-sm leading-relaxed whitespace-pre-line break-words text-ink-2">{text || "(empty)"}</blockquote>
     </figure>
   );
 }
