@@ -9,7 +9,17 @@ const verdictTitle = {
 } as const;
 
 // The decision in one card: what to do, why, and what it costs. Money math comes from code, not the model.
-export function VerdictCard({ analysis, amount, currency }: { analysis: AnalysisResult; amount: number; currency: string }) {
+export function VerdictCard({
+  analysis,
+  amount,
+  currency,
+  historical = false,
+}: {
+  analysis: AnalysisResult;
+  amount: number;
+  currency: string;
+  historical?: boolean;
+}) {
   const a = analysis.assessment;
   const e = analysis.economics;
   const offerCost = a.offer_type === "REPLACEMENT_WITHOUT_REFUND" ? null : (a.offer_amount ?? null);
@@ -31,11 +41,19 @@ export function VerdictCard({ analysis, amount, currency }: { analysis: Analysis
   const offerOverride = a.recommended_action === "OFFER" && offerCost !== null && offerCost > Math.min(e.acceptCost, e.fightExpectedCost);
 
   return (
-    <section aria-label="Recommendation" className="rise overflow-hidden rounded-xl border-2 border-ink bg-card">
+    <section
+      aria-label="Recommendation"
+      className={`rise overflow-hidden rounded-xl bg-card ${historical ? "border border-rule opacity-80" : "border-2 border-ink"}`}
+    >
+      {historical && (
+        <p className="border-b border-rule bg-paper-2 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3 md:px-8">
+          Historical: the recommendation made before this case closed
+        </p>
+      )}
       <div className="grid gap-6 p-6 md:grid-cols-[auto_1fr] md:items-start md:gap-8 md:p-8">
         <div className="flex flex-col items-start gap-2">
           <span className={`stamp stamp-in text-3xl md:text-4xl ${verdictColor[a.recommended_action]}`}>{a.recommended_action}</span>
-          <span className="mt-2 font-mono text-xs uppercase tracking-[0.18em] text-ink-3">Recommendation</span>
+          <span className="mt-2 font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{historical ? "Was recommended" : "Recommendation"}</span>
         </div>
         <div>
           <h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{verdictTitle[a.recommended_action]}</h2>

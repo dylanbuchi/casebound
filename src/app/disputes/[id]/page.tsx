@@ -58,6 +58,8 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
   const outcome = dispute.dispute_outcome ?? dispute.outcome;
   const used = windowUsed(dispute.create_time, dispute.seller_response_due_date);
   const urgent = actionable && due !== null && due <= 3;
+  const resolved = dispute.status === "RESOLVED";
+  const wonBySeller = Boolean(outcome?.outcome_code?.includes("SELLER"));
 
   return (
     <div className="space-y-8">
@@ -91,9 +93,27 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         </div>
       </header>
 
+      {/* A closed case leads with how it ended; the analysis below is history. */}
+      {resolved && (
+        <section aria-label="Outcome" className="rise rounded-xl border-2 border-ink bg-card p-6 md:p-8">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">Final outcome</p>
+          <h2 className="mt-2 font-display text-3xl font-semibold md:text-4xl">
+            {wonBySeller ? "Won: PayPal decided for you" : "Closed in the buyer's favour"}
+          </h2>
+          <p className="mt-3 max-w-3xl text-lg leading-relaxed text-ink-2">
+            {outcome?.amount_refunded
+              ? `${fmtMoney(outcome.amount_refunded)} was refunded to the buyer${outcome && "outcome_reason" in outcome && outcome.outcome_reason ? ` (${String(outcome.outcome_reason).toLowerCase().replaceAll("_", " ")})` : ""}.`
+              : wonBySeller
+                ? "You keep the payment."
+                : "No refund amount was reported."}{" "}
+            {history.length > 0 && `${PRODUCT} sent ${history.filter((h) => h.ok).length} response${history.filter((h) => h.ok).length === 1 ? "" : "s"} for you; the receipts are below.`}
+          </p>
+        </section>
+      )}
+
       {/* The decision, first and full width */}
       {a ? (
-        <VerdictCard analysis={analysis!} amount={Number(dispute.dispute_amount.value)} currency={currency} />
+        <VerdictCard analysis={analysis!} amount={Number(dispute.dispute_amount.value)} currency={currency} historical={resolved} />
       ) : quickCall && allowed.has("accept_claim") ? (
         <section className="rise rounded-xl border-2 border-accept bg-card p-6 md:p-8" aria-label="Quick call">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-accept">Quick call, no AI needed</p>
