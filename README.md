@@ -47,6 +47,26 @@ A small demo store (Lumen & Loom, a fictional shop) creates real sandbox payment
 - Tools: eight read-only investigation tools (including the evidence checklist and an economics calculator) plus one strict-schema `record_assessment` tool. The agent cannot move money; actions are built on the server from the seller's approval.
 - Buyer messages are treated as untrusted data in the system prompt.
 
+## Accuracy (synthetic eval, not a merchant pilot)
+
+`pnpm eval` runs 21 made-up disputes through the same `analyzeDispute` the app uses, against an in-memory source that can never send anything. Full table in [eval/results.md](eval/results.md).
+
+| | Result |
+|---|---|
+| Right call | **20 of 21 (95%)**; the agent alone got 17 of 18 |
+| Quick calls | 3 of 3 small disputes ($4 to $6) settled in code, no AI, $0 |
+| Cost | **$0.085** for the whole run on Claude Haiku 5.5, from the API's token counts |
+| Time | median **30 s** per case, plus about 6 min to review, against an estimated 45 min by hand |
+| Source check | 13 claims sent back for a rewrite, 3 cut in code |
+| Changed its mind | 2 cases, both where PayPal tracking contradicted the shop record |
+
+Method and limits:
+
+- The cases cover all five PayPal reasons: strong, weak and contradicted evidence, plus quick calls. The right action for each was written in [eval/dataset.ts](eval/dataset.ts) before the first run. Where two actions are fair (for example offer or refund on a cracked lamp), both count.
+- The one miss: an unauthorised charge on a first order to a freight forwarder. The agent chose to fight at only 25% odds, where refunding is the safer call.
+- The 45 minutes by hand is an assumption about how long a seller takes to gather records and write a response. It was not measured.
+- The cases are synthetic and were written by the same team that built the agent. This shows the pipeline behaves sensibly, not that real merchants win more disputes.
+
 ## Run it
 
 Requirements: Node 20+, pnpm.

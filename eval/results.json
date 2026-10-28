@@ -1,0 +1,376 @@
+{
+  "summary": {
+    "model": "claude-haiku-5-5",
+    "ranAt": "2026-10-28T17:17:08.243Z",
+    "cases": 21,
+    "correct": 20,
+    "accuracy": 0.9523809523809523,
+    "agentCases": 18,
+    "agentCorrect": 17,
+    "agentAccuracy": 0.9444444444444444,
+    "quickCalls": 3,
+    "errors": 0,
+    "totalCostUsd": 0.0848,
+    "medianAgentSeconds": 30,
+    "manualMinutesEstimate": 45,
+    "reviewMinutesEstimate": 6,
+    "claimsSentBack": 13,
+    "claimsRemoved": 3,
+    "oddsLowered": 0,
+    "changedMind": 2
+  },
+  "rows": [
+    {
+      "id": "EVAL-01",
+      "title": "Not received, carrier delivered and signed",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 28.875532291,
+      "cost": 0.0048473299999999995,
+      "winProbability": 0.8,
+      "modelEstimate": 0.8,
+      "removed": 2,
+      "sentBack": 4,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-02",
+      "title": "Not received, carrier delivered, under signature threshold",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 20.380873958,
+      "cost": 0.0032711899999999998,
+      "winProbability": 0.75,
+      "modelEstimate": 0.75,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-03",
+      "title": "Not received, delivered with porch photo",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 23.142677041000002,
+      "cost": 0.0037980249999999996,
+      "winProbability": 0.75,
+      "modelEstimate": 0.75,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-04",
+      "title": "Not received, shipped without tracking",
+      "expected": [
+        "ACCEPT",
+        "OFFER"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 26.847300959000002,
+      "cost": 0.00465306,
+      "winProbability": 0.1,
+      "modelEstimate": 0.1,
+      "removed": 0,
+      "sentBack": 1,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-05",
+      "title": "Not received, shop says delivered, tracker says returned",
+      "expected": [
+        "ACCEPT",
+        "OFFER"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 37.466221708,
+      "cost": 0.005527135,
+      "winProbability": 0.1,
+      "modelEstimate": 0.1,
+      "removed": 0,
+      "sentBack": 2,
+      "changedMind": true
+    },
+    {
+      "id": "EVAL-06",
+      "title": "Not received, tracker stuck in transit",
+      "expected": [
+        "ACCEPT",
+        "OFFER"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 31.061775332999996,
+      "cost": 0.00503234,
+      "winProbability": 0.1,
+      "modelEstimate": 0.1,
+      "removed": 0,
+      "sentBack": 1,
+      "changedMind": true
+    },
+    {
+      "id": "EVAL-07",
+      "title": "Not received, $240 delivered without signature",
+      "expected": [
+        "FIGHT",
+        "OFFER"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 33.479053500000006,
+      "cost": 0.005715795,
+      "winProbability": 0.5,
+      "modelEstimate": 0.5,
+      "removed": 1,
+      "sentBack": 3,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-08",
+      "title": "Not as described, lamp arrived cracked",
+      "expected": [
+        "OFFER",
+        "ACCEPT"
+      ],
+      "got": "OFFER",
+      "correct": true,
+      "route": "agent",
+      "seconds": 26.573322249999997,
+      "cost": 0.003962965,
+      "winProbability": 0.15,
+      "modelEstimate": 0.15,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-09",
+      "title": "Not as described, colour slightly off",
+      "expected": [
+        "OFFER",
+        "FIGHT"
+      ],
+      "got": "OFFER",
+      "correct": true,
+      "route": "agent",
+      "seconds": 30.678301417000004,
+      "cost": 0.004406274999999999,
+      "winProbability": 0.35,
+      "modelEstimate": 0.35,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-10",
+      "title": "Not as described, wrong size claimed but packing record matches",
+      "expected": [
+        "FIGHT",
+        "OFFER"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 35.60066249999999,
+      "cost": 0.005270804999999999,
+      "winProbability": 0.5,
+      "modelEstimate": 0.5,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-11",
+      "title": "Not as described, cheap candle broken in transit",
+      "expected": [
+        "ACCEPT",
+        "OFFER"
+      ],
+      "got": "OFFER",
+      "correct": true,
+      "route": "agent",
+      "seconds": 30.040711375000015,
+      "cost": 0.00413299,
+      "winProbability": 0.15,
+      "modelEstimate": 0.15,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-12",
+      "title": "Unauthorised, returning buyer, delivered and signed at account address",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 28.565398833,
+      "cost": 0.0049261899999999996,
+      "winProbability": 0.75,
+      "modelEstimate": 0.75,
+      "removed": 0,
+      "sentBack": 2,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-13",
+      "title": "Unauthorised, first order to a forwarding address, no signature",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "FIGHT",
+      "correct": false,
+      "route": "agent",
+      "seconds": 29.729866749999985,
+      "cost": 0.004452905,
+      "winProbability": 0.25,
+      "modelEstimate": 0.25,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-14",
+      "title": "Credit not processed, refund already issued",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 38.39881433299999,
+      "cost": 0.005709305,
+      "winProbability": 0.6,
+      "modelEstimate": 0.6,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-15",
+      "title": "Credit not processed, return received but refund forgotten",
+      "expected": [
+        "ACCEPT",
+        "OFFER"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 17.954244333999988,
+      "cost": 0.0027493599999999997,
+      "winProbability": 0.05,
+      "modelEstimate": 0.05,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-16",
+      "title": "Credit not processed, return never arrived",
+      "expected": [
+        "FIGHT",
+        "OFFER"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 32.19341191699999,
+      "cost": 0.004530434999999999,
+      "winProbability": 0.5,
+      "modelEstimate": 0.5,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-17",
+      "title": "Duplicate charge that really happened",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 41.691290917,
+      "cost": 0.0057058249999999994,
+      "winProbability": 0.3,
+      "modelEstimate": 0.3,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-18",
+      "title": "Duplicate claim with a single capture",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 46.083268333000014,
+      "cost": 0.00606718,
+      "winProbability": 0.5,
+      "modelEstimate": 0.5,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "EVAL-19",
+      "title": "Duplicate $6 charge (quick call)",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "quick call",
+      "seconds": 0.000027750000008381903,
+      "cost": 0
+    },
+    {
+      "id": "EVAL-20",
+      "title": "Not received $5, delivered (quick call)",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "quick call",
+      "seconds": 0.000023583000001963227,
+      "cost": 0
+    },
+    {
+      "id": "EVAL-21",
+      "title": "Not as described $4 (quick call)",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "quick call",
+      "seconds": 0.000002957999997306615,
+      "cost": 0
+    }
+  ]
+}
