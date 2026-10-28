@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Assessment } from "./agent";
 import type { FulfillmentRecord } from "./fulfillment";
 import type { Dispute } from "./paypal/types";
-import { offerProblem, planActions } from "./plan";
+import { isStale, offerProblem, planActions } from "./plan";
 
 const dispute = {
   dispute_id: "PP-D-1",
@@ -85,6 +85,15 @@ describe("planActions", () => {
   it("accepting is a single refund step", () => {
     const steps = planActions(dispute, { ...base, recommended_action: "ACCEPT" }, record);
     expect(steps.map((s) => s.action.kind)).toEqual(["accept_claim"]);
+  });
+});
+
+describe("isStale", () => {
+  it("blocks a send when the dispute changed after the analysis", () => {
+    const d = { ...dispute, update_time: "2026-10-28T15:35:23.884Z" };
+    expect(isStale("2026-10-28T15:35:23.884Z", d)).toBe(false);
+    expect(isStale("2026-10-28T15:00:00.000Z", d)).toBe(true);
+    expect(isStale(undefined, d)).toBe(true);
   });
 });
 

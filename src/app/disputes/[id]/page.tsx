@@ -10,7 +10,7 @@ import { conflictsIn, type CheckItem } from "@/lib/checklist";
 import { isUnlocked } from "@/lib/auth";
 import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, windowUsed } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
-import { offerProblem, planActions } from "@/lib/plan";
+import { isStale, offerProblem, planActions, STALE_MESSAGE } from "@/lib/plan";
 import { getAnalysis, getAudit } from "@/lib/records";
 import { isPractice, source } from "@/lib/source";
 import { ResetPractice } from "@/components/reset-practice";
@@ -52,8 +52,10 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
   const allowed = allowedActions(dispute);
   const actionable = allowed.size > 0;
   const a = analysis?.assessment;
-  const steps = a ? planActions(dispute, a, fulfillment) : [];
+  const stale = Boolean(analysis) && isStale(analysis!.disputeUpdatedAt, dispute);
+  const steps = a && !stale ? planActions(dispute, a, fulfillment) : [];
   const history = audit.filter((e) => e.disputeId === id);
+  const sentSinceAnalysis = Boolean(analysis) && history.some((h) => h.ok && h.at > analysis!.createdAt);
   const currency = dispute.dispute_amount.currency_code;
 
   const outcome = dispute.dispute_outcome ?? dispute.outcome;
@@ -69,11 +71,11 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         <ApprovePanel
           disputeId={id}
           actionable={actionable}
-          sent={history.some((h) => h.ok && h.at > analysis!.createdAt)}
+          sent={sentSinceAnalysis}
           warning={conflicts.length > 0 ? "Some evidence conflicts. Open “The evidence disagrees” and check it before approving." : undefined}
           unlocked={unlocked}
           simulated={isPractice(id)}
-          blocked={offerProblem(dispute, a) ?? undefined}
+          blocked={stale && !sentSinceAnalysis ? STALE_MESSAGE : (offerProblem(dispute, a) ?? undefined)}
           steps={steps}
           evidenceNotes={a.evidence_notes}
           buyerMessage={a.buyer_message}

@@ -21,6 +21,12 @@ export function carrierCode(name: string) {
 
 export type PlannedStep = { label: string; action: DisputeAction };
 
+export const STALE_MESSAGE = "The dispute changed on PayPal since this analysis. Re-analyze before sending.";
+
+// An analysis is only sendable against the dispute it read. Any change on PayPal (a buyer message, a new status,
+// our own earlier send) moves update_time, which also stops a second send after a re-analysis.
+export const isStale = (analysisUpdatedAt: string | undefined, dispute: Dispute) => (analysisUpdatedAt ?? "") !== dispute.update_time;
+
 // Why a recommended offer cannot be sent as it stands, or null. An offer never falls back to another action:
 // the verdict says OFFER, so Approve must not quietly send evidence instead.
 export function offerProblem(dispute: Dispute, a: Assessment, allowed: Set<ActionKind> = allowedActions(dispute)): string | null {

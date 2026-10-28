@@ -10,7 +10,7 @@ import { clientIp, rateLimiter } from "@/lib/limits";
 import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
 import { PayPalError } from "@/lib/paypal/client";
 import { allowedActions } from "@/lib/dispute-state";
-import { describeRequest, offerProblem, planActions, withEdits, type PlannedStep } from "@/lib/plan";
+import { describeRequest, isStale, offerProblem, planActions, STALE_MESSAGE, withEdits, type PlannedStep } from "@/lib/plan";
 import { appendAudit, deleteAnalysis, getAnalysis, type AuditEntry } from "@/lib/records";
 import { updateJson } from "@/lib/store";
 import { isPractice, modeOf, source, type Source } from "@/lib/source";
@@ -89,6 +89,7 @@ export async function executePlan(_prev: ActionState, form: FormData): Promise<A
   if (!analysis) return { ok: false, message: "Run the analysis first." };
 
   const dispute = await src.getDispute(disputeId);
+  if (isStale(analysis.disputeUpdatedAt, dispute)) return { ok: false, message: STALE_MESSAGE };
   const fulfillment = await src.getFulfillment(dispute);
   const steps = planActions(dispute, analysis.assessment, fulfillment).map((s) => ({ ...s, action: withEdits(s.action, edits) }));
   if (steps.length === 0) {
