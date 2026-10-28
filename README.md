@@ -115,7 +115,7 @@ pnpm dev
 - With no PayPal credentials, the app runs on five bundled demo disputes that use the same data shapes as the sandbox.
 - With `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal sandbox app, it uses real sandbox disputes.
 - `ANTHROPIC_API_KEY` is needed to run the analysis.
-- Set `APP_PASSCODE` on any public deploy: it gates analyses (which cost API credits), sending, and the store tools. Without it, a production build stays locked. Also set `AUTH_SECRET` to a long random string; the unlock cookie is signed with it, expires after 7 days, and changing it signs everyone out. Wrong passcodes are limited to 5 tries per network per 15 minutes.
+- Set `APP_PASSCODE` on any public deploy: it gates analyses (which cost API credits), sending, buying in the demo store, and the seller order tools. Reading cases, orders and the audit log stays open. Without it, a production build stays locked. Also set `AUTH_SECRET` to a long random string; the unlock cookie is signed with it, expires after 7 days, and changing it signs everyone out. Wrong passcodes are limited to 5 tries per network per 15 minutes.
 
 ### Create a sandbox dispute
 
@@ -130,6 +130,8 @@ pnpm dev
 - Disputes always come live from PayPal. Shop records, saved analyses and receipts live in JSON files under `DATA_DIR`.
 - On hosts with an ephemeral disk (for example Render's free tier), the app falls back to the committed snapshot in `seed/` whenever a data file is missing, so a restart shows the same orders, analyses and receipts. Refresh the snapshot with `node scripts/export-seed.mjs` (it refuses anything that looks like a secret).
 - Set `APP_PASSCODE`, keep `AI_DAILY_CAP` low (30 per day for the public demo), and set a low monthly spend limit in the Anthropic console: the in-app cap resets whenever the host restarts. Saved analyses are shown without spending credits.
+- What a public visitor can see without the passcode: the sandbox disputes, the demo orders with sandbox buyer names and emails, and the raw PayPal request and response JSON in the receipts and audit log. All of it is PayPal sandbox test data; never point this demo at a production PayPal account.
+- Analysis errors reach the browser as a plain message; the detail stays in the server log. A dropped connection stops the model run, so a proxy cutting a long stream does not keep billing.
 
 ## Tests
 

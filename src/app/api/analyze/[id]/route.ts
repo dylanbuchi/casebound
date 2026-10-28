@@ -41,21 +41,30 @@ export async function POST(req: Request, ctx: RouteContext<"/api/analyze/[id]">)
   }
 
   const encoder = new TextEncoder();
+  // A closed tab or a proxy cutting the stream stops the model run instead of letting it bill to the end.
+  const abort = new AbortController();
+  req.signal.addEventListener("abort", () => abort.abort());
   const stream = new ReadableStream({
     async start(controller) {
-      const send = (obj: unknown) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+      const send = (obj: unknown) => {
+        if (!abort.signal.aborted) controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+      };
       try {
-        const result = await analyzeDispute(source(), id, (e: AgentEvent) => send(e));
+        const result = await analyzeDispute(source(), id, (e: AgentEvent) => send(e), abort.signal);
         await saveAnalysis(result);
         send({ type: "done" });
       } catch (e) {
+        // The detail stays in the server log; the browser gets a plain message.
         console.error("analysis failed", id, e);
-        send({ type: "error", message: e instanceof Error ? e.message : "Analysis failed" });
+        send({ type: "error", message: "The analysis failed. Nothing was saved or sent; try again in a minute." });
       } finally {
         running.delete(id);
         gate.leave();
-        controller.close();
+        if (!abort.signal.aborted) controller.close();
       }
+    },
+    cancel() {
+      abort.abort();
     },
   });
 

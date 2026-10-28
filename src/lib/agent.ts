@@ -121,6 +121,8 @@ export async function analyzeDispute(
   src: Source,
   disputeId: string,
   onEvent: (e: AgentEvent) => void = () => {},
+  // Aborting stops the tool runner, so a dropped connection stops billing too.
+  signal?: AbortSignal,
 ): Promise<AnalysisResult> {
   const client = new Anthropic();
   const dispute = await src.getDispute(disputeId);
@@ -304,7 +306,7 @@ export async function analyzeDispute(
         content: `Analyze PayPal dispute ${dispute.dispute_id} for ${merchant.name} and record your assessment.`,
       },
     ],
-  });
+  }, { signal });
 
   const usage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
   for await (const message of runner) {
