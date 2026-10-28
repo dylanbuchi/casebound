@@ -12,7 +12,8 @@ import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, windowU
 import { merchant } from "@/lib/merchant";
 import { planActions } from "@/lib/plan";
 import { getAnalysis, getAudit } from "@/lib/records";
-import { source } from "@/lib/source";
+import { isPractice, source } from "@/lib/source";
+import { ResetPractice } from "@/components/reset-practice";
 import { PRODUCT } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
@@ -65,6 +66,13 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       </Link>
 
       <header className="rise border-b border-rule pb-6">
+        {isPractice(id) && (
+          <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-offer bg-card px-4 py-2 text-sm">
+            <span className="font-semibold text-offer">Practice case</span>
+            <span className="text-ink-2">Bundled sample data. Sends are simulated and never reach PayPal.</span>
+            {unlocked && <ResetPractice disputeId={id} />}
+          </div>
+        )}
         <p className="font-mono text-xs tracking-wider text-ink-3">{dispute.dispute_id}</p>
         <h1 className="mt-1 font-display text-4xl font-semibold md:text-5xl">
           {reasonLabel[dispute.reason]} · {fmtMoney(dispute.dispute_amount)}

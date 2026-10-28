@@ -5,7 +5,7 @@ import { isLive } from "@/lib/env";
 import { daysUntil, fmtUsd, reasonLabel, statusLabel } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
 import { getAnalyses, getAudit } from "@/lib/records";
-import { source } from "@/lib/source";
+import { isPractice, source } from "@/lib/source";
 import { PRODUCT } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +33,7 @@ export default async function Inbox() {
       dueInDays: daysUntil(d.seller_response_due_date),
       verdict: a?.assessment.recommended_action ?? null,
       quickCall: !a && quickCallFor(d),
+      practice: isPractice(d.dispute_id),
       winProbability: a?.assessment.win_probability ?? null,
       savings: a ? a.economics.expectedSavingsFromFighting : null,
     };

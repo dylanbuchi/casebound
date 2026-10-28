@@ -18,6 +18,7 @@ export type QueueRow = {
   dueInDays: number | null;
   verdict: "FIGHT" | "ACCEPT" | "OFFER" | null;
   quickCall: boolean;
+  practice: boolean;
   winProbability: number | null;
   savings: number | null;
 };
@@ -71,7 +72,20 @@ export function DisputeQueue({ rows }: { rows: QueueRow[] }) {
         valueFormatter: (p) => money(p.value, p.data?.currency),
         cellClass: "font-mono",
       },
-      { field: "reason", headerName: "Reason", flex: 1.4, minWidth: 170 },
+      {
+        field: "reason",
+        headerName: "Reason",
+        flex: 1.4,
+        minWidth: 190,
+        cellRenderer: (p: ICellRendererParams<QueueRow, string>) => (
+          <span>
+            {p.value}
+            {p.data?.practice && (
+              <span className="ml-2 rounded-full border border-offer px-2 py-0.5 text-[11px] font-medium text-offer">Practice</span>
+            )}
+          </span>
+        ),
+      },
       { field: "stage", headerName: "Stage", width: 120, valueFormatter: (p) => String(p.value).toLowerCase() },
       { field: "status", headerName: "Status", flex: 1, minWidth: 160 },
       { field: "verdict", headerName: "Recommendation", width: 160, cellRenderer: Verdict },

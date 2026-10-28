@@ -355,5 +355,106 @@
       "cacheRead": 19635,
       "cacheWrite": 11866
     }
+  },
+  "PP-D-DEMO-1": {
+    "disputeId": "PP-D-DEMO-1",
+    "disputeUpdatedAt": "2026-10-27T10:01:10.117Z",
+    "createdAt": "2026-10-28T16:25:30.542Z",
+    "model": "claude-haiku-5-5",
+    "assessment": {
+      "summary": "Buyer Jordan Avery says the $189.00 merino throw never arrived. USPS tracking shows delivery on 2026-10-21 with signature by \"J AVERY\" at the address on the payment. Recommend FIGHT with the tracking and signature evidence; accepting costs about $154 more than fighting.",
+      "buyer_claim": "The buyer states the merino wool throw ($189.00) never arrived and requests a refund.",
+      "key_facts": [
+        {
+          "fact": "USPS tracking 9400111202061234567890 is attached to the PayPal capture DEMO-CAP-1 and its status is DELIVERED.",
+          "source": "paypal_tracking",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The shop record shows the same USPS tracking number, shipped 2026-10-17 with signature confirmation because the order is over $150.",
+          "source": "shop_records",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The shop record shows delivery on 2026-10-21 with signature by 'J AVERY'.",
+          "source": "shop_records",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The payment went to jordan.avery@example.com and the shop shipped to Portland, OR, US, which is the address on the payment.",
+          "source": "shop_records",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The buyer's only message says 'My throw never arrived. I want a refund.' and gives no detail about the delivery.",
+          "source": "paypal_dispute",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "The dispute was opened 2026-10-27, six days after the recorded delivery, and the seller response is due 2026-11-06.",
+          "source": "paypal_dispute",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "The buyer has no other orders or prior disputes with the shop, so there is no history to support or undercut the claim.",
+          "source": "buyer_history",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "The store policy says orders over $150 ship with signature confirmation, and this order followed that policy.",
+          "source": "store_policy",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The PayPal tracking record shows DELIVERED but no delivery date or signature name, so those details come only from the shop record.",
+          "source": "paypal_tracking",
+          "supports": "NEUTRAL"
+        }
+      ],
+      "missing_evidence": [
+        "Carrier delivery scan or USPS delivery confirmation with timestamp and address, pulled directly from USPS, to back up the shop-recorded 2026-10-21 delivery.",
+        "Copy of the USPS signature record (signature image or name), since the signature is only noted in the shop record.",
+        "Any delivery photo or note from the carrier showing where the parcel was left (not required by policy, but it would strengthen the case)."
+      ],
+      "win_probability": 0.85,
+      "win_probability_reasoning": "USPS shows delivery with a signature to the address on the payment, which is the strongest evidence a PayPal reviewer looks for in item-not-received disputes. The buyer has offered no detail that contradicts the carrier record. The risk is that a household member or someone else signed, which the seller cannot rule out, and the carrier scan details are not yet on file.",
+      "recommended_action": "FIGHT",
+      "action_reasoning": "Estimated expected cost of fighting is about $34.60 against $189.00 for accepting, and the break-even win probability is only 0.093, far below the 0.85 estimate. Delivery is signed and recorded at the buyer's address, so fighting is both cheaper and fair. The buyer message stays warm and invites them to share any missing detail, so the relationship is protected without paying for a delivery that was signed for.",
+      "offer_amount": null,
+      "offer_type": null,
+      "evidence_type": "PROOF_OF_FULFILLMENT",
+      "evidence_notes": "Lumen & Loom disputes this claim. Order DEMO-ORDER-1 (capture DEMO-CAP-1, $189.00 USD, merino wool throw, oat) was shipped via USPS on 2026-10-17 with tracking number 9400111202061234567890. Because the order was over $150, it shipped with signature confirmation under our published policy. USPS records show the parcel DELIVERED, and our fulfillment record shows delivery on 2026-10-21 signed by \"J AVERY.\" The ship-to address (Portland, OR, US) matches the address on the payment. The buyer's only statement is that the throw never arrived, with no detail about the delivery. We ask PayPal to find in the seller's favor on this item-not-received claim, since the carrier confirmed delivery with a signature to the buyer's address. We will provide the USPS delivery record and signature details on request.",
+      "buyer_message": "Hi Jordan, thank you for your order of the merino wool throw in oat. We're sorry the dispute has been stressful. USPS records show your parcel (tracking 9400111202061234567890) was delivered on 2026-10-21 to Portland, OR and signed for by \"J AVERY.\" Could you check with anyone at your address, such as a household member, neighbor or building front desk, who may have accepted it? If you find anything, or tell us what you're seeing with the delivery, we'll look at it right away and help you with the next steps, including a USPS trace on the parcel.",
+      "risk_flags": [
+        "Confirm the USPS delivery record and signature directly before submitting. The delivery date and signer name come only from the shop record, and PayPal's tracking record shows DELIVERED without them.",
+        "The buyer may dispute the signature. If they say no one at the address signed, consider a USPS investigation and reopen the discussion before the 2026-11-06 deadline.",
+        "The buyer message offers help but makes no refund promise. If the seller decides to refund for goodwill, record that change before sending."
+      ]
+    },
+    "economics": {
+      "acceptCost": 189,
+      "fightExpectedCost": 34.6,
+      "timeCost": 4,
+      "expectedSavingsFromFighting": 154.4,
+      "cheaperOption": "FIGHT"
+    },
+    "breakEven": 0.09313725490196079,
+    "toolCalls": [
+      "get_dispute",
+      "get_payment",
+      "get_shipment_tracking",
+      "get_shop_records",
+      "get_buyer_history",
+      "get_store_policy",
+      "get_evidence_checklist",
+      "estimate_economics",
+      "record_assessment"
+    ],
+    "usage": {
+      "input": 10,
+      "output": 3932,
+      "cacheRead": 13929,
+      "cacheWrite": 8453
+    }
   }
 }

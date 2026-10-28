@@ -212,4 +212,32 @@ const live: Source = {
   },
 };
 
-export const source = (): Source => (isLive() ? live : demo);
+// Practice cases: a couple of bundled fixtures shown next to the real sandbox disputes, so a
+// visitor can always run the decide-and-approve flow. Their sends are simulated, never sent to PayPal.
+export const PRACTICE_IDS = ["PP-D-DEMO-1", "PP-D-DEMO-6"];
+export const isPractice = (id: string) => id.startsWith("PP-D-DEMO-");
+
+const pick = (id: string): Source => (isPractice(id) ? demo : live);
+
+const withPractice: Source = {
+  mode: "live",
+  async listDisputes() {
+    const [real, practice] = await Promise.all([
+      live.listDisputes(),
+      Promise.all(PRACTICE_IDS.map((id) => demo.getDispute(id))),
+    ]);
+    return [...practice, ...real];
+  },
+  getDispute: (id) => pick(id).getDispute(id),
+  getPayment: (d) => pick(d.dispute_id).getPayment(d),
+  getTrackers: (d) => pick(d.dispute_id).getTrackers(d),
+  getFulfillment: (d) => pick(d.dispute_id).getFulfillment(d),
+  // Buyer history is looked up by email; practice buyers use example.com addresses.
+  getBuyerHistory: (email, excludeOrderId) =>
+    (email.endsWith("@example.com") ? demo : live).getBuyerHistory(email, excludeOrderId),
+  act: (id, action, requestId) => pick(id).act(id, action, requestId),
+};
+
+export const modeOf = (id: string): "demo" | "live" => (isLive() && !isPractice(id) ? "live" : "demo");
+
+export const source = (): Source => (isLive() ? withPractice : demo);

@@ -9,8 +9,9 @@ import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
 import { PayPalError } from "@/lib/paypal/client";
 import { allowedActions } from "@/lib/dispute-state";
 import { describeRequest, planActions, withEdits, type PlannedStep } from "@/lib/plan";
-import { appendAudit, getAnalysis } from "@/lib/records";
-import { source, type Source } from "@/lib/source";
+import { appendAudit, getAnalysis, type AuditEntry } from "@/lib/records";
+import { updateJson } from "@/lib/store";
+import { isPractice, modeOf, source, type Source } from "@/lib/source";
 
 export type ActionState = { ok: boolean; message: string } | null;
 
@@ -43,7 +44,7 @@ async function runSteps(src: Source, disputeId: string, steps: PlannedStep[], id
     // Same seed + same step = same request id, so a retried click is not applied twice.
     const requestId = createHash("sha256").update(`${disputeId}:${idSeed}:${step.action.kind}`).digest("hex").slice(0, 36);
     const request = describeRequest(disputeId, step.action);
-    const base = { at: new Date().toISOString(), disputeId, mode: src.mode, action: step.action.kind, detail: step.label, request };
+    const base = { at: new Date().toISOString(), disputeId, mode: modeOf(disputeId), action: step.action.kind, detail: step.label, request };
     try {
       const response = await src.act(disputeId, step.action, requestId);
       await appendAudit({ ...base, ok: true, response: response ?? { status: 204 } });
@@ -103,4 +104,20 @@ export async function quickAccept(_prev: ActionState, form: FormData): Promise<A
     action: { kind: "accept_claim", note: QUICK_ACCEPT_MESSAGE },
   };
   return runSteps(src, dispute.dispute_id, [step], `quick:${dispute.update_time}`);
+}
+
+// Puts the practice cases back to pending: clears their simulated sends, keeps the saved analyses.
+export async function resetPractice(_prev: ActionState, form: FormData): Promise<ActionState> {
+  if (!(await isUnlocked())) return { ok: false, message: "Enter the passcode first." };
+  const id = String(form.get("disputeId") ?? "");
+  if (!isPractice(id)) return { ok: false, message: "Only practice cases can be reset." };
+  await updateJson<Record<string, unknown>>("demo-state", {}, (all) => {
+    const next = { ...all };
+    delete next[id];
+    return next;
+  });
+  await updateJson<AuditEntry[]>("audit", [], (all) => all.filter((e) => e.disputeId !== id));
+  revalidatePath("/");
+  revalidatePath(`/disputes/${id}`);
+  return { ok: true, message: "Practice case reset." };
 }
