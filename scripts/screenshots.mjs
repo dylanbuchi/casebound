@@ -1,16 +1,14 @@
 // Dev tool: captures README/Devpost screenshots of the running app.
 // Usage: node scripts/screenshots.mjs [baseUrl]   (default http://localhost:3217)
-import { createHash } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
 import { chromium } from "playwright";
 
 const base = process.argv[2] ?? "http://localhost:3217";
 const out = "docs/screenshots";
 
-// Unlock with the same cookie the app sets, derived from APP_PASSCODE in .env.local.
+// Unlock through the real form with APP_PASSCODE from .env.local, so the app sets its own signed cookie.
 const env = await readFile(".env.local", "utf8").catch(() => "");
 const passcode = env.match(/^APP_PASSCODE=(.*)$/m)?.[1] ?? "";
-const cookie = createHash("sha256").update(`dispute-desk:${passcode}`).digest("hex");
 
 const shots = [
   { name: "1-inbox", path: "/", fullPage: false },
@@ -27,8 +25,13 @@ const shots = [
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, reducedMotion: "reduce" });
-if (passcode) await context.addCookies([{ name: "dd_pass", value: cookie, url: base }]);
 const page = await context.newPage();
+if (passcode) {
+  await page.goto(`${base}/unlock`);
+  await page.fill("input[name=passcode]", passcode);
+  await page.click("button[type=submit]");
+  await page.waitForURL(`${base}/`);
+}
 
 for (const s of shots) {
   await page.setViewportSize(s.viewport ?? { width: 1440, height: 900 });

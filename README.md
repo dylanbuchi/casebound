@@ -105,7 +105,7 @@ pnpm dev
 - With no PayPal credentials, the app runs on five bundled demo disputes that use the same data shapes as the sandbox.
 - With `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal sandbox app, it uses real sandbox disputes.
 - `ANTHROPIC_API_KEY` is needed to run the analysis.
-- Set `APP_PASSCODE` on any public deploy: it gates analyses (which cost API credits), sending, and the store tools.
+- Set `APP_PASSCODE` on any public deploy: it gates analyses (which cost API credits), sending, and the store tools. Without it, a production build stays locked. Also set `AUTH_SECRET` to a long random string; the unlock cookie is signed with it, expires after 7 days, and changing it signs everyone out. Wrong passcodes are limited to 5 tries per network per 15 minutes.
 
 ### Create a sandbox dispute
 

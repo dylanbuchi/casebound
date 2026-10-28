@@ -9,6 +9,8 @@ export const env = {
   paypalApiBase: "https://api-m.sandbox.paypal.com",
   anthropicConfigured: Boolean(process.env.ANTHROPIC_API_KEY),
   appPasscode: process.env.APP_PASSCODE ?? "",
+  // Signs the unlock cookie; change it to sign everyone out.
+  authSecret: process.env.AUTH_SECRET ?? "",
   dataDir: process.env.DATA_DIR ?? ".data",
 };
 

@@ -2,9 +2,11 @@
 
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
-import { checkPasscode, cookieValue, isUnlocked, PASS_COOKIE } from "@/lib/auth";
+import { checkPasscode, isUnlocked, newCookie, PASS_COOKIE } from "@/lib/auth";
+import { COOKIE_TTL_MS } from "@/lib/pass";
+import { clientIp, rateLimiter } from "@/lib/limits";
 import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
 import { PayPalError } from "@/lib/paypal/client";
 import { allowedActions } from "@/lib/dispute-state";
@@ -15,14 +17,22 @@ import { isPractice, modeOf, source, type Source } from "@/lib/source";
 
 export type ActionState = { ok: boolean; message: string } | null;
 
+// Five tries per network per 15 minutes, and each wrong one waits a second, to slow guessing down.
+const unlockTries = rateLimiter(5, 15 * 60 * 1000);
+
 export async function unlock(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const tries = unlockTries.take(clientIp(await headers()));
+  if (!tries.ok) return { ok: false, message: `Too many tries. Wait ${Math.ceil(tries.retryMs / 60000)} min and try again.` };
   const code = String(form.get("passcode") ?? "").slice(0, 200);
-  if (!checkPasscode(code)) return { ok: false, message: "That passcode is not right." };
-  (await cookies()).set(PASS_COOKIE, cookieValue(), {
+  if (!checkPasscode(code)) {
+    await new Promise((r) => setTimeout(r, 1000));
+    return { ok: false, message: "That passcode is not right." };
+  }
+  (await cookies()).set(PASS_COOKIE, newCookie(), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: COOKIE_TTL_MS / 1000,
     path: "/",
   });
   revalidatePath("/", "layout");

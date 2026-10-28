@@ -11,6 +11,7 @@ export const PASS_COOKIE = "dd_pass";
 
 const digest = (s: string) => createHash("sha256").update(`dispute-desk:${s}`).digest();
 const config = () => ({ passcode: env.appPasscode, production: process.env.NODE_ENV === "production" });
+const signer = () => ({ passcode: env.appPasscode, secret: env.authSecret });
 
 export const passcodeRequired = () => pass.passcodeRequired(config());
 export const unlockPossible = () => pass.unlockPossible(config());
@@ -21,12 +22,10 @@ export function checkPasscode(input: string) {
   return timingSafeEqual(digest(input), digest(env.appPasscode));
 }
 
-export const cookieValue = () => digest(env.appPasscode).toString("hex");
+export const newCookie = () => pass.makeToken(signer(), Date.now());
 
 export async function isUnlocked() {
   if (!passcodeRequired()) return true;
   if (!unlockPossible()) return false;
-  const c = (await cookies()).get(PASS_COOKIE)?.value ?? "";
-  const expected = cookieValue();
-  return c.length === expected.length && timingSafeEqual(Buffer.from(c), Buffer.from(expected));
+  return pass.verifyToken(signer(), (await cookies()).get(PASS_COOKIE)?.value ?? "", Date.now());
 }

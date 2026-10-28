@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { passcodeRequired, unlockPossible } from "./pass";
+import { COOKIE_TTL_MS, makeToken, passcodeRequired, unlockPossible, verifyToken } from "./pass";
 
 describe("passcode rules", () => {
   it("leaves local development open when no passcode is set", () => {
@@ -15,5 +15,29 @@ describe("passcode rules", () => {
   it("requires the passcode wherever one is set", () => {
     expect(passcodeRequired({ passcode: "x", production: false })).toBe(true);
     expect(unlockPossible({ passcode: "x", production: true })).toBe(true);
+  });
+});
+
+describe("unlock cookie", () => {
+  const s = { passcode: "open-sesame", secret: "server-secret" };
+  const t0 = 1_800_000_000_000;
+
+  it("accepts a fresh token and rejects it after expiry", () => {
+    const tok = makeToken(s, t0);
+    expect(verifyToken(s, tok, t0 + 1000)).toBe(true);
+    expect(verifyToken(s, tok, t0 + COOKIE_TTL_MS)).toBe(false);
+  });
+
+  it("is revoked by changing the secret or the passcode", () => {
+    const tok = makeToken(s, t0);
+    expect(verifyToken({ ...s, secret: "rotated" }, tok, t0)).toBe(false);
+    expect(verifyToken({ ...s, passcode: "new" }, tok, t0)).toBe(false);
+  });
+
+  it("rejects a token whose expiry was pushed out or that is malformed", () => {
+    const [, sig] = makeToken(s, t0).split(".");
+    expect(verifyToken(s, `${t0 + COOKIE_TTL_MS * 2}.${sig}`, t0)).toBe(false);
+    expect(verifyToken(s, "garbage", t0)).toBe(false);
+    expect(verifyToken({ ...s, passcode: "" }, makeToken({ ...s, passcode: "" }, t0), t0)).toBe(false);
   });
 });
