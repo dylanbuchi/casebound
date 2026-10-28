@@ -113,7 +113,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
 
       {/* The decision, first and full width */}
       {a ? (
-        <VerdictCard analysis={analysis!} amount={Number(dispute.dispute_amount.value)} currency={currency} historical={resolved} />
+        <VerdictCard analysis={analysis!} caseId={dispute.dispute_id} amount={Number(dispute.dispute_amount.value)} currency={currency} historical={resolved} />
       ) : quickCall && allowed.has("accept_claim") ? (
         <section className="rise rounded-xl border-2 border-accept bg-card p-6 md:p-8" aria-label="Quick call">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-accept">Quick call, no AI needed</p>

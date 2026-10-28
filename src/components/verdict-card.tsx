@@ -1,132 +1,271 @@
+import type { CSSProperties } from "react";
 import type { AnalysisResult } from "@/lib/agent";
 import { fmtUsd, verdictColor } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
 
+type Action = AnalysisResult["assessment"]["recommended_action"];
+
 const verdictTitle = {
-  FIGHT: "Fight it",
-  ACCEPT: "Accept and refund",
-  OFFER: "Make an offer",
+  FIGHT: "Fight it.",
+  ACCEPT: "Refund it.",
+  OFFER: "Make an offer.",
 } as const;
 
-// The decision in one card: what to do, why, and what it costs. Money math comes from code, not the model.
+type Option = {
+  key: Action;
+  label: string;
+  keep: number | null; // what stays with the seller, null when the cost is an item, not money
+  note: string;
+};
+
+// The decision as a stamped case-file sheet, then one picture of the money: for each option, how much of
+// the payment the seller keeps. Every number comes from the code-computed economics, never the model.
 export function VerdictCard({
   analysis,
   amount,
   currency,
+  caseId,
   historical = false,
 }: {
   analysis: AnalysisResult;
   amount: number;
   currency: string;
+  caseId?: string;
   historical?: boolean;
 }) {
   const a = analysis.assessment;
   const e = analysis.economics;
+  const p = a.win_probability;
   const offerCost = a.offer_type === "REPLACEMENT_WITHOUT_REFUND" ? null : (a.offer_amount ?? null);
-  const options = [
-    { key: "ACCEPT", label: "Refund now", value: e.acceptCost, note: "certain" },
-    { key: "FIGHT", label: "Fight", value: e.fightExpectedCost, note: `expected, at ${pct(a.win_probability)} win odds` },
+  const keepIfWin = amount - e.timeCost;
+  const keepIfLose = -(merchant.disputeFee + e.timeCost);
+
+  const options: Option[] = [
+    {
+      key: "FIGHT",
+      label: "Fight",
+      keep: amount - e.fightExpectedCost,
+      note: `expected, at ${pct(p)} win odds`,
+    },
+    { key: "ACCEPT", label: "Refund now", keep: amount - e.acceptCost, note: `you return ${fmtUsd(e.acceptCost, currency)}, certain` },
     ...(a.recommended_action === "OFFER"
       ? [
           {
-            key: "OFFER",
+            key: "OFFER" as const,
             label: a.offer_type === "REPLACEMENT_WITHOUT_REFUND" ? "Replace it" : "Offer",
-            value: offerCost,
-            note: a.offer_type ? a.offer_type.replaceAll("_", " ").toLowerCase() : "offer",
+            keep: offerCost === null ? null : amount - offerCost,
+            note: offerCost === null ? "costs you a replacement item" : `you return ${fmtUsd(offerCost, currency)}`,
           },
         ]
       : []),
-  ] as const;
+  ];
+  // Recommended option first: it is the one the stamp is about.
+  options.sort((x, y) => Number(y.key === a.recommended_action) - Number(x.key === a.recommended_action));
+
+  // One scale for every bar: from the worst case (lose the fight: fee plus time) up to the full payment.
+  const floor = Math.min(0, keepIfLose, ...options.map((o) => o.keep ?? 0));
+  const span = amount - floor || 1;
+  const at = (v: number) => ((v - floor) / span) * 100;
+
   const overridesMath = a.recommended_action !== "OFFER" && a.recommended_action !== e.cheaperOption;
   const offerOverride = a.recommended_action === "OFFER" && offerCost !== null && offerCost > Math.min(e.acceptCost, e.fightExpectedCost);
+  const color = verdictColor[a.recommended_action];
 
   return (
     <section
       aria-label="Recommendation"
-      className={`rise overflow-hidden rounded-xl bg-card ${historical ? "border border-rule opacity-80" : "border-2 border-ink"}`}
+      className={`verdict-sheet relative overflow-hidden rounded-xl bg-card ${historical ? "border border-rule" : "border-2 border-ink"}`}
     >
-      {historical && (
-        <p className="border-b border-rule bg-paper-2 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3 md:px-8">
-          Historical: the recommendation made before this case closed
-        </p>
-      )}
-      <div className="grid gap-6 p-6 md:grid-cols-[auto_1fr] md:items-start md:gap-8 md:p-8">
-        <div className="flex flex-col items-start gap-2">
-          <span className={`stamp stamp-in text-3xl md:text-4xl ${verdictColor[a.recommended_action]}`}>{a.recommended_action}</span>
-          <span className="mt-2 font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{historical ? "Was recommended" : "Recommendation"}</span>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-rule bg-paper-2/60 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3 md:px-8">
+        <span>{historical ? "Historical: the recommendation made before this case closed" : "Decision"}</span>
+        {caseId && <span className="normal-case tracking-wider">{caseId}</span>}
+      </div>
+
+      <div className={`relative px-5 pt-6 pb-2 md:px-8 md:pt-8 ${historical ? "opacity-85" : ""}`}>
+        {/* The stamp sits over the corner of the sheet like ink on paper. */}
+        <div className="mb-4 md:absolute md:top-6 md:right-8 md:mb-0" aria-hidden>
+          <span className={`stamp stamp-ink stamp-in text-4xl md:text-6xl ${color}`}>{a.recommended_action}</span>
         </div>
-        <div>
-          <h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{verdictTitle[a.recommended_action]}</h2>
-          <p className="mt-3 max-w-3xl text-lg leading-relaxed">{a.summary}</p>
-          <div className="mt-4 max-w-3xl border-l-4 border-rule pl-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Why</p>
-            <p className="mt-1 leading-relaxed text-ink-2">{a.action_reasoning}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{historical ? "Was recommended" : "Recommendation"}</p>
+        <h2 className="mt-1 font-display text-4xl leading-[1.05] font-semibold md:text-6xl">
+          <span className="sr-only">{a.recommended_action}: </span>
+          {verdictTitle[a.recommended_action]}
+        </h2>
+        <p className="mt-4 max-w-3xl text-lg leading-relaxed md:pr-48">{a.summary}</p>
+      </div>
+
+      {/* The money, as one picture: the full track is the payment, solid is what you keep, hatched is what you give up. */}
+      <div className={`px-5 py-6 md:px-8 ${historical ? "opacity-85" : ""}`}>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+            What you keep of the {fmtUsd(amount, currency)} payment
+          </h3>
+          <Legend />
+        </div>
+        <ol className="space-y-5">
+          {options.map((o, i) => {
+            const chosen = o.key === a.recommended_action;
+            return (
+              <li key={o.key} className="ledger-row grid gap-x-6 gap-y-2 md:grid-cols-[9.5rem_1fr_12rem] md:items-center" style={{ "--i": i } as CSSProperties}>
+                <div className="flex items-baseline justify-between gap-3 md:block">
+                  <p className={`flex items-center gap-2 font-medium ${chosen ? "text-ink" : "text-ink-2"}`}>
+                    {o.label}
+                    {chosen && (
+                      <span className="rounded-full bg-ink px-2 py-0.5 font-mono text-[10px] font-medium tracking-wider text-paper uppercase">
+                        pick
+                      </span>
+                    )}
+                  </p>
+                  <Figure o={o} chosen={chosen} currency={currency} className="text-right md:hidden" />
+                </div>
+                {o.keep === null ? (
+                  <p className="text-sm text-ink-3">A replacement costs you the item, not money from this payment.</p>
+                ) : (
+                  <KeepBar
+                    keep={o.keep}
+                    amount={amount}
+                    at={at}
+                    fill={chosen ? "bg-ink" : "bg-ink-3"}
+                    tall={chosen}
+                    label={`${o.label}: keep ${fmtUsd(o.keep, currency)} of ${fmtUsd(amount, currency)}, ${o.note}`}
+                  />
+                )}
+                <Figure o={o} chosen={chosen} currency={currency} className="hidden md:block md:text-right" />
+                {o.key === "FIGHT" && (
+                  <div className="md:col-start-2">
+                    <OddsSplit
+                      win={p}
+                      breakEven={analysis.breakEven}
+                      ifWin={fmtUsd(keepIfWin, currency)}
+                      ifLose={fmtUsd(keepIfLose, currency)}
+                    />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        <div className="mt-3 grid md:grid-cols-[9.5rem_1fr_12rem] md:gap-x-6" aria-hidden>
+          <div className="relative h-4 font-mono text-[11px] text-ink-3 md:col-start-2">
+            {at(0) >= 15 && <span className="absolute left-0">{fmtUsd(floor, currency)}</span>}
+            {floor < 0 && <span className="absolute -translate-x-1/2" style={{ left: `${at(0)}%` }}>$0</span>}
+            <span className="absolute right-0">{fmtUsd(amount, currency)}</span>
           </div>
         </div>
       </div>
 
-      <div className={`grid gap-px border-t border-rule bg-rule ${options.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-        {options.map((o) => {
-          const chosen = o.key === a.recommended_action;
-          return (
-            <div key={o.key} className={`px-6 py-5 ${chosen ? "bg-paper-2" : "bg-card"}`}>
-              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-ink-3">
-                {o.label}
-                {chosen && <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] tracking-normal text-paper normal-case">recommended</span>}
-              </p>
-              <p className={`mt-1 font-mono text-3xl ${chosen ? "font-bold" : ""}`}>{o.value === null ? "item cost" : fmtUsd(o.value, currency)}</p>
-              <p className="text-sm text-ink-3">{o.note}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="space-y-3 border-t border-rule px-6 py-5 md:px-8">
-        <OddsBar win={a.win_probability} breakEven={analysis.breakEven} />
-        <p className="text-sm text-ink-2">
-          Fighting only pays off above <strong>{pct(analysis.breakEven)}</strong> win odds, counting the{" "}
-          {fmtUsd(merchant.disputeFee, currency)} fee if you lose and {merchant.minutesWithDraft} minutes of your time.
-          {a.recommended_action === "FIGHT" && (
-            <>
-              {" "}A service keeping {pct(merchant.typicalSuccessFee)} of wins would take{" "}
-              <strong>{fmtUsd(amount * merchant.typicalSuccessFee, currency)}</strong> of this one. Here you keep all of it.
-            </>
-          )}
-        </p>
-        {(overridesMath || offerOverride) && (
-          <p className="rounded-md border border-offer/40 bg-paper px-3 py-2 text-sm text-ink-2">
-            <strong className="text-offer">Not the cheapest option.</strong> The agent chose this on fairness or the customer
-            relationship, and says why above. You decide.
+      <div className="grid gap-4 border-t border-rule px-5 py-5 md:grid-cols-[1fr_1fr] md:gap-8 md:px-8">
+        <div className="border-l-4 border-rule pl-4">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Why</p>
+          <p className="mt-1 leading-relaxed text-ink-2">{a.action_reasoning}</p>
+        </div>
+        <div className="space-y-3 text-sm text-ink-2">
+          <p>
+            Fighting only pays off above <strong className="text-ink">{pct(analysis.breakEven)}</strong> win odds, counting the{" "}
+            {fmtUsd(merchant.disputeFee, currency)} fee if you lose and {merchant.minutesWithDraft} minutes of your time.
+            {a.recommended_action === "FIGHT" && (
+              <>
+                {" "}A service keeping {pct(merchant.typicalSuccessFee)} of wins would take{" "}
+                <strong className="text-ink">{fmtUsd(amount * merchant.typicalSuccessFee, currency)}</strong> of this one. Here you keep all of it.
+              </>
+            )}
           </p>
-        )}
+          {(overridesMath || offerOverride) && (
+            <p className="rounded-md border border-offer/40 bg-paper px-3 py-2">
+              <strong className="text-offer">Not the cheapest option.</strong> The agent chose this on fairness or the customer
+              relationship, and says why. You decide.
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );
 }
 
-const pct = (p: number) => `${Math.round(p * 100)}%`;
+const pct = (n: number) => `${Math.round(n * 100)}%`;
 
-function OddsBar({ win, breakEven }: { win: number; breakEven: number }) {
-  const winsAboveBreakEven = win >= breakEven;
+function Figure({ o, chosen, currency, className = "" }: { o: Option; chosen: boolean; currency: string; className?: string }) {
   return (
-    <div>
-      <div className="mb-1 flex justify-between text-xs text-ink-3">
-        <span>
-          Win odds <strong className="font-mono text-sm text-ink">{pct(win)}</strong>
-        </span>
-        <span>break-even {pct(breakEven)}</span>
-      </div>
-      <div
-        className="relative h-3 rounded-full bg-paper-2"
-        role="img"
-        aria-label={`Win odds ${pct(win)}, break-even ${pct(breakEven)}: fighting ${winsAboveBreakEven ? "pays off" : "does not pay off"}`}
-      >
-        <div
-          className={`absolute inset-y-0 left-0 rounded-full ${winsAboveBreakEven ? "bg-accept" : "bg-fight/70"}`}
-          style={{ width: `${Math.max(2, win * 100)}%` }}
-        />
-        <div className="absolute -inset-y-1 w-0.5 bg-ink" style={{ left: `${breakEven * 100}%` }} aria-hidden />
-      </div>
+    <div className={`ledger-figure ${className}`}>
+      <p className={`font-mono leading-none tabular-nums ${chosen ? "text-3xl font-bold md:text-4xl" : "text-xl text-ink-2 md:text-2xl"} ${o.keep !== null && o.keep < 0 ? "text-fight" : ""}`}>
+        {o.keep === null ? "item" : fmtUsd(o.keep, currency)}
+      </p>
+      <p className="mt-1 text-xs text-ink-3">{o.note}</p>
     </div>
+  );
+}
+
+function KeepBar({
+  keep,
+  amount,
+  at,
+  fill,
+  tall,
+  label,
+}: {
+  keep: number;
+  amount: number;
+  at: (v: number) => number;
+  fill: string;
+  tall: boolean;
+  label: string;
+}) {
+  const zero = at(0);
+  const kept = keep >= 0 ? { left: zero, width: at(keep) - zero } : { left: at(keep), width: zero - at(keep) };
+  const lostFrom = Math.max(zero, at(keep));
+  return (
+    <div className={`relative ${tall ? "h-8 md:h-10" : "h-5 md:h-6"}`} role="img" aria-label={label}>
+      {/* Below zero is where a lost fight lands: fee plus time. Drawn as a faint dashed zone. */}
+      {zero > 0 && <div className="absolute inset-y-0 left-0 rounded-l-sm border border-dashed border-rule" style={{ width: `${zero}%` }} />}
+      <div className="absolute inset-y-0 right-0 rounded-r-sm bg-paper-2" style={{ left: `${zero}%` }} />
+      {/* Hatched: the part of the payment that goes back to the buyer. */}
+      <div className="lost-hatch absolute inset-y-0 rounded-r-sm" style={{ left: `${lostFrom}%`, width: `${at(amount) - lostFrom}%` }} />
+      <div
+        className={`keep-fill absolute inset-y-0 ${keep >= 0 ? fill : "bg-fight"} ${keep >= 0 ? "rounded-r-sm" : "rounded-l-sm"}`}
+        style={{ left: `${kept.left}%`, width: `${Math.max(kept.width, keep === 0 ? 0 : 0.6)}%`, transformOrigin: keep >= 0 ? "left" : "right" }}
+      />
+      {/* Zero line, only when the scale reaches below it */}
+      {zero > 0 && <div className="absolute -inset-y-1 w-px bg-ink" style={{ left: `${zero}%` }} />}
+    </div>
+  );
+}
+
+function OddsSplit({ win, breakEven, ifWin, ifLose }: { win: number; breakEven: number; ifWin: string; ifLose: string }) {
+  const pays = win >= breakEven;
+  return (
+    <div className="text-xs text-ink-2">
+      <div
+        className="relative flex h-1.5 overflow-visible rounded-full bg-paper-2"
+        role="img"
+        aria-label={`Win odds ${pct(win)}, break-even ${pct(breakEven)}: fighting ${pays ? "pays off" : "does not pay off"}`}
+      >
+        <div className={`h-full rounded-l-full ${pays ? "bg-accept" : "bg-fight/70"}`} style={{ width: `${Math.max(1, win * 100)}%` }} />
+        <div className="absolute -top-1 -bottom-1 w-0.5 bg-ink" style={{ left: `${breakEven * 100}%` }} aria-hidden />
+      </div>
+      <p className="mt-1.5 flex flex-wrap justify-between gap-x-4 gap-y-0.5">
+        <span>
+          <strong className="font-mono text-ink">{pct(win)}</strong> win: keep {ifWin}
+        </span>
+        <span className="text-ink-3">break-even {pct(breakEven)}</span>
+        <span>
+          <strong className="font-mono text-ink">{pct(1 - win)}</strong> lose: {ifLose} with the fee
+        </span>
+      </p>
+    </div>
+  );
+}
+
+function Legend() {
+  return (
+    <p className="flex gap-4 text-xs text-ink-3" aria-hidden>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-2.5 w-4 rounded-sm bg-ink-3" />
+        you keep
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="lost-hatch inline-block h-2.5 w-4 rounded-sm" />
+        goes to the buyer
+      </span>
+    </p>
   );
 }
