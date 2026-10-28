@@ -10,10 +10,6 @@ const steps = [
   { step: "deliver", label: "Delivered + photo" },
 ] as const;
 
-const disputes = [
-  { step: "dispute_inr", label: "Buyer opens dispute: not received" },
-  { step: "dispute_snad", label: "Buyer opens dispute: not as described" },
-] as const;
 
 export function StageButtons({ orderId }: { orderId: string }) {
   const [state, action, pending] = useActionState<StoreActionState, FormData>(stageOrder, null);
@@ -27,18 +23,6 @@ export function StageButtons({ orderId }: { orderId: string }) {
             {"carrier" in s && <input type="hidden" name="carrier" value={s.carrier} />}
             <button type="submit" disabled={pending} className="rounded border border-ink px-3 py-1 text-xs hover:bg-paper-2 disabled:opacity-50">
               {s.label}
-            </button>
-          </form>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-ink-3">Sandbox test:</span>
-        {disputes.map((d) => (
-          <form key={d.step} action={action}>
-            <input type="hidden" name="orderId" value={orderId} />
-            <input type="hidden" name="step" value={d.step} />
-            <button type="submit" disabled={pending} className="rounded border border-fight px-3 py-1 text-xs text-fight hover:bg-paper-2 disabled:opacity-50">
-              {d.label}
             </button>
           </form>
         ))}

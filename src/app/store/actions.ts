@@ -6,7 +6,6 @@ import { isUnlocked } from "@/lib/auth";
 import { isLive } from "@/lib/env";
 import { findFulfillment, patchFulfillment } from "@/lib/fulfillment";
 import { PayPalError } from "@/lib/paypal/client";
-import { createSandboxDispute } from "@/lib/paypal/sandbox";
 import { addTracker } from "@/lib/paypal/shop";
 import { carrierCode } from "@/lib/plan";
 
@@ -14,7 +13,7 @@ import { carrierCode } from "@/lib/plan";
 
 const Input = z.object({
   orderId: z.string().regex(/^[A-Z0-9]{8,32}$/),
-  step: z.enum(["ship_tracked", "ship_untracked", "deliver", "deliver_signed", "note", "dispute_inr", "dispute_snad"]),
+  step: z.enum(["ship_tracked", "ship_untracked", "deliver", "deliver_signed", "note"]),
   carrier: z.string().max(40).optional(),
   note: z.string().max(300).optional(),
 });
@@ -58,21 +57,6 @@ export async function stageOrder(_prev: StoreActionState, form: FormData): Promi
           ...(step === "deliver_signed" ? { signedBy: record.buyerName.toUpperCase() } : { deliveryPhoto: true }),
         });
         break;
-      case "dispute_inr":
-      case "dispute_snad": {
-        // Sandbox test tool: acts as the buyer opening a dispute on this payment.
-        if (!record.buyerEmail.includes("@")) return { ok: false, message: "No buyer email on this order." };
-        await createSandboxDispute({
-          buyerEmail: record.buyerEmail,
-          sellerTransactionId: record.captureId,
-          reason: step === "dispute_inr" ? "MERCHANDISE_OR_SERVICE_NOT_RECEIVED" : "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
-          amount: { currency_code: "USD", value: record.total },
-          message:
-            note?.trim() ||
-            (step === "dispute_inr" ? "My order never arrived. I want a refund." : "The item arrived damaged and is not as described."),
-        });
-        break;
-      }
       case "note":
         if (note?.trim()) await patchFulfillment(orderId, { notes: [...(record.notes ?? []), note.trim()] });
         break;

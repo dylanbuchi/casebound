@@ -67,8 +67,14 @@ pnpm dev
 1. In the PayPal developer dashboard, open Sandbox accounts and note the personal (buyer) account login.
 2. Open `/store`, buy an item with that buyer account.
 3. Open `/store/orders` and stage what happened: ship tracked or untracked, mark delivered.
-4. Open the dispute: on `/store/orders`, click "Buyer opens dispute" (uses the app's sandbox `disputes/create` scope on the buyer's behalf). Or log in to `https://www.sandbox.paypal.com` as the buyer, open the payment under Activity, and choose Report a problem.
-5. Refresh the inbox.
+4. Log in to `https://www.sandbox.paypal.com` as the buyer, open the payment under Activity, and choose Report a problem. (Creating disputes through the API needs a buyer-side permission PayPal does not grant this app, so the Resolution Center is the supported path.)
+5. Wait a minute or two: PayPal moves new disputes into a state the seller can answer, then the inbox shows them.
+
+## Hosting the demo
+
+- Disputes always come live from PayPal. Shop records, saved analyses and receipts live in JSON files under `DATA_DIR`.
+- On hosts with an ephemeral disk (for example Render's free tier), the app falls back to the committed snapshot in `seed/` whenever a data file is missing, so a restart shows the same orders, analyses and receipts. Refresh the snapshot with `node scripts/export-seed.mjs` (it refuses anything that looks like a secret).
+- Set `APP_PASSCODE`, and keep `AI_DAILY_CAP` low (30 per day for the public demo). Saved analyses are shown without spending credits.
 
 ## Tests
 
