@@ -1,4 +1,5 @@
 import { UnlockForm } from "@/components/unlock-form";
+import { unlockPossible } from "@/lib/auth";
 import { PRODUCT } from "@/lib/brand";
 
 export default function Unlock() {
@@ -15,7 +16,13 @@ export default function Unlock() {
           testing instructions.
         </p>
         <div className="mt-6">
-          <UnlockForm />
+          {unlockPossible() ? (
+            <UnlockForm />
+          ) : (
+            <p role="alert" className="rounded-md border border-fight bg-paper p-3 text-sm text-fight">
+              This deployment has no passcode set, so analyses, sending and the store tools stay off. Set APP_PASSCODE on the host.
+            </p>
+          )}
         </div>
       </div>
     </div>
