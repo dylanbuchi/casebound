@@ -107,14 +107,19 @@ export function ApprovePanel(props: {
           <Link href="/unlock" className="btn btn-line">
             Unlock to send
           </Link>
+        ) : props.sent || state?.ok ? (
+          <span role="status" className="flex items-center gap-3">
+            <span className="stamp stamp-in text-base text-accept">Sent</span>
+            <span className="text-sm font-medium text-accept">PayPal has it. The receipt is below.</span>
+          </span>
         ) : (
           <button
             type="submit"
-            disabled={pending || props.sent || !props.actionable || props.steps.length === 0 || state?.ok === true}
+            disabled={pending || !props.actionable || props.steps.length === 0}
             className="btn btn-ink px-6 py-3 text-base"
           >
             {pending && <span className="spinner" aria-hidden />}
-            {pending ? "Sending to PayPal…" : props.sent || state?.ok ? "Sent ✓" : props.actionable ? "Approve and send" : "Already handled"}
+            {pending ? "Sending to PayPal…" : props.actionable ? "Approve and send" : "Already handled"}
           </button>
         )}
         <span className="text-xs text-ink-3">Sent through the PayPal Disputes API. Every call is kept as a receipt.</span>
@@ -122,12 +127,7 @@ export function ApprovePanel(props: {
 
       {state &&
         (state.ok ? (
-          <div role="status" className="rise mt-4 flex items-center gap-4 rounded-md border border-accept/50 bg-paper px-4 py-3">
-            <span className="stamp stamp-in text-sm text-accept" aria-hidden>
-              Sent
-            </span>
-            <p className="text-sm text-ink-2">{state.message} The receipt is below.</p>
-          </div>
+          <p className="rise mt-3 text-sm text-ink-2">{state.message}</p>
         ) : (
           <p role="alert" className="rise mt-4 rounded-md border border-fight/50 bg-paper px-3 py-2 text-sm text-fight">
             {state.message}
