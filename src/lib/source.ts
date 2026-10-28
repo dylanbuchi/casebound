@@ -137,8 +137,11 @@ const demo: Source = {
               evidences: action.evidences.map((e) => ({ evidence_type: e.evidence_type, notes: e.notes, date: now })),
             },
           };
-        case "accept_claim":
-          return { ...all, [id]: { ...cur, status: "RESOLVED", outcome: { outcome_code: "RESOLVED_BUYER_FAVOUR" } } };
+        case "accept_claim": {
+          // Accepting the claim refunds the full disputed amount, as PayPal does.
+          const amount_refunded = demoFixtures.find((x) => x.dispute.dispute_id === id)?.dispute.dispute_amount;
+          return { ...all, [id]: { ...cur, status: "RESOLVED", outcome: { outcome_code: "RESOLVED_BUYER_FAVOUR", amount_refunded } } };
+        }
         case "make_offer":
         case "send_message": {
           const content = action.kind === "make_offer" ? `${action.note} (Offer: ${action.amount ? `${action.amount.value} ${action.amount.currency_code}` : "replacement"})` : action.message;
