@@ -11,6 +11,13 @@ export async function getAnalysis(disputeId: string) {
 export const saveAnalysis = (a: AnalysisResult) =>
   updateJson<Record<string, AnalysisResult>>("analyses", {}, (all) => ({ ...all, [a.disputeId]: a }));
 
+export const deleteAnalysis = (disputeId: string) =>
+  updateJson<Record<string, AnalysisResult>>("analyses", {}, (all) => {
+    const next = { ...all };
+    delete next[disputeId];
+    return next;
+  });
+
 export type AuditEntry = {
   at: string;
   disputeId: string;

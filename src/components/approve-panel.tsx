@@ -29,7 +29,7 @@ export function ApprovePanel(props: {
   return (
     <form action={action} className="rise rounded-lg border-2 border-ink bg-card p-5" aria-label="Review and send">
       <h2 className="font-display text-2xl font-semibold">Review and send</h2>
-      <p className="mb-4 text-sm text-ink-2">Edit the wording, check the exact request, then approve. Nothing goes out before you click.</p>
+      <p className="mb-4 text-sm text-ink-2">Nothing goes out before you click.</p>
       <input type="hidden" name="disputeId" value={props.disputeId} />
 
       {props.warning && (
@@ -40,7 +40,7 @@ export function ApprovePanel(props: {
           PayPal is not accepting this kind of response on the dispute right now.
         </p>
       ) : (
-        <ol className="mb-4 space-y-1.5">
+        <ol className="mb-4 space-y-1.5" aria-label="What will happen">
           {props.steps.map((s, i) => (
             <li key={s.label} className="flex items-center gap-2 text-sm font-medium">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink font-mono text-[11px] text-paper">{i + 1}</span>
@@ -50,41 +50,51 @@ export function ApprovePanel(props: {
         </ol>
       )}
 
-      {showEvidence ? (
-        <label className="block">
-          <span className="text-sm font-medium">Response to PayPal</span>
-          <textarea
-            name="evidenceNotes"
-            value={evidenceNotes}
-            onChange={(e) => setEvidenceNotes(e.target.value)}
-            maxLength={2000}
-            rows={7}
-            className="field mt-1.5 text-sm"
-          />
-        </label>
-      ) : (
-        <input type="hidden" name="evidenceNotes" value={evidenceNotes} />
-      )}
+      {/* What goes out, at a glance; the full wording and the raw request stay one click away. */}
+      <div className="space-y-3">
+        {showEvidence && <Draft label="To PayPal" text={evidenceNotes} />}
+        {showMessage && <Draft label="To the buyer" text={buyerMessage} />}
+      </div>
 
-      {showMessage ? (
-        <label className="mt-4 block">
-          <span className="text-sm font-medium">Message to the buyer</span>
-          <textarea
-            name="buyerMessage"
-            value={buyerMessage}
-            onChange={(e) => setBuyerMessage(e.target.value)}
-            maxLength={2000}
-            rows={4}
-            className="field mt-1.5 text-sm"
-          />
-        </label>
-      ) : (
-        <input type="hidden" name="buyerMessage" value={buyerMessage} />
-      )}
+      <details className="mt-4 rounded-md border border-rule bg-paper">
+        <summary className="px-3 py-2.5 text-sm font-medium">Edit the wording</summary>
+        <div className="space-y-4 px-3 pb-3">
+          {showEvidence ? (
+            <label className="block">
+              <span className="text-sm font-medium">Response to PayPal</span>
+              <textarea
+                name="evidenceNotes"
+                value={evidenceNotes}
+                onChange={(e) => setEvidenceNotes(e.target.value)}
+                maxLength={2000}
+                rows={7}
+                className="field mt-1.5 text-sm"
+              />
+            </label>
+          ) : (
+            <input type="hidden" name="evidenceNotes" value={evidenceNotes} />
+          )}
+          {showMessage ? (
+            <label className="block">
+              <span className="text-sm font-medium">Message to the buyer</span>
+              <textarea
+                name="buyerMessage"
+                value={buyerMessage}
+                onChange={(e) => setBuyerMessage(e.target.value)}
+                maxLength={2000}
+                rows={4}
+                className="field mt-1.5 text-sm"
+              />
+            </label>
+          ) : (
+            <input type="hidden" name="buyerMessage" value={buyerMessage} />
+          )}
+        </div>
+      </details>
 
-      <details open className="mt-4 rounded-md border border-rule bg-paper">
-        <summary className="px-3 py-2.5 text-sm font-medium">
-          Exact PayPal request{previews.length > 1 ? "s" : ""} ({previews.length})
+      <details className="mt-2 rounded-md border border-rule bg-paper">
+        <summary className="px-3 py-2.5 text-sm font-medium text-ink-2">
+          Technical details: the exact PayPal request{previews.length > 1 ? "s" : ""} ({previews.length})
         </summary>
         <div className="space-y-3 px-3 pb-3">
           {previews.map((p) => (
@@ -134,5 +144,14 @@ export function ApprovePanel(props: {
           </p>
         ))}
     </form>
+  );
+}
+
+function Draft({ label, text }: { label: string; text: string }) {
+  return (
+    <figure className="border-l-2 border-rule pl-3">
+      <figcaption className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{label}</figcaption>
+      <blockquote className="mt-0.5 line-clamp-3 text-sm leading-relaxed text-ink-2">{text || "(empty)"}</blockquote>
+    </figure>
   );
 }

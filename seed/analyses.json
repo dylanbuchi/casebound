@@ -124,108 +124,87 @@
   },
   "PP-R-ZIV-10194962": {
     "disputeId": "PP-R-ZIV-10194962",
-    "disputeUpdatedAt": "2026-10-28T15:36:53.767Z",
-    "createdAt": "2026-10-28T15:41:53.478Z",
+    "disputeUpdatedAt": "2026-10-28T15:42:16.086Z",
+    "createdAt": "2026-10-28T17:04:55.496Z",
     "model": "claude-haiku-5-5",
     "assessment": {
-      "summary": "Buyer says a $189 merino wool throw never arrived, but USPS tracking and a signed delivery to the order address are on file. Recommend fighting (about 60% win chance, expected cost about $86 vs $189 to accept), but only after confirming the USPS delivery scan, because the shop's delivery timestamp looks implausible.",
-      "buyer_claim": "The buyer states the wool throw (oat, $189.00) never arrived and requests a full refund of $189.00.",
+      "summary": "The buyer says the $189 merino throw never arrived. The shop record claims delivery and a signature, but PayPal tracking shows only SHIPPED and the shop's timestamps are implausible, so I recommend accepting the refund rather than fighting.",
+      "buyer_claim": "The buyer says the merino wool throw (oat, $189.00) never arrived and asks for a full refund.",
       "key_facts": [
         {
-          "fact": "Dispute reason is MERCHANDISE_OR_SERVICE_NOT_RECEIVED for $189.00; buyer requests a full $189.00 refund. Buyer's note only says the throw never arrived.",
+          "fact": "The buyer opened the dispute at 15:15:33 on 2026-10-28, about 15 minutes after the 15:00:14 capture, claiming the item never arrived.",
           "source": "paypal_dispute",
           "supports": "BUYER"
         },
         {
-          "fact": "Dispute is UNDER_REVIEW at the CHARGEBACK stage; merchant_contacted is false, so the seller has not yet responded.",
-          "source": "paypal_dispute",
-          "supports": "NEUTRAL"
-        },
-        {
-          "fact": "Seller protection is ELIGIBLE (EXPANDED_SELLER_PROTECTION) for ITEM_NOT_RECEIVED and UNAUTHORIZED_TRANSACTION categories.",
-          "source": "paypal_payment",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "Order 2M700992FS736383K, $189.00 for Merino wool throw, oat (SKU THROW-OAT), captured 2026-10-28 15:00:14 UTC. Shipping address is Rue de Bourgogne 5, Case postale 12, 1211 Geneva, CH, which matches the payer's country (CH).",
-          "source": "paypal_payment",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "USPS tracking 9400179320009232893696 is attached to the PayPal transaction, but the PayPal tracker status is only SHIPPED with no delivery event recorded.",
+          "fact": "The PayPal tracker for USPS 9400179320009232893696 has status SHIPPED, and no carrier delivery confirmation is on file.",
           "source": "paypal_tracking",
           "supports": "BUYER"
         },
         {
-          "fact": "Shop fulfillment record: USPS tracking 9400179320009232893696, shipped 2026-10-28 15:08:12 UTC, delivered 2026-10-28 15:08:24 UTC, signedBy JOHN DOE, ship-to GENEVA 5, CH.",
+          "fact": "The shop record shows shipped at 15:08:12 and delivered at 15:08:24 on 2026-10-28, signed for by JOHN DOE.",
           "source": "shop_records",
           "supports": "SELLER"
         },
         {
-          "fact": "The shop record's delivery timestamp is 12 seconds after the ship timestamp for a Geneva address, which is physically implausible and needs verification against the USPS scan history before it is relied on.",
+          "fact": "The shop's delivered timestamp is 12 seconds after its shipped timestamp, which is not plausible for a USPS parcel to Geneva, so the record is unreliable as delivery proof.",
           "source": "shop_records",
           "supports": "BUYER"
         },
         {
-          "fact": "Store policy says orders over $150 ship with signature confirmation. This $189 order is recorded as signed by JOHN DOE, so the policy was followed on the record.",
-          "source": "store_policy",
+          "fact": "The order ships to Rue de Bourgogne 5, Geneva 1211, CH, which matches the PayPal order and the payer's country.",
+          "source": "paypal_payment",
           "supports": "SELLER"
         },
         {
-          "fact": "Store policy says orders ship within 2 business days with tracking. Shipment was recorded the same day as the order (about 8 minutes later), which meets this.",
+          "fact": "Store policy requires signature confirmation for orders over $150, and this $189 order is over that threshold, so a signature is required proof.",
           "source": "store_policy",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "Buyer has 2 prior disputes and 2 other orders totaling $107.",
-          "source": "buyer_history",
-          "supports": "BUYER"
-        },
-        {
-          "fact": "Buyer history timestamps are inconsistent: firstOrderAt (2026-10-28 15:01:01) is after the disputed order was created (15:00:14), even though the history is said to exclude the disputed order.",
-          "source": "buyer_history",
           "supports": "NEUTRAL"
         },
         {
-          "fact": "Refund 25N66593SC893360M for $182.27 is PENDING and tied to a HOLD_PLACED debit. It is not a refund issued to the buyer, and the $6.73 difference from $189.00 is unexplained.",
+          "fact": "The buyer has 2 prior disputes and 2 other orders totaling $107, but their first-order timestamp (15:01:01 on the same day) does not fit that history.",
+          "source": "buyer_history",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "The PayPal payment record lists a PENDING refund of $182.27 on the capture.",
           "source": "paypal_payment",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "The seller has already sent PayPal supporting information at 15:42:16 that cites the shop-record delivery and signature as fact.",
+          "source": "paypal_dispute",
           "supports": "NEUTRAL"
         }
       ],
       "missing_evidence": [
-        "USPS scan history for 9400179320009232893696 showing the actual delivery event, date/time and location (the PayPal tracker shows SHIPPED only).",
-        "USPS signature image or delivery confirmation record for the signature 'JOHN DOE'.",
-        "Explanation or correction of the 12-second gap between the recorded shipment and delivery times.",
-        "Confirmation of where the parcel was delivered given the 'Case postale 12' (PO box) address line.",
-        "Packing slip or dispatch proof showing the correct item (THROW-OAT) left the warehouse.",
-        "Any pre-dispute buyer contact; the buyer opened the dispute about 15 minutes after the order, and no seller contact is recorded.",
-        "Outcomes and details of the buyer's 2 prior disputes."
+        "USPS carrier scan for 9400179320009232893696 showing delivery to Geneva and the signature. This is the only item that would change the outcome.",
+        "An explanation or corrected fulfillment record for the 15:08:12 shipped and 15:08:24 delivered timestamps.",
+        "Proof of postage or label showing the actual ship date and the international service used.",
+        "Any delivery photo or packing photo. None is on file.",
+        "Confirmation of what the pending $182.27 refund on the capture is (a hold versus a real refund) before any payout is triggered."
       ],
-      "win_probability": 0.6,
-      "win_probability_reasoning": "Tracking is attached, the shop record shows delivery signed by JOHN DOE, and the ship-to matches the payer address, which is strong for ITEM_NOT_RECEIVED. It is not higher because PayPal's own tracker still shows SHIPPED with no delivery event, the shop's delivery timestamp is implausible (12 seconds after shipment), the buyer has 2 prior disputes, and the buyer history timestamps are inconsistent. If the USPS scan confirms a delivery at the address, the odds rise substantially; if not, they fall sharply.",
-      "recommended_action": "FIGHT",
-      "action_reasoning": "Fighting costs about $85.60 in expected value (about 40% chance of losing $189 plus the $15 dispute fee, plus time), versus $189 for accepting. Even at a 40% win probability fighting remains cheaper, so the economics clearly favour fighting. The signed delivery to the matching address supports the seller, and the buyer's 2 prior disputes give no goodwill reason to refund. This recommendation depends on verification: before sending, pull the USPS scan history. If USPS does not show delivery to this address, or the shop record is wrong, switch to ACCEPT (refund $189) rather than submit evidence that PayPal can contradict.",
+      "win_probability": 0.1,
+      "win_probability_reasoning": "About 10%. PayPal tracking shows only SHIPPED with no carrier delivery confirmation. The signature exists only in the shop record, and that record's delivery time is 12 seconds after shipment, which a reviewer would reject. The Geneva address match and the signature policy help only slightly. The code cap may lower this further.",
+      "recommended_action": "ACCEPT",
+      "action_reasoning": "Fight is cheaper on paper, but only by about $1.40 at a 10% win chance (break-even about 9.3%). The difference only reaches about $22 if the win chance is 20%, which the evidence does not support. That small gap is outweighed by fairness and by evidence integrity: fighting would mean asking PayPal to accept a delivery and signature from a shop record whose timestamps cannot be right and which PayPal's own tracking does not confirm. Accepting closes the dispute and refunds $189.00 automatically, and the buyer is treated fairly. Before accepting, check USPS 9400179320009232893696 directly. If the carrier shows delivered with a signature, switch to FIGHT, because the evidence would then be strong. Also confirm the pending $182.27 refund so the buyer is not refunded twice.",
       "offer_amount": null,
       "offer_type": null,
-      "evidence_type": "PROOF_OF_FULFILLMENT",
-      "evidence_notes": "Order 2M700992FS736383K (capture 2CK934370T3998057): 1 x Merino wool throw, oat (SKU THROW-OAT), $189.00, captured 2026-10-28. The item was shipped via USPS, tracking 9400179320009232893696, and shipped on 2026-10-28. The shipping address is Rue de Bourgogne 5, Case postale 12, 1211 Geneva, CH, which is the address on the PayPal order and matches the payer's country. Our fulfillment record shows delivery on 2026-10-28, signed for by JOHN DOE. Because the order total is over $150, our policy requires signature confirmation, and the record shows a signature was obtained. We ask PayPal to find that the item was delivered to the buyer's address and to decline the claim that it was not received.",
-      "buyer_message": "Hello John, thank you for contacting us about your Merino wool throw (oat), order 2M700992FS736383K. Our records show USPS tracking 9400179320009232893696 and a delivery on 28 October 2026 to the address on your order, signed for by JOHN DOE. We want to find your parcel for you. Could you check with the people at your address, your building reception, and the Case postale box, and let us know what you find? If it still cannot be located, reply to this message and we will work with you on next steps.",
+      "evidence_type": null,
+      "evidence_notes": "",
+      "buyer_message": "Hi John, thank you for your patience while we looked into your order of the oat merino wool throw. We have not been able to confirm delivery on USPS tracking 9400179320009232893696, so we are accepting your claim. The full $189.00 will be returned to your original PayPal payment method. We're sorry the throw didn't reach you, and we hope to see you again at Lumen & Loom.",
       "risk_flags": [
-        "CRITICAL: Verify the USPS delivery scan before sending. The shop record shows delivery 12 seconds after shipment (shipped 15:08:12, delivered 15:08:24 UTC) for a Geneva address, which is implausible. If USPS shows a different date or no delivery, do not submit these notes; accept the claim instead.",
-        "PayPal's tracker for 9400179320009232893696 still shows SHIPPED with no delivery event, so it does not match the shop's 'delivered' record. PayPal reviewers will see this mismatch.",
-        "Refund 25N66593SC893360M ($182.27, PENDING) is a PayPal HOLD_PLACED entry, not a refund to the buyer. Do not describe it as a refund. The $6.73 gap from $189.00 is unexplained.",
-        "The buyer history is internally inconsistent: firstOrderAt (15:01:01) is after the disputed order (15:00:14) even though the history should exclude it. Verify before relying on the '2 prior disputes' point.",
-        "The shipping address is 'Case postale 12' (a PO box) and the admin_area_1 field is malformed ('CH_zip = 1211'). Confirm with USPS where the parcel was delivered.",
-        "The dispute lists the seller as 'Test Store' and the emails are sandbox-style (sb-…@example.com). Confirm the dispute is routed to the Lumen & Loom merchant account.",
-        "No response deadline appears in the dispute data. Check the deadline in PayPal and respond promptly. Losing the dispute costs $189 plus a $15 fee.",
-        "The FIGHT action attaches tracking and any refund IDs from shop records. Make sure no misleading refund ID is attached as proof of refund."
+        "Before accepting, check USPS 9400179320009232893696 directly. If the carrier shows delivered with a signature, switch to FIGHT.",
+        "A pending $182.27 refund is on the capture. Confirm it so the buyer is not refunded twice.",
+        "The shop's 15:08 shipped and delivered timestamps look wrong, and the 15:42 PayPal submission cites them. Correct the fulfillment record.",
+        "The buyer history is inconsistent (2 prior disputes versus a same-day first-order timestamp). Verify it, but do not treat it as proof of fraud."
       ]
     },
     "economics": {
       "acceptCost": 189,
-      "fightExpectedCost": 85.6,
+      "fightExpectedCost": 187.6,
       "timeCost": 4,
-      "expectedSavingsFromFighting": 103.4,
+      "expectedSavingsFromFighting": 1.4,
       "cheaperOption": "FIGHT"
     },
     "breakEven": 0.09313725490196079,
@@ -238,13 +217,50 @@
       "get_store_policy",
       "get_evidence_checklist",
       "estimate_economics",
+      "estimate_economics",
+      "record_assessment",
       "record_assessment"
     ],
     "usage": {
-      "input": 10,
-      "output": 10818,
-      "cacheRead": 21225,
-      "cacheWrite": 17761
+      "input": 14,
+      "output": 16308,
+      "cacheRead": 60196,
+      "cacheWrite": 24387
+    },
+    "calibration": {
+      "modelEstimate": 0.1,
+      "calibrated": 0.1,
+      "cap": 0.55,
+      "basis": [
+        {
+          "label": "Tracking on the PayPal transaction",
+          "source": "PayPal",
+          "effect": 0,
+          "why": "confirmed by PayPal"
+        },
+        {
+          "label": "Delivery confirmed by the carrier",
+          "source": "Shop record",
+          "effect": 0.2,
+          "why": "contradicted by PayPal tracking"
+        },
+        {
+          "label": "Signature on delivery",
+          "source": "Shop record",
+          "effect": 0.1,
+          "why": "weak or unverified"
+        },
+        {
+          "label": "Shipped to the address on the payment",
+          "source": "Shop record",
+          "effect": 0.05,
+          "why": "your own record, not independently confirmed"
+        }
+      ]
+    },
+    "grounding": {
+      "removed": [],
+      "sentBack": 3
     }
   },
   "PP-R-IJZ-10194964": {
@@ -354,107 +370,6 @@
       "output": 4813,
       "cacheRead": 19635,
       "cacheWrite": 11866
-    }
-  },
-  "PP-D-DEMO-1": {
-    "disputeId": "PP-D-DEMO-1",
-    "disputeUpdatedAt": "2026-10-27T10:01:10.117Z",
-    "createdAt": "2026-10-28T16:25:30.542Z",
-    "model": "claude-haiku-5-5",
-    "assessment": {
-      "summary": "Buyer Jordan Avery says the $189.00 merino throw never arrived. USPS tracking shows delivery on 2026-10-21 with signature by \"J AVERY\" at the address on the payment. Recommend FIGHT with the tracking and signature evidence; accepting costs about $154 more than fighting.",
-      "buyer_claim": "The buyer states the merino wool throw ($189.00) never arrived and requests a refund.",
-      "key_facts": [
-        {
-          "fact": "USPS tracking 9400111202061234567890 is attached to the PayPal capture DEMO-CAP-1 and its status is DELIVERED.",
-          "source": "paypal_tracking",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "The shop record shows the same USPS tracking number, shipped 2026-10-17 with signature confirmation because the order is over $150.",
-          "source": "shop_records",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "The shop record shows delivery on 2026-10-21 with signature by 'J AVERY'.",
-          "source": "shop_records",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "The payment went to jordan.avery@example.com and the shop shipped to Portland, OR, US, which is the address on the payment.",
-          "source": "shop_records",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "The buyer's only message says 'My throw never arrived. I want a refund.' and gives no detail about the delivery.",
-          "source": "paypal_dispute",
-          "supports": "BUYER"
-        },
-        {
-          "fact": "The dispute was opened 2026-10-27, six days after the recorded delivery, and the seller response is due 2026-11-06.",
-          "source": "paypal_dispute",
-          "supports": "NEUTRAL"
-        },
-        {
-          "fact": "The buyer has no other orders or prior disputes with the shop, so there is no history to support or undercut the claim.",
-          "source": "buyer_history",
-          "supports": "NEUTRAL"
-        },
-        {
-          "fact": "The store policy says orders over $150 ship with signature confirmation, and this order followed that policy.",
-          "source": "store_policy",
-          "supports": "SELLER"
-        },
-        {
-          "fact": "The PayPal tracking record shows DELIVERED but no delivery date or signature name, so those details come only from the shop record.",
-          "source": "paypal_tracking",
-          "supports": "NEUTRAL"
-        }
-      ],
-      "missing_evidence": [
-        "Carrier delivery scan or USPS delivery confirmation with timestamp and address, pulled directly from USPS, to back up the shop-recorded 2026-10-21 delivery.",
-        "Copy of the USPS signature record (signature image or name), since the signature is only noted in the shop record.",
-        "Any delivery photo or note from the carrier showing where the parcel was left (not required by policy, but it would strengthen the case)."
-      ],
-      "win_probability": 0.85,
-      "win_probability_reasoning": "USPS shows delivery with a signature to the address on the payment, which is the strongest evidence a PayPal reviewer looks for in item-not-received disputes. The buyer has offered no detail that contradicts the carrier record. The risk is that a household member or someone else signed, which the seller cannot rule out, and the carrier scan details are not yet on file.",
-      "recommended_action": "FIGHT",
-      "action_reasoning": "Estimated expected cost of fighting is about $34.60 against $189.00 for accepting, and the break-even win probability is only 0.093, far below the 0.85 estimate. Delivery is signed and recorded at the buyer's address, so fighting is both cheaper and fair. The buyer message stays warm and invites them to share any missing detail, so the relationship is protected without paying for a delivery that was signed for.",
-      "offer_amount": null,
-      "offer_type": null,
-      "evidence_type": "PROOF_OF_FULFILLMENT",
-      "evidence_notes": "Lumen & Loom disputes this claim. Order DEMO-ORDER-1 (capture DEMO-CAP-1, $189.00 USD, merino wool throw, oat) was shipped via USPS on 2026-10-17 with tracking number 9400111202061234567890. Because the order was over $150, it shipped with signature confirmation under our published policy. USPS records show the parcel DELIVERED, and our fulfillment record shows delivery on 2026-10-21 signed by \"J AVERY.\" The ship-to address (Portland, OR, US) matches the address on the payment. The buyer's only statement is that the throw never arrived, with no detail about the delivery. We ask PayPal to find in the seller's favor on this item-not-received claim, since the carrier confirmed delivery with a signature to the buyer's address. We will provide the USPS delivery record and signature details on request.",
-      "buyer_message": "Hi Jordan, thank you for your order of the merino wool throw in oat. We're sorry the dispute has been stressful. USPS records show your parcel (tracking 9400111202061234567890) was delivered on 2026-10-21 to Portland, OR and signed for by \"J AVERY.\" Could you check with anyone at your address, such as a household member, neighbor or building front desk, who may have accepted it? If you find anything, or tell us what you're seeing with the delivery, we'll look at it right away and help you with the next steps, including a USPS trace on the parcel.",
-      "risk_flags": [
-        "Confirm the USPS delivery record and signature directly before submitting. The delivery date and signer name come only from the shop record, and PayPal's tracking record shows DELIVERED without them.",
-        "The buyer may dispute the signature. If they say no one at the address signed, consider a USPS investigation and reopen the discussion before the 2026-11-06 deadline.",
-        "The buyer message offers help but makes no refund promise. If the seller decides to refund for goodwill, record that change before sending."
-      ]
-    },
-    "economics": {
-      "acceptCost": 189,
-      "fightExpectedCost": 34.6,
-      "timeCost": 4,
-      "expectedSavingsFromFighting": 154.4,
-      "cheaperOption": "FIGHT"
-    },
-    "breakEven": 0.09313725490196079,
-    "toolCalls": [
-      "get_dispute",
-      "get_payment",
-      "get_shipment_tracking",
-      "get_shop_records",
-      "get_buyer_history",
-      "get_store_policy",
-      "get_evidence_checklist",
-      "estimate_economics",
-      "record_assessment"
-    ],
-    "usage": {
-      "input": 10,
-      "output": 3932,
-      "cacheRead": 13929,
-      "cacheWrite": 8453
     }
   }
 }

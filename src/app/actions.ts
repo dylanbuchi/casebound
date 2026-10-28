@@ -9,7 +9,7 @@ import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
 import { PayPalError } from "@/lib/paypal/client";
 import { allowedActions } from "@/lib/dispute-state";
 import { describeRequest, planActions, withEdits, type PlannedStep } from "@/lib/plan";
-import { appendAudit, getAnalysis, type AuditEntry } from "@/lib/records";
+import { appendAudit, deleteAnalysis, getAnalysis, type AuditEntry } from "@/lib/records";
 import { updateJson } from "@/lib/store";
 import { isPractice, modeOf, source, type Source } from "@/lib/source";
 
@@ -117,6 +117,8 @@ export async function resetPractice(_prev: ActionState, form: FormData): Promise
     return next;
   });
   await updateJson<AuditEntry[]>("audit", [], (all) => all.filter((e) => e.disputeId !== id));
+  // Back to unanalyzed, so the next visitor can watch the investigation from the start.
+  await deleteAnalysis(id);
   revalidatePath("/");
   revalidatePath(`/disputes/${id}`);
   return { ok: true, message: "Practice case reset." };
