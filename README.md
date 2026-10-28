@@ -1,8 +1,8 @@
-# Dispute Desk
+# Casebound
 
-> Working name. A Zycody product.
+> A Zycody product. Hosted demo: [casebound.zycody.com](https://casebound.zycody.com).
 
-An AI case worker for PayPal disputes. Dispute Desk reads each dispute, investigates it through the PayPal APIs and the shop's own records, works out whether fighting is worth the money, and drafts the response. The seller reviews and clicks send. Nothing moves without them.
+An AI case worker for PayPal disputes. Casebound reads each dispute, investigates it through the PayPal APIs and the shop's own records, works out whether fighting is worth the money, and drafts the response. The seller reviews and clicks send. Nothing moves without them.
 
 Built for the PayPal AI Hackathon (2026). Sandbox only.
 
@@ -10,7 +10,7 @@ Built for the PayPal AI Hackathon (2026). Sandbox only.
 
 Small sellers lose disputes by default. Answering one means digging up the order, the tracking and the messages, guessing whether it is worth fighting, and writing a response before the deadline. Many never answer, and some fight $12 disputes that cost more in time and fees than the refund.
 
-Sellers who already use dispute tools tell the same story: fees taken on disputes they would have won anyway, charges when nothing was filed, no say in which disputes get answered, and generic AI responses. Dispute Desk takes a different angle:
+Sellers who already use dispute tools tell the same story: fees taken on disputes they would have won anyway, charges when nothing was filed, no say in which disputes get answered, and generic AI responses. Casebound takes a different angle:
 
 - **Decides, not just contests.** Fight, accept, or offer a refund or replacement, based on the expected cost of each, with the math shown.
 - **Seller in control.** The agent investigates and drafts; one click by the seller and it executes through the PayPal Disputes API.
@@ -23,9 +23,9 @@ Sellers who already use dispute tools tell the same story: fees taken on dispute
 2. **Investigate.** A Claude agent calls read-only tools: the PayPal dispute, the capture and order (Payments v2, Orders v2), shipment tracking, the shop's fulfillment record, the buyer's history and the store policy. You watch each step stream in.
 3. **Deadline and evidence gaps.** A countdown from the dispute's own due date, and a checklist per reason code (item not received, not as described, unauthorized, refund not processed, digital goods) marking each piece of evidence as on file, weak, or missing, such as a missing signature on a high-value order.
 4. **Decide with real math.** The agent estimates win odds with reasons. Code, not the model, turns that into an expected cost of fighting vs refunding, including the dispute fee and the seller's time, and shows the break-even odds.
-   Tiny disputes get a "quick call" with no AI run: when refunding is cheaper even at 90% win odds, Dispute Desk says so and offers a one-click accept.
+   Tiny disputes get a "quick call" with no AI run: when refunding is cheaper even at 90% win odds, Casebound says so and offers a one-click accept.
 5. **Draft.** The agent drafts the evidence response to PayPal and a message to the buyer. Tracking numbers and refund IDs are taken from shop records, never from model text.
-6. **Approve and send.** The seller edits the wording and sees the exact PayPal request before approving. Nothing is ever sent automatically. Dispute Desk then calls `provide-evidence`, `accept-claim`, `make-offer` or `send-message` on the PayPal Disputes API, with idempotent request IDs, and keeps a receipt of each request and PayPal's response.
+6. **Approve and send.** The seller edits the wording and sees the exact PayPal request before approving. Nothing is ever sent automatically. Casebound then calls `provide-evidence`, `accept-claim`, `make-offer` or `send-message` on the PayPal Disputes API, with idempotent request IDs, and keeps a receipt of each request and PayPal's response.
 
 A small demo store (Lumen & Loom, a fictional shop) creates real sandbox payments with PayPal Checkout, and seller tools attach tracking through the Shipment Tracking API, so disputes can be opened against real sandbox transactions.
 

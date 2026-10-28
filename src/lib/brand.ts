@@ -1,3 +1,4 @@
-// Product name in one place. "Dispute Desk" is a working name only: it is taken, so rename before anything goes public.
-export const PRODUCT = "Dispute Desk";
+// Product name and home in one place.
+export const PRODUCT = "Casebound";
+export const SITE_URL = "https://casebound.zycody.com";
 export const MAKER = "Zycody";

@@ -7,10 +7,11 @@ Deadline: Thu Nov 12, 2026, 12:00 PT (21:00 Geneva). Dylan registers and submits
 - [ ] `git log --all -- .env.local .env` shows nothing: `.env.local` was never committed.
 - [ ] Only `.env.example` is tracked, with empty values.
 - [ ] AGPL-3.0 `LICENSE` shows in the GitHub About section once public.
-- [ ] Product renamed everywhere (`src/lib/brand.ts`, README title, repo name). "Dispute Desk" is taken.
+- [x] Product renamed to Casebound in the app, README, docs and package name ("Dispute Desk" is taken).
+- [ ] GitHub repo named `casebound` when it is created. The local folder keeps its old name on purpose.
 
 ## Judge access
-- [ ] Hosted demo stays up and free to use for judges until Dec 15, 2026, at `<name>.zycody.com` on Render.
+- [ ] Hosted demo stays up and free to use for judges until Dec 15, 2026, at `casebound.zycody.com` on Render.
 - [ ] Hosted demo URL works and shows seeded disputes with saved analyses.
 - [ ] The demo passcode and the steps to test are in the README and the Devpost "testing instructions". The passcode becomes public with them, so `AI_DAILY_CAP` stays low on the hosted demo and the PayPal app stays sandbox-only.
 - [ ] Setup from a fresh clone works in demo mode with no credentials.

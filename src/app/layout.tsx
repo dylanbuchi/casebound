@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Fraunces, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { isUnlocked, passcodeRequired } from "@/lib/auth";
-import { MAKER, PRODUCT } from "@/lib/brand";
+import { MAKER, PRODUCT, SITE_URL } from "@/lib/brand";
 import { isLive } from "@/lib/env";
 import { merchant } from "@/lib/merchant";
 import "./globals.css";
@@ -11,9 +11,14 @@ const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axe
 const plexSans = IBM_Plex_Sans({ variable: "--font-plex-sans", subsets: ["latin"], weight: ["400", "500", "600"] });
 const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500", "700"] });
 
+const description = "An AI case worker for PayPal disputes: investigates, does the math, drafts the response. You approve.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: PRODUCT,
-  description: "An AI case worker for PayPal disputes: investigates, does the math, drafts the response. You approve.",
+  description,
+  openGraph: { title: PRODUCT, description, url: SITE_URL, siteName: PRODUCT, type: "website" },
+  twitter: { card: "summary", title: PRODUCT, description },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
