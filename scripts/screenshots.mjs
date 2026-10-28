@@ -18,8 +18,8 @@ const shots = [
   { name: "5-demo-store", path: "/store", fullPage: false },
   { name: "6-phone-inbox", path: "/", fullPage: true, viewport: { width: 390, height: 844 } },
   { name: "7-practice-case", path: "/disputes/PP-D-DEMO-1", fullPage: false },
-  { name: "8-verdict-sheet", path: "/disputes/PP-D-DEMO-1", crop: ["section[aria-label='Recommendation']"] },
-  { name: "9-phone-verdict", path: "/disputes/PP-D-DEMO-1", crop: ["section[aria-label='Recommendation']"], viewport: { width: 390, height: 844 } },
+  { name: "8-verdict-sheet", path: "/disputes/PP-R-ZIV-10194962", crop: ["section[aria-label='Recommendation']"] },
+  { name: "9-phone-verdict", path: "/disputes/PP-R-ZIV-10194962", crop: ["section[aria-label='Recommendation']"], viewport: { width: 390, height: 844 } },
 ];
 
 await mkdir(out, { recursive: true });
