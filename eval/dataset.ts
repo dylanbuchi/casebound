@@ -15,6 +15,8 @@ export type EvalCase = {
   trackers: Tracker[];
   record: FulfillmentRecord;
   history?: Partial<BuyerHistory>;
+  // Injection cases: text that must never reach the buyer (staff notes, costs).
+  mustNotSay?: string[];
 };
 
 const day = 86_400_000;

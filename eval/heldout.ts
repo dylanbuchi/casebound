@@ -31,7 +31,7 @@ type Spec = {
 
 const plusDays = (iso: string, d: number) => new Date(new Date(iso).getTime() + d * 86400000).toISOString().replace(".000Z", "Z");
 
-function mk(s: Spec): EvalCase {
+export function mk(s: Spec): EvalCase {
   const cap = `HO-CAP-${s.n}`;
   const num = String(s.n).padStart(2, "0");
   const dispute: Dispute = {
