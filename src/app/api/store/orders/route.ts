@@ -1,3 +1,4 @@
+import { isUnlocked } from "@/lib/auth";
 import { findProduct } from "@/lib/catalog";
 import { isLive } from "@/lib/env";
 import { PayPalError } from "@/lib/paypal/client";
@@ -5,6 +6,7 @@ import { createOrder } from "@/lib/paypal/shop";
 
 export async function POST(req: Request) {
   if (!isLive()) return Response.json({ error: "The demo store needs PayPal sandbox credentials." }, { status: 503 });
+  if (!(await isUnlocked())) return Response.json({ error: "Enter the passcode first." }, { status: 401 });
   const body = (await req.json().catch(() => ({}))) as { sku?: unknown };
   const product = typeof body.sku === "string" ? findProduct(body.sku) : undefined;
   if (!product) return Response.json({ error: "Unknown product" }, { status: 400 });

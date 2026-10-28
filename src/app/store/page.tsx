@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PayPalButtons } from "@/components/paypal-buttons";
+import { isUnlocked } from "@/lib/auth";
 import { catalog } from "@/lib/catalog";
 import { env, isLive } from "@/lib/env";
 import { merchant } from "@/lib/merchant";
@@ -7,8 +8,9 @@ import { PRODUCT } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
-export default function Store() {
+export default async function Store() {
   const live = isLive();
+  const unlocked = await isUnlocked();
   return (
     <div className="storefront space-y-8 p-6 sm:p-10">
       <p className="rounded-full bg-[var(--shop-accent)] px-4 py-1.5 text-center text-xs font-medium text-white">
@@ -39,11 +41,16 @@ export default function Store() {
               <p className="font-mono">${p.price}</p>
             </div>
             <p className="mt-1 text-sm text-ink-2">{p.blurb}</p>
-            {live && (
-              <div className="mt-4">
-                <PayPalButtons clientId={env.paypalClientId} sku={p.sku} />
-              </div>
-            )}
+            {live &&
+              (unlocked ? (
+                <div className="mt-4">
+                  <PayPalButtons clientId={env.paypalClientId} sku={p.sku} />
+                </div>
+              ) : (
+                <Link href="/unlock" className="mt-4 inline-block text-sm underline">
+                  Enter the passcode to buy
+                </Link>
+              ))}
           </li>
         ))}
       </ul>

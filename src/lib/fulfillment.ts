@@ -23,6 +23,8 @@ export type FulfillmentRecord = {
 };
 
 const FILE = "fulfillment";
+// Keeps the file bounded: the newest orders win once there are more than this.
+export const MAX_ORDERS = 300;
 
 export const listFulfillment = () => readJson<FulfillmentRecord[]>(FILE, []);
 
@@ -35,7 +37,7 @@ export function upsertFulfillment(record: FulfillmentRecord) {
   return updateJson<FulfillmentRecord[]>(FILE, [], (all) => [
     ...all.filter((r) => r.orderId !== record.orderId),
     record,
-  ]);
+  ].slice(-MAX_ORDERS));
 }
 
 export function patchFulfillment(orderId: string, patch: Partial<FulfillmentRecord>) {

@@ -1,3 +1,4 @@
+import { isUnlocked } from "@/lib/auth";
 import { isLive } from "@/lib/env";
 import { upsertFulfillment } from "@/lib/fulfillment";
 import { PayPalError } from "@/lib/paypal/client";
@@ -7,6 +8,7 @@ import { captureOrder } from "@/lib/paypal/shop";
 export async function POST(_req: Request, ctx: RouteContext<"/api/store/orders/[id]/capture">) {
   const { id } = await ctx.params;
   if (!isLive()) return Response.json({ error: "The demo store needs PayPal sandbox credentials." }, { status: 503 });
+  if (!(await isUnlocked())) return Response.json({ error: "Enter the passcode first." }, { status: 401 });
   if (!/^[A-Z0-9]{8,32}$/.test(id)) return Response.json({ error: "Invalid order id" }, { status: 400 });
 
   try {
