@@ -62,13 +62,69 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
   const resolved = dispute.status === "RESOLVED";
   const wonBySeller = Boolean(outcome?.outcome_code?.includes("SELLER"));
 
+  // The send column: source check, approval and receipts. Sits beside the verdict so Approve is in the first view.
+  const sendColumn = (
+    <>
+      {a && (actionable || history.length === 0) && (
+        <ApprovePanel
+          disputeId={id}
+          actionable={actionable}
+          sent={history.some((h) => h.ok && h.at > analysis!.createdAt)}
+          warning={conflicts.length > 0 ? "Some evidence conflicts. Open “The evidence disagrees” and check it before approving." : undefined}
+          unlocked={unlocked}
+          steps={steps}
+          evidenceNotes={a.evidence_notes}
+          buyerMessage={a.buyer_message}
+        />
+      )}
+
+      {analysis?.grounding && <GroundingNote g={analysis.grounding} />}
+
+      {history.length > 0 && (
+        <section aria-label="Receipts" className="rise rounded-lg border-2 border-accept/60 bg-card p-5">
+          <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Receipts: what was sent to PayPal</h2>
+          <ul className="space-y-3">
+            {history.map((h, i) => (
+              <li key={i}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Pill tone={h.ok ? "accept" : "fight"}>
+                    {h.ok ? (h.mode === "demo" ? "simulated ✓" : "PayPal accepted ✓") : "PayPal rejected"}
+                  </Pill>
+                  <span className="font-medium">{h.detail}</span>
+                  <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US")}</span>
+                </div>
+                {!h.ok && <p className="mt-1 text-sm text-fight">{h.error}</p>}
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-sm text-ink-2">Request and PayPal&apos;s reply</summary>
+                  <pre className="mt-1 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words text-paper">
+                    {JSON.stringify({ request: h.request, response: h.response }, null, 2)}
+                  </pre>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {a && (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
+          <span>
+            Analyzed {new Date(analysis!.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} by{" "}
+            {analysis!.model} · {analysis!.toolCalls.length} tool calls
+          </span>
+          {actionable && <AnalyzeButton disputeId={id} unlocked={unlocked} again />}
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <Link href="/" className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.18em] text-ink-3 hover:text-ink">
         <span aria-hidden>←</span> Inbox
       </Link>
 
-      <header className="rise border-b border-rule pb-6">
+      <header className="rise border-b border-rule pb-5">
         {isPractice(id) && (
           <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-offer bg-card px-4 py-2 text-sm">
             <span className="font-semibold text-offer">Practice case</span>
@@ -77,13 +133,16 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           </div>
         )}
         <p className="font-mono text-xs tracking-wider text-ink-3">{dispute.dispute_id}</p>
-        <h1 className="mt-1 font-display text-4xl font-semibold md:text-5xl">
+        <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
           {reasonLabel[dispute.reason]} · {fmtMoney(dispute.dispute_amount)}
         </h1>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-ink-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-ink-2">
           <span>{tx?.buyer?.name ?? "Buyer"}</span>
           <span aria-hidden>·</span>
           <Pill tone={actionable ? "ink" : "muted"}>{statusLabel(dispute.status)}</Pill>
+          {actionable && due !== null && (
+            <Pill tone={urgent ? "fight" : "muted"}>{due <= 0 ? "respond today" : `${due} day${due === 1 ? "" : "s"} to respond`}</Pill>
+          )}
           {dispute.dispute_life_cycle_stage && <Pill tone="muted">{dispute.dispute_life_cycle_stage.toLowerCase()}</Pill>}
           {outcome?.outcome_code && (
             <Pill tone={outcome.outcome_code.includes("SELLER") ? "accept" : "muted"}>
@@ -112,9 +171,14 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         </section>
       )}
 
-      {/* The decision, first and full width */}
+      {/* The decision first: verdict and ledger beside the approval, so both fit the first view on a desktop */}
       {a ? (
-        <VerdictCard analysis={analysis!} caseId={dispute.dispute_id} amount={Number(dispute.dispute_amount.value)} currency={currency} historical={resolved} />
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:items-start">
+          <VerdictCard analysis={analysis!} caseId={dispute.dispute_id} amount={Number(dispute.dispute_amount.value)} currency={currency} historical={resolved} />
+          <section aria-label="Response" className="min-w-0 space-y-4">
+            {sendColumn}
+          </section>
+        </div>
       ) : quickCall && allowed.has("accept_claim") ? (
         <section className="rise rounded-xl border-2 border-accept bg-card p-6 md:p-8" aria-label="Quick call">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-accept">Quick call, no AI needed</p>
@@ -147,26 +211,30 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       ) : null}
 
       {conflicts.length > 0 && (
-        <section role="alert" className="rise rounded-lg border-2 border-fight bg-card p-5">
-          <p className="font-semibold text-fight">The evidence disagrees. Verify before you send.</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-2">
+        <details aria-label="Conflicting evidence" className="rise rounded-lg border-2 border-fight bg-card px-5 py-3">
+          <summary className="cursor-pointer font-semibold text-fight">
+            The evidence disagrees on {conflicts.length} point{conflicts.length === 1 ? "" : "s"}. Verify before you send.
+          </summary>
+          <ul className="mt-2 mb-2 list-disc space-y-1 pl-5 text-sm text-ink-2">
             {conflicts.map((c) => (
               <li key={c.label}>
                 <span className="font-medium text-ink">{c.label}:</span> {c.detail}
               </li>
             ))}
           </ul>
-        </section>
+        </details>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
         {/* Case file: everything the agent can see */}
         <section aria-label="Case file" className="min-w-0 space-y-4">
-          <div className={`rise rounded-lg border-2 bg-card p-5 ${urgent ? "border-fight" : "border-rule"}`}>
-            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Deadline and evidence</h2>
+          <details className={`rise rounded-lg border-2 bg-card px-5 py-4 ${urgent ? "border-fight" : "border-rule"}`} open={!a}>
+            <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+              Deadline and what a PayPal reviewer looks for
+            </summary>
             {actionable && dispute.seller_response_due_date ? (
               <>
-                <div className="flex flex-wrap items-baseline gap-x-3">
+                <div className="mt-3 flex flex-wrap items-baseline gap-x-3">
                   <p className={`font-mono text-4xl font-bold ${urgent ? "text-fight" : ""}`}>
                     {due !== null && due <= 0 ? "Due today" : `${due} days`}
                   </p>
@@ -179,7 +247,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                 </div>
               </>
             ) : (
-              <p className="text-ink-2">{statusLabel(dispute.status)}: no response due from you right now.</p>
+              <p className="mt-3 text-ink-2">{statusLabel(dispute.status)}: no response due from you right now.</p>
             )}
             <h3 className="mt-5 mb-2 text-sm font-semibold">What a PayPal reviewer will look for</h3>
             <ul className="space-y-2">
@@ -187,7 +255,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                 <Check key={c.label} item={c} />
               ))}
             </ul>
-          </div>
+          </details>
 
           <Card title="Buyer's claim">
             {(dispute.messages ?? []).length === 0 ? (
@@ -251,9 +319,10 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         </section>
 
         {/* The agent's evidence, the send step and the receipts */}
-        <section aria-label="Response" className="min-w-0 space-y-4">
+        <section aria-label="Evidence" className="min-w-0 space-y-4">
+          {!a && sendColumn}
           {a && (
-            <Card title="Evidence the agent used">
+            <Card title={`Evidence the agent used (${a.key_facts.length} facts)`} folded>
               <ul className="space-y-2.5">
                 {a.key_facts.slice(0, 6).map((f, i) => (
                   <li key={i} className="flex gap-3 text-sm leading-snug">
@@ -328,57 +397,6 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
               )}
             </Card>
           )}
-
-          {analysis?.grounding && <GroundingNote g={analysis.grounding} />}
-
-          {a && (actionable || history.length === 0) && (
-            <ApprovePanel
-              disputeId={id}
-              actionable={actionable}
-              sent={history.some((h) => h.ok && h.at > analysis!.createdAt)}
-              warning={conflicts.length > 0 ? "Some evidence conflicts (see the red box above). Check it before approving." : undefined}
-              unlocked={unlocked}
-              steps={steps}
-              evidenceNotes={a.evidence_notes}
-              buyerMessage={a.buyer_message}
-            />
-          )}
-
-          {history.length > 0 && (
-            <section aria-label="Receipts" className="rise rounded-lg border-2 border-accept/60 bg-card p-5">
-              <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Receipts: what was sent to PayPal</h2>
-              <ul className="space-y-3">
-                {history.map((h, i) => (
-                  <li key={i}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Pill tone={h.ok ? "accept" : "fight"}>
-                        {h.ok ? (h.mode === "demo" ? "simulated ✓" : "PayPal accepted ✓") : "PayPal rejected"}
-                      </Pill>
-                      <span className="font-medium">{h.detail}</span>
-                      <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US")}</span>
-                    </div>
-                    {!h.ok && <p className="mt-1 text-sm text-fight">{h.error}</p>}
-                    <details className="mt-1">
-                      <summary className="cursor-pointer text-sm text-ink-2">Request and PayPal&apos;s reply</summary>
-                      <pre className="mt-1 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words text-paper">
-                        {JSON.stringify({ request: h.request, response: h.response }, null, 2)}
-                      </pre>
-                    </details>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {a && (
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
-              <span>
-                Analyzed {new Date(analysis!.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} by{" "}
-                {analysis!.model} · {analysis!.toolCalls.length} tool calls
-              </span>
-              {actionable && <AnalyzeButton disputeId={id} unlocked={unlocked} again />}
-            </div>
-          )}
         </section>
       </div>
     </div>
@@ -407,12 +425,12 @@ function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
     );
   }
   return (
-    <section aria-label="Removed claims" className="rise rounded-lg border-2 border-offer bg-card p-5">
-      <p className="font-semibold text-offer">
+    <details aria-label="Removed claims" className="rise rounded-lg border-2 border-offer bg-card px-5 py-3">
+      <summary className="cursor-pointer font-semibold text-offer">
         Removed {g.removed.length} claim{g.removed.length === 1 ? "" : "s"} no record backs
-      </p>
+      </summary>
       <p className="mt-1 text-sm text-ink-2">
-        {g.sentBack > 0 ? "The agent was asked to fix these once and did not. " : ""}They are not in the drafts below.
+        {g.sentBack > 0 ? "The agent was asked to fix these once and did not. " : ""}They are not in the drafts.
       </p>
       <ul className="mt-3 space-y-2 text-sm">
         {g.removed.map((r, i) => (
@@ -424,7 +442,7 @@ function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
           </li>
         ))}
       </ul>
-    </section>
+    </details>
   );
 }
 
@@ -438,7 +456,15 @@ function Pill({ tone, children }: { tone: "ink" | "muted" | "accept" | "fight"; 
   return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${cls}`}>{children}</span>;
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, folded = false, children }: { title: string; folded?: boolean; children: React.ReactNode }) {
+  if (folded) {
+    return (
+      <details className="rise rounded-lg border border-rule bg-card px-5 py-4 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
+        <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{title}</summary>
+        <div className="mt-3">{children}</div>
+      </details>
+    );
+  }
   return (
     <div className="rise rounded-lg border border-rule bg-card p-5 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
       <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{title}</h2>

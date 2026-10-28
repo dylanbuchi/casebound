@@ -81,35 +81,35 @@ export function VerdictCard({
         {caseId && <span className="normal-case tracking-wider">{caseId}</span>}
       </div>
 
-      <div className={`relative px-5 pt-6 pb-2 md:px-8 md:pt-8 ${historical ? "opacity-85" : ""}`}>
+      <div className={`relative px-5 pt-5 pb-1 md:px-8 md:pt-6 ${historical ? "opacity-85" : ""}`}>
         {/* The stamp sits over the corner of the sheet like ink on paper. */}
-        <div className="mb-4 md:absolute md:top-6 md:right-8 md:mb-0" aria-hidden>
-          <span className={`stamp stamp-ink stamp-in text-4xl md:text-6xl ${color}`}>{a.recommended_action}</span>
+        <div className="mb-4 md:absolute md:top-5 md:right-8 md:mb-0" aria-hidden>
+          <span className={`stamp stamp-ink stamp-in text-4xl md:text-5xl ${color}`}>{a.recommended_action}</span>
         </div>
         <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{historical ? "Was recommended" : "Recommendation"}</p>
-        <h2 className="mt-1 font-display text-4xl leading-[1.05] font-semibold md:text-6xl">
+        <h2 className="mt-1 font-display text-4xl leading-[1.05] font-semibold md:text-5xl">
           <span className="sr-only">{a.recommended_action}: </span>
           {verdictTitle[a.recommended_action]}
         </h2>
-        <p className="mt-4 max-w-3xl text-lg leading-relaxed md:pr-48">{a.summary}</p>
+        <p className="mt-3 max-w-3xl leading-relaxed md:text-[17px]">{a.summary}</p>
         {analysis.hypotheses && analysis.hypotheses.length > 0 && <Trail hs={analysis.hypotheses} final={a.recommended_action} />}
       </div>
 
       {/* The money, as one picture: the full track is the payment, solid is what you keep, hatched is what you give up. */}
-      <div className={`px-5 py-6 md:px-8 ${historical ? "opacity-85" : ""}`}>
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+      <div className={`px-5 py-5 md:px-8 ${historical ? "opacity-85" : ""}`}>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
             What you keep of the {fmtUsd(amount, currency)} payment
           </h3>
           <Legend />
         </div>
-        <ol className="space-y-5">
+        <ol className="space-y-4">
           {options.map((o, i) => {
             const chosen = o.key === a.recommended_action;
             return (
-              <li key={o.key} className="ledger-row grid gap-x-6 gap-y-2 md:grid-cols-[9.5rem_1fr_12rem] md:items-center" style={{ "--i": i } as CSSProperties}>
+              <li key={o.key} className="ledger-row grid gap-x-5 gap-y-2 md:grid-cols-[8.75rem_1fr_8rem] md:items-center" style={{ "--i": i } as CSSProperties}>
                 <div className="flex items-baseline justify-between gap-3 md:block">
-                  <p className={`flex items-center gap-2 font-medium ${chosen ? "text-ink" : "text-ink-2"}`}>
+                  <p className={`flex items-center gap-2 font-medium whitespace-nowrap ${chosen ? "text-ink" : "text-ink-2"}`}>
                     {o.label}
                     {chosen && (
                       <span className="rounded-full bg-ink px-2 py-0.5 font-mono text-[10px] font-medium tracking-wider text-paper uppercase">
@@ -147,7 +147,7 @@ export function VerdictCard({
             );
           })}
         </ol>
-        <div className="mt-3 grid md:grid-cols-[9.5rem_1fr_12rem] md:gap-x-6" aria-hidden>
+        <div className="mt-3 grid md:grid-cols-[8.75rem_1fr_8rem] md:gap-x-5" aria-hidden>
           <div className="relative h-4 font-mono text-[11px] text-ink-3 md:col-start-2">
             {at(0) >= 15 && <span className="absolute left-0">{fmtUsd(floor, currency)}</span>}
             {floor < 0 && <span className="absolute -translate-x-1/2" style={{ left: `${at(0)}%` }}>$0</span>}
@@ -156,7 +156,10 @@ export function VerdictCard({
         </div>
       </div>
 
-      <div className="grid gap-4 border-t border-rule px-5 py-5 md:grid-cols-[1fr_1fr] md:gap-8 md:px-8">
+      {/* The summary above is the short why; the full reasoning and the odds basis are one click away. */}
+      <details className="border-t border-rule px-5 py-3 md:px-8">
+        <summary className="cursor-pointer text-sm font-medium text-ink-2">Full reasoning, odds basis and break-even</summary>
+      <div className="grid gap-4 pt-3 pb-2 md:grid-cols-[1fr_1fr] md:gap-8">
         <div className="border-l-4 border-rule pl-4">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Why</p>
           <p className="mt-1 leading-relaxed text-ink-2">{a.action_reasoning}</p>
@@ -181,6 +184,7 @@ export function VerdictCard({
           )}
         </div>
       </div>
+      </details>
     </section>
   );
 }
@@ -201,9 +205,9 @@ const toolNames: Record<string, string> = {
 function Trail({ hs, final }: { hs: NonNullable<AnalysisResult["hypotheses"]>; final: Action }) {
   const flip = hs.find((h) => h.changed);
   return (
-    <div className="mt-5 max-w-3xl md:pr-48">
+    <div className="mt-4 max-w-3xl">
       {flip && (
-        <p className="mb-3 rounded-md border-l-4 border-offer bg-paper px-4 py-3 leading-relaxed">
+        <p className="mb-2 rounded-md border-l-4 border-offer bg-paper px-4 py-2.5 leading-relaxed">
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-offer">Changed my mind</span>
           <span className="mt-0.5 block text-ink">
             Leaned {hs[0].lean.toLowerCase()} at first, then switched to {flip.lean.toLowerCase()}. {flip.because}
@@ -234,7 +238,7 @@ function Trail({ hs, final }: { hs: NonNullable<AnalysisResult["hypotheses"]>; f
 function Figure({ o, chosen, currency, className = "" }: { o: Option; chosen: boolean; currency: string; className?: string }) {
   return (
     <div className={`ledger-figure ${className}`}>
-      <p className={`font-mono leading-none tabular-nums ${chosen ? "text-3xl font-bold md:text-4xl" : "text-xl text-ink-2 md:text-2xl"} ${o.keep !== null && o.keep < 0 ? "text-fight" : ""}`}>
+      <p className={`font-mono leading-none tabular-nums ${chosen ? "text-3xl font-bold" : "text-xl text-ink-2"} ${o.keep !== null && o.keep < 0 ? "text-fight" : ""}`}>
         {o.keep === null ? "item" : fmtUsd(o.keep, currency)}
       </p>
       <p className="mt-1 text-xs text-ink-3">{o.note}</p>
