@@ -72,9 +72,17 @@ export type AnalysisResult = {
   // Optional so analyses saved before these checks existed still load.
   calibration?: Calibration;
   grounding?: { removed: Unsupported[]; sentBack: number };
+  // The agent's working leans, in order, with the tools it had read when it noted each one.
+  hypotheses?: Hypothesis[];
 };
 
-export type AgentEvent = { type: "tool"; name: string; label: string } | { type: "thinking" };
+export type Lean = Assessment["recommended_action"];
+export type Hypothesis = { lean: Lean; because: string; afterTools: string[]; changed: boolean };
+
+export type AgentEvent =
+  | { type: "tool"; name: string; label: string }
+  | { type: "hypothesis"; lean: Lean; because: string; changed: boolean }
+  | { type: "thinking" };
 
 const toolLabels: Record<string, string> = {
   get_dispute: "Reading the dispute on PayPal",
@@ -92,8 +100,9 @@ const toolLabels: Record<string, string> = {
 const SYSTEM = `You are ${PRODUCT}, a dispute analyst for a small online shop that sells through PayPal.
 You help the seller decide, for one PayPal dispute, whether to fight it, accept it, or offer a partial refund, and you draft the response.
 
-How to work:
-- Investigate with the tools before deciding. Read the dispute, the payment, tracking, the shop's fulfillment record, the buyer's history, the store policy and the evidence checklist.
+How to work, in two passes:
+- First pass: read only the dispute (get_dispute) and the shop's fulfillment record (get_shop_records). Then call note_hypothesis with the action you lean toward and the facts behind it.
+- Second pass: verify against the independent sources: PayPal tracking, the PayPal payment, the buyer's history, the store policy and the evidence checklist. If a result contradicts your lean, call note_hypothesis again with the new lean and the exact fact that changed your mind. Do not note a new hypothesis when nothing changed.
 - Write drafts that cite the real facts on file (carrier, tracking number, dates, signature, refund ID, order items). Never send generic text.
 - Call estimate_economics with your win probability before choosing. Prefer the cheaper option unless fairness or the customer relationship clearly outweighs a small difference; say so when you override it.
 - Be fair to the buyer. If the seller is at fault (no tracking on a lost parcel, damage from poor packing), recommend making it right.
@@ -138,6 +147,7 @@ export async function analyzeDispute(
       checklist: await checklistFor(src, dispute, trackers, record),
     })));
   let lastInput: Assessment | null = null;
+  const hypotheses: Hypothesis[] = [];
   let sentBack = 0;
 
   const tools = [
@@ -157,7 +167,19 @@ export async function analyzeDispute(
       name: "get_shipment_tracking",
       description: "Tracking records attached to the PayPal transaction: carrier, number, status, ship date.",
       inputSchema: empty,
-      run: () => track("get_shipment_tracking", () => src.getTrackers(dispute)),
+      run: () =>
+        track("get_shipment_tracking", async () => {
+          const [trackers, record] = await Promise.all([src.getTrackers(dispute), fulfillmentPromise]);
+          // Spell out, in code, whether the carrier agrees with the shop's own delivery claim.
+          const carrier = trackers.find((t) => t.status === "DELIVERED");
+          const status = trackers.map((t) => t.status).filter(Boolean).join(", ") || "none";
+          const vs_shop_record = !record?.deliveredAt
+            ? null
+            : carrier
+              ? "Agrees with the shop record: the carrier shows DELIVERED."
+              : `Contradicts the shop record: the shop says delivered on ${record.deliveredAt.slice(0, 10)}${record.signedBy ? ` and signed by ${record.signedBy}` : ""}, but PayPal tracking status is ${status}.`;
+          return { trackers, vs_shop_record };
+        }),
     }),
     betaZodTool({
       name: "get_shop_records",
@@ -198,6 +220,22 @@ export async function analyzeDispute(
         track("get_evidence_checklist", async () =>
           checklistFor(src, dispute, await src.getTrackers(dispute), await fulfillmentPromise),
         ),
+    }),
+    betaZodTool({
+      name: "note_hypothesis",
+      description:
+        "Note the action you currently lean toward and the facts behind it. Call after the first pass, and again only if later evidence changes your lean.",
+      inputSchema: z.object({
+        lean: z.enum(["FIGHT", "ACCEPT", "OFFER"]),
+        because: z.string().describe("One or two sentences naming the facts and which tool they came from."),
+      }),
+      run: async ({ lean, because }) => {
+        const prev = hypotheses.at(-1);
+        const changed = Boolean(prev && prev.lean !== lean);
+        hypotheses.push({ lean, because: stripMarkup(because), afterTools: toolCalls.filter((t) => t.startsWith("get_")), changed });
+        onEvent({ type: "hypothesis", lean, because: stripMarkup(because), changed });
+        return JSON.stringify({ ok: true, noted: changed ? `Changed from ${prev!.lean} to ${lean}` : lean });
+      },
     }),
     betaZodTool({
       name: "estimate_economics",
@@ -298,5 +336,6 @@ export async function analyzeDispute(
     usage,
     calibration,
     grounding: { removed, sentBack },
+    hypotheses,
   };
 }

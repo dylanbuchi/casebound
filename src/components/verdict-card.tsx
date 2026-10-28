@@ -92,6 +92,7 @@ export function VerdictCard({
           {verdictTitle[a.recommended_action]}
         </h2>
         <p className="mt-4 max-w-3xl text-lg leading-relaxed md:pr-48">{a.summary}</p>
+        {analysis.hypotheses && analysis.hypotheses.length > 0 && <Trail hs={analysis.hypotheses} final={a.recommended_action} />}
       </div>
 
       {/* The money, as one picture: the full track is the payment, solid is what you keep, hatched is what you give up. */}
@@ -185,6 +186,50 @@ export function VerdictCard({
 }
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
+
+const toolNames: Record<string, string> = {
+  get_dispute: "the dispute",
+  get_payment: "the payment",
+  get_shipment_tracking: "PayPal tracking",
+  get_shop_records: "your shop record",
+  get_buyer_history: "buyer history",
+  get_store_policy: "the policy",
+  get_evidence_checklist: "the checklist",
+};
+
+// How the agent got to the stamp: its first lean, and any change of mind the evidence forced.
+function Trail({ hs, final }: { hs: NonNullable<AnalysisResult["hypotheses"]>; final: Action }) {
+  const flip = hs.find((h) => h.changed);
+  return (
+    <div className="mt-5 max-w-3xl md:pr-48">
+      {flip && (
+        <p className="mb-3 rounded-md border-l-4 border-offer bg-paper px-4 py-3 leading-relaxed">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-offer">Changed my mind</span>
+          <span className="mt-0.5 block text-ink">
+            Leaned {hs[0].lean.toLowerCase()} at first, then switched to {flip.lean.toLowerCase()}. {flip.because}
+          </span>
+        </p>
+      )}
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-ink-3" aria-label="How the agent got here">
+        {hs.map((h, i) => (
+          <li key={i} className="flex items-center gap-2">
+            {i > 0 && <span aria-hidden>→</span>}
+            <span title={h.because}>
+              <span className={h.changed ? "font-bold text-offer" : "text-ink-2"}>{h.lean}</span>{" "}
+              <span className="normal-case tracking-normal">
+                after {h.afterTools.filter((t) => i === 0 || !hs[i - 1].afterTools.includes(t)).map((t) => toolNames[t] ?? t).join(", ") || "a second look"}
+              </span>
+            </span>
+          </li>
+        ))}
+        <li className="flex items-center gap-2">
+          <span aria-hidden>→</span>
+          <span className="font-bold text-ink">{final}</span> <span className="normal-case tracking-normal">final</span>
+        </li>
+      </ol>
+    </div>
+  );
+}
 
 function Figure({ o, chosen, currency, className = "" }: { o: Option; chosen: boolean; currency: string; className?: string }) {
   return (

@@ -247,4 +247,40 @@ export const demoFixtures: Fixture[] = [
       notes: ["Checkout retried after a timeout; two $6.00 payments were captured for one order."],
     },
   ),
+  // The shop record looks like a clean win; the carrier's own tracker tells a different story.
+  fixture(
+    7,
+    {
+      create_time: at(-1),
+      reason: "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+      status: "WAITING_FOR_SELLER_RESPONSE",
+      dispute_amount: { currency_code: "USD", value: "210.00" },
+      dispute_life_cycle_stage: "INQUIRY",
+      seller_response_due_date: at(9),
+      disputed_transactions: [
+        {
+          create_time: at(-14),
+          gross_amount: { currency_code: "USD", value: "210.00" },
+          buyer: { name: "Rosa Diaz" },
+          items: [{ item_name: "Hand-thrown stoneware set, 4 pieces", item_quantity: "1" }],
+        },
+      ],
+      messages: [{ posted_by: "BUYER", time_posted: at(-1), content: "Two weeks and still nothing. UPS says nothing useful. Please refund me." }],
+    },
+    {
+      createdAt: at(-14),
+      buyerName: "Rosa Diaz",
+      buyerEmail: "rosa.diaz@example.com",
+      shipTo: "Austin, TX, US",
+      items: [{ name: "Hand-thrown stoneware set, 4 pieces", quantity: 1, unitPrice: "210.00" }],
+      total: "210.00",
+      carrier: "UPS",
+      trackingNumber: "1Z999AA10123456786",
+      shippedAt: at(-13),
+      deliveredAt: at(-9),
+      signedBy: "R DIAZ",
+      notes: ["Shipped with signature required (order over $150)."],
+    },
+    [{ tracking_number: "1Z999AA10123456786", carrier: "UPS", status: "RETURNED", shipment_date: at(-13).slice(0, 10) }],
+  ),
 ];

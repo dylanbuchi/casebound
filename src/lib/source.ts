@@ -214,7 +214,7 @@ const live: Source = {
 
 // Practice cases: a couple of bundled fixtures shown next to the real sandbox disputes, so a
 // visitor can always run the decide-and-approve flow. Their sends are simulated, never sent to PayPal.
-export const PRACTICE_IDS = ["PP-D-DEMO-1", "PP-D-DEMO-6"];
+export const PRACTICE_IDS = ["PP-D-DEMO-7", "PP-D-DEMO-1", "PP-D-DEMO-6"];
 export const isPractice = (id: string) => id.startsWith("PP-D-DEMO-");
 
 const pick = (id: string): Source => (isPractice(id) ? demo : live);

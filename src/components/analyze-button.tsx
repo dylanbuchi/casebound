@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type Step = { name: string; label: string };
+type Step =
+  | { kind: "tool"; name: string; label: string }
+  | { kind: "lean"; lean: "FIGHT" | "ACCEPT" | "OFFER"; because: string; changed: boolean };
+
+const leanColor = { FIGHT: "text-fight", ACCEPT: "text-accept", OFFER: "text-offer" } as const;
 
 // Streams the agent's tool calls so the seller sees the investigation happen.
 export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: string; unlocked: boolean; again?: boolean }) {
@@ -44,7 +48,8 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
         for (const line of lines) {
           if (!line.trim()) continue;
           const ev = JSON.parse(line);
-          if (ev.type === "tool") setSteps((s) => [...s, { name: ev.name, label: ev.label }]);
+          if (ev.type === "tool") setSteps((s) => [...s, { kind: "tool", name: ev.name, label: ev.label }]);
+          if (ev.type === "hypothesis") setSteps((s) => [...s, { kind: "lean", lean: ev.lean, because: ev.because, changed: ev.changed }]);
           if (ev.type === "error") throw new Error(ev.message);
           if (ev.type === "done") {
             setFinished(true);
@@ -91,6 +96,21 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
           <ol className="space-y-1.5 font-mono text-sm" aria-live="polite">
             {steps.map((s, i) => {
               const live = i === steps.length - 1 && running;
+              if (s.kind === "lean") {
+                // A working lean is a thought, not a step; a change of mind is the moment worth seeing.
+                return (
+                  <li
+                    key={i}
+                    className={`rise my-2 rounded-md border-l-4 bg-card px-3 py-2 font-sans ${s.changed ? "border-offer" : "border-rule"}`}
+                  >
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+                      {s.changed ? "Changed my mind" : "Working lean"}{" "}
+                      <span className={`font-bold ${leanColor[s.lean]}`}>→ {s.lean}</span>
+                    </p>
+                    <p className="mt-0.5 text-sm leading-snug text-ink-2">{s.because}</p>
+                  </li>
+                );
+              }
               return (
                 <li key={i} className="rise flex items-center gap-2.5">
                   <span className={`flex h-4 w-4 shrink-0 items-center justify-center ${live ? "text-offer" : "text-accept"}`} aria-hidden>
