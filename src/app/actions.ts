@@ -1,0 +1,106 @@
+"use server";
+
+import { createHash } from "node:crypto";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { z } from "zod";
+import { checkPasscode, cookieValue, isUnlocked, PASS_COOKIE } from "@/lib/auth";
+import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
+import { PayPalError } from "@/lib/paypal/client";
+import { allowedActions } from "@/lib/dispute-state";
+import { describeRequest, planActions, withEdits, type PlannedStep } from "@/lib/plan";
+import { appendAudit, getAnalysis } from "@/lib/records";
+import { source, type Source } from "@/lib/source";
+
+export type ActionState = { ok: boolean; message: string } | null;
+
+export async function unlock(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const code = String(form.get("passcode") ?? "").slice(0, 200);
+  if (!checkPasscode(code)) return { ok: false, message: "That passcode is not right." };
+  (await cookies()).set(PASS_COOKIE, cookieValue(), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  });
+  revalidatePath("/", "layout");
+  return { ok: true, message: "Unlocked." };
+}
+
+const DisputeId = z.string().regex(/^[A-Za-z0-9-]{1,64}$/);
+
+const ExecuteInput = z.object({
+  disputeId: DisputeId,
+  evidenceNotes: z.string().max(2000),
+  buyerMessage: z.string().max(2000),
+});
+
+
+// Sends the steps in order, logging the exact request and PayPal's response for each.
+async function runSteps(src: Source, disputeId: string, steps: PlannedStep[], idSeed: string): Promise<ActionState> {
+  for (const step of steps) {
+    // Same seed + same step = same request id, so a retried click is not applied twice.
+    const requestId = createHash("sha256").update(`${disputeId}:${idSeed}:${step.action.kind}`).digest("hex").slice(0, 36);
+    const request = describeRequest(disputeId, step.action);
+    const base = { at: new Date().toISOString(), disputeId, mode: src.mode, action: step.action.kind, detail: step.label, request };
+    try {
+      const response = await src.act(disputeId, step.action, requestId);
+      await appendAudit({ ...base, ok: true, response: response ?? { status: 204 } });
+    } catch (e) {
+      const message = e instanceof PayPalError ? `${e.message}${e.debugId ? ` (debug id ${e.debugId})` : ""}` : "Unexpected error";
+      console.error("action failed", disputeId, step.action.kind, e);
+      await appendAudit({ ...base, ok: false, error: message, response: e instanceof PayPalError ? e.details : undefined });
+      revalidatePath(`/disputes/${disputeId}`);
+      return { ok: false, message: `PayPal rejected "${step.label}": ${message}` };
+    }
+  }
+  revalidatePath("/");
+  revalidatePath("/log");
+  revalidatePath(`/disputes/${disputeId}`);
+  return { ok: true, message: `Done: ${steps.map((s) => s.label).join(" · ")}.` };
+}
+
+// Runs the approved plan. The client sends only edited wording; the structure
+// (which call, which amount, which tracking number) is rebuilt on the server.
+export async function executePlan(_prev: ActionState, form: FormData): Promise<ActionState> {
+  if (!(await isUnlocked())) return { ok: false, message: "Enter the passcode first." };
+  const parsed = ExecuteInput.safeParse({
+    disputeId: form.get("disputeId"),
+    evidenceNotes: form.get("evidenceNotes") ?? "",
+    buyerMessage: form.get("buyerMessage") ?? "",
+  });
+  if (!parsed.success) return { ok: false, message: "Invalid request." };
+  const { disputeId, ...edits } = parsed.data;
+
+  const src = source();
+  const analysis = await getAnalysis(disputeId);
+  if (!analysis) return { ok: false, message: "Run the analysis first." };
+
+  const dispute = await src.getDispute(disputeId);
+  const fulfillment = await src.getFulfillment(dispute);
+  const steps = planActions(dispute, analysis.assessment, fulfillment).map((s) => ({ ...s, action: withEdits(s.action, edits) }));
+  if (steps.length === 0) {
+    return { ok: false, message: `PayPal is not accepting this response right now (status: ${dispute.status.toLowerCase().replaceAll("_", " ")}).` };
+  }
+  return runSteps(src, disputeId, steps, analysis.createdAt);
+}
+
+// Accepts a tiny dispute without an AI run. Allowed only when refunding is
+// cheaper even at 90% win odds, checked again here on the server.
+export async function quickAccept(_prev: ActionState, form: FormData): Promise<ActionState> {
+  if (!(await isUnlocked())) return { ok: false, message: "Enter the passcode first." };
+  const parsed = DisputeId.safeParse(form.get("disputeId"));
+  if (!parsed.success) return { ok: false, message: "Invalid request." };
+
+  const src = source();
+  const dispute = await src.getDispute(parsed.data);
+  if (!allowedActions(dispute).has("accept_claim")) return { ok: false, message: "PayPal is not accepting a claim acceptance on this dispute right now." };
+  if (!quickCallFor(dispute)) return { ok: false, message: "This one is worth a proper look. Run the investigation instead." };
+
+  const step: PlannedStep = {
+    label: `Accept the claim and refund ${dispute.dispute_amount.value} ${dispute.dispute_amount.currency_code}`,
+    action: { kind: "accept_claim", note: QUICK_ACCEPT_MESSAGE },
+  };
+  return runSteps(src, dispute.dispute_id, [step], `quick:${dispute.update_time}`);
+}
