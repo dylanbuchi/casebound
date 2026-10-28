@@ -1,0 +1,82 @@
+[
+  {
+    "at": "2026-10-28T15:43:44.393Z",
+    "disputeId": "PP-R-IJZ-10194964",
+    "mode": "live",
+    "action": "accept_claim",
+    "detail": "Accept the claim and refund 12.00 USD",
+    "request": {
+      "method": "POST",
+      "path": "/v1/customer/disputes/PP-R-IJZ-10194964/accept-claim",
+      "contentType": "application/json",
+      "body": {
+        "note": "Hello John, thank you for letting us know your tealights haven't arrived, and I'm sorry for the wait. Your parcel was sent by Royal Mail to Geneva without tracking, so we can't confirm delivery on our side. We're refunding your $12.00 in full to your original PayPal payment. Our policy is to ship with tracking, and we are fixing that for future orders. We hope to make candles for you again soon."
+      }
+    },
+    "ok": true,
+    "response": {
+      "links": [
+        {
+          "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-IJZ-10194964",
+          "rel": "detail",
+          "method": "GET"
+        }
+      ]
+    }
+  },
+  {
+    "at": "2026-10-28T15:42:14.961Z",
+    "disputeId": "PP-R-ZIV-10194962",
+    "mode": "live",
+    "action": "provide_supporting_info",
+    "detail": "Send supporting information to PayPal",
+    "request": {
+      "method": "POST",
+      "path": "/v1/customer/disputes/PP-R-ZIV-10194962/provide-supporting-info",
+      "contentType": "multipart/form-data (input part)",
+      "body": {
+        "notes": "Tracking: USPS 9400179320009232893696. Order 2M700992FS736383K (capture 2CK934370T3998057): 1 x Merino wool throw, oat (SKU THROW-OAT), $189.00, captured 2026-10-28. The item was shipped via USPS, tracking 9400179320009232893696, and shipped on 2026-10-28. The shipping address is Rue de Bourgogne 5, Case postale 12, 1211 Geneva, CH, which is the address on the PayPal order and matches the payer's country. Our fulfillment record shows delivery on 2026-10-28, signed for by JOHN DOE. Because the order total is over $150, our policy requires signature confirmation, and the record shows a signature was obtained. We ask PayPal to find that the item was delivered to the buyer's address and to decline the claim that it was not received."
+      }
+    },
+    "ok": true,
+    "response": {
+      "links": [
+        {
+          "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-ZIV-10194962",
+          "rel": "detail",
+          "method": "GET"
+        }
+      ]
+    }
+  },
+  {
+    "at": "2026-10-28T15:40:37.393Z",
+    "disputeId": "PP-R-GDD-10194963",
+    "mode": "live",
+    "action": "make_offer",
+    "detail": "Offer 95.00 USD (refund)",
+    "request": {
+      "method": "POST",
+      "path": "/v1/customer/disputes/PP-R-GDD-10194963/make-offer",
+      "contentType": "application/json",
+      "body": {
+        "note": "Hi John, I'm sorry your sage ceramic table lamp arrived cracked. It was shipped in a single box without extra protection, and it should have been packed better for the trip. I've offered a full refund of $95.00 for the lamp through the dispute. You don't need to send the lamp back. If you're able, a photo of the crack would help us improve our packing, but it isn't required. Under our policy, refunds go to your original PayPal payment within 3 business days of approval.",
+        "offer_type": "REFUND",
+        "offer_amount": {
+          "currency_code": "USD",
+          "value": "95.00"
+        }
+      }
+    },
+    "ok": true,
+    "response": {
+      "links": [
+        {
+          "href": "https://api-m.sandbox.paypal.com/v1/customer/disputes/PP-R-GDD-10194963",
+          "rel": "detail",
+          "method": "GET"
+        }
+      ]
+    }
+  }
+]

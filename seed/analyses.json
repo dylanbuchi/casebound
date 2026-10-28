@@ -1,0 +1,359 @@
+{
+  "PP-R-GDD-10194963": {
+    "disputeId": "PP-R-GDD-10194963",
+    "disputeUpdatedAt": "2026-10-28T15:35:23.884Z",
+    "createdAt": "2026-10-28T15:37:45.206Z",
+    "model": "claude-haiku-5-5",
+    "assessment": {
+      "summary": "Buyer says the $95 ceramic table lamp arrived with a crack down one side and asks for a refund or replacement. The shop packed fragile ceramic in a single box without double-boxing, so I recommend offering a full $95 refund (no return needed) after checking the existing $91.47 pending refund.",
+      "buyer_claim": "The lamp base arrived cracked down one side and is unsafe to use, and the buyer wants a replacement lamp or a refund.",
+      "key_facts": [
+        {
+          "fact": "Dispute PP-R-GDD-10194963 is open under reason MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED for $95.00. Seller response is due 2026-11-17.",
+          "source": "paypal_dispute",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Buyer states the lamp base arrived cracked down one side, the box looked fine from outside, and they want a replacement or a refund.",
+          "source": "paypal_dispute",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "No photo of the crack has been submitted by the buyer; the evidence list has only the buyer's text.",
+          "source": "paypal_dispute",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "Allowed responses on this dispute: accept (partial refund, refund with return, refund) or make an offer (refund, refund with return). A replacement is not an offer type here.",
+          "source": "paypal_dispute",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Shop packing note: the item was packed in a single box without double-boxing.",
+          "source": "shop_records",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Store policy: items damaged in transit are replaced or refunded on receipt of a photo, and return shipping is on the seller when the item arrived damaged.",
+          "source": "store_policy",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "USPS tracking 9400111202061111222233 is attached to the capture. The shop record shows delivery on 2026-10-28 with a delivery photo flagged as on file.",
+          "source": "shop_records",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The shop record's delivery time (15:08:26) is only 25 seconds after its ship time (15:08:01). PayPal's tracker still shows SHIPPED with no delivered event, so the delivery record needs checking.",
+          "source": "paypal_tracking",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "A refund 1FA210790C4770820 for $91.47 is already PENDING on the capture, with a matching $91.47 HOLD_PLACED debit. This must be reconciled before any new refund is sent.",
+          "source": "paypal_payment",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Seller protection on the capture is eligible only for ITEM_NOT_RECEIVED and UNAUTHORIZED_TRANSACTION. This dispute is a not-as-described claim, so protection may not apply.",
+          "source": "paypal_payment",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Payment is a single item, $95.00, shipped to Geneva 1211, Switzerland, which matches the buyer's account address.",
+          "source": "paypal_payment",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Buyer history: 2 other orders totaling $201 and 1 prior dispute. The first order timestamp is one minute before this disputed order.",
+          "source": "buyer_history",
+          "supports": "NEUTRAL"
+        }
+      ],
+      "missing_evidence": [
+        "Buyer's photo of the cracked lamp and packaging, which the store policy requires before a transit-damage refund or replacement",
+        "Carrier scan history for USPS 9400111202061111222233 confirming delivery and its timestamp; PayPal still shows SHIPPED",
+        "The delivery photo itself (the shop record only flags that one exists)",
+        "Packing details or photos showing how the lamp was padded",
+        "Origin of the pending $91.47 refund 1FA210790C4770820: was it initiated by the shop, and for what",
+        "Details of the buyer's prior dispute"
+      ],
+      "win_probability": 0.2,
+      "win_probability_reasoning": "Fighting is weak. The shop packed fragile ceramic in a single box without double-boxing, and the buyer says the box looked fine from outside, which points to inadequate protection in transit. Delivery is confirmed by USPS and the shop record, but the timestamps are inconsistent and the PayPal tracker still shows SHIPPED. The buyer has not supplied a photo, which helps the seller somewhat, but the store's own policy refunds transit damage. A reviewer would likely side with the buyer.",
+      "recommended_action": "OFFER",
+      "action_reasoning": "The economics tool says fighting is cheaper by about $3 in expectation (break-even win probability 0.173 versus my 0.2). I am overriding that: the packing shortfall is the shop's, the store policy refunds transit damage, and a fight risks a $15 fee plus a worse relationship with a buyer who has a broken item. A full $95 refund offer lets the buyer accept without returning the lamp. Before sending, confirm whether the existing $91.47 pending refund was shop-initiated. If it was for this dispute, the balance to offer is $3.53 and the offer amount should be adjusted to avoid over-refunding. A replacement is not an offer type on this dispute, so a replacement would have to be arranged separately.",
+      "offer_amount": 95,
+      "offer_type": "REFUND",
+      "evidence_type": null,
+      "evidence_notes": "",
+      "buyer_message": "Hi John, I'm sorry your sage ceramic table lamp arrived cracked. It was shipped in a single box without extra protection, and it should have been packed better for the trip. I've offered a full refund of $95.00 for the lamp through the dispute. You don't need to send the lamp back. If you're able, a photo of the crack would help us improve our packing, but it isn't required. Under our policy, refunds go to your original PayPal payment within 3 business days of approval.",
+      "risk_flags": [
+        "A $91.47 refund (1FA210790C4770820) is already PENDING on the capture with a matching hold debit. Confirm its origin before sending the offer, to avoid refunding twice.",
+        "The economics tool favored fighting by about $3. This recommendation overrides that on fairness and the packing fault. Say so if you decide otherwise.",
+        "Seller protection on the capture covers ITEM_NOT_RECEIVED and UNAUTHORIZED_TRANSACTION only, not not-as-described claims.",
+        "The shop's delivery timestamp (25 seconds after ship time) conflicts with PayPal's tracker, which still shows SHIPPED. Check the carrier record before relying on delivery as evidence.",
+        "The buyer's first order is timestamped one minute before this disputed order. Check the account and the prior dispute before any future orders from this buyer.",
+        "Replacement is not a valid make-offer type on this dispute. The buyer's replacement request can only be met through a separate message and arrangement.",
+        "The store policy asks for a photo before a transit-damage refund. The offer does not require one, so the seller is choosing to waive that step."
+      ]
+    },
+    "economics": {
+      "acceptCost": 95,
+      "fightExpectedCost": 92,
+      "timeCost": 4,
+      "expectedSavingsFromFighting": 3,
+      "cheaperOption": "FIGHT"
+    },
+    "breakEven": 0.17272727272727273,
+    "toolCalls": [
+      "get_dispute",
+      "get_payment",
+      "get_shipment_tracking",
+      "get_shop_records",
+      "get_buyer_history",
+      "get_store_policy",
+      "get_evidence_checklist",
+      "estimate_economics",
+      "record_assessment"
+    ],
+    "usage": {
+      "input": 10,
+      "output": 12017,
+      "cacheRead": 23307,
+      "cacheWrite": 19237
+    }
+  },
+  "PP-R-ZIV-10194962": {
+    "disputeId": "PP-R-ZIV-10194962",
+    "disputeUpdatedAt": "2026-10-28T15:36:53.767Z",
+    "createdAt": "2026-10-28T15:41:53.478Z",
+    "model": "claude-haiku-5-5",
+    "assessment": {
+      "summary": "Buyer says a $189 merino wool throw never arrived, but USPS tracking and a signed delivery to the order address are on file. Recommend fighting (about 60% win chance, expected cost about $86 vs $189 to accept), but only after confirming the USPS delivery scan, because the shop's delivery timestamp looks implausible.",
+      "buyer_claim": "The buyer states the wool throw (oat, $189.00) never arrived and requests a full refund of $189.00.",
+      "key_facts": [
+        {
+          "fact": "Dispute reason is MERCHANDISE_OR_SERVICE_NOT_RECEIVED for $189.00; buyer requests a full $189.00 refund. Buyer's note only says the throw never arrived.",
+          "source": "paypal_dispute",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Dispute is UNDER_REVIEW at the CHARGEBACK stage; merchant_contacted is false, so the seller has not yet responded.",
+          "source": "paypal_dispute",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Seller protection is ELIGIBLE (EXPANDED_SELLER_PROTECTION) for ITEM_NOT_RECEIVED and UNAUTHORIZED_TRANSACTION categories.",
+          "source": "paypal_payment",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "Order 2M700992FS736383K, $189.00 for Merino wool throw, oat (SKU THROW-OAT), captured 2026-10-28 15:00:14 UTC. Shipping address is Rue de Bourgogne 5, Case postale 12, 1211 Geneva, CH, which matches the payer's country (CH).",
+          "source": "paypal_payment",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "USPS tracking 9400179320009232893696 is attached to the PayPal transaction, but the PayPal tracker status is only SHIPPED with no delivery event recorded.",
+          "source": "paypal_tracking",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Shop fulfillment record: USPS tracking 9400179320009232893696, shipped 2026-10-28 15:08:12 UTC, delivered 2026-10-28 15:08:24 UTC, signedBy JOHN DOE, ship-to GENEVA 5, CH.",
+          "source": "shop_records",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "The shop record's delivery timestamp is 12 seconds after the ship timestamp for a Geneva address, which is physically implausible and needs verification against the USPS scan history before it is relied on.",
+          "source": "shop_records",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Store policy says orders over $150 ship with signature confirmation. This $189 order is recorded as signed by JOHN DOE, so the policy was followed on the record.",
+          "source": "store_policy",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "Store policy says orders ship within 2 business days with tracking. Shipment was recorded the same day as the order (about 8 minutes later), which meets this.",
+          "source": "store_policy",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "Buyer has 2 prior disputes and 2 other orders totaling $107.",
+          "source": "buyer_history",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Buyer history timestamps are inconsistent: firstOrderAt (2026-10-28 15:01:01) is after the disputed order was created (15:00:14), even though the history is said to exclude the disputed order.",
+          "source": "buyer_history",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Refund 25N66593SC893360M for $182.27 is PENDING and tied to a HOLD_PLACED debit. It is not a refund issued to the buyer, and the $6.73 difference from $189.00 is unexplained.",
+          "source": "paypal_payment",
+          "supports": "NEUTRAL"
+        }
+      ],
+      "missing_evidence": [
+        "USPS scan history for 9400179320009232893696 showing the actual delivery event, date/time and location (the PayPal tracker shows SHIPPED only).",
+        "USPS signature image or delivery confirmation record for the signature 'JOHN DOE'.",
+        "Explanation or correction of the 12-second gap between the recorded shipment and delivery times.",
+        "Confirmation of where the parcel was delivered given the 'Case postale 12' (PO box) address line.",
+        "Packing slip or dispatch proof showing the correct item (THROW-OAT) left the warehouse.",
+        "Any pre-dispute buyer contact; the buyer opened the dispute about 15 minutes after the order, and no seller contact is recorded.",
+        "Outcomes and details of the buyer's 2 prior disputes."
+      ],
+      "win_probability": 0.6,
+      "win_probability_reasoning": "Tracking is attached, the shop record shows delivery signed by JOHN DOE, and the ship-to matches the payer address, which is strong for ITEM_NOT_RECEIVED. It is not higher because PayPal's own tracker still shows SHIPPED with no delivery event, the shop's delivery timestamp is implausible (12 seconds after shipment), the buyer has 2 prior disputes, and the buyer history timestamps are inconsistent. If the USPS scan confirms a delivery at the address, the odds rise substantially; if not, they fall sharply.",
+      "recommended_action": "FIGHT",
+      "action_reasoning": "Fighting costs about $85.60 in expected value (about 40% chance of losing $189 plus the $15 dispute fee, plus time), versus $189 for accepting. Even at a 40% win probability fighting remains cheaper, so the economics clearly favour fighting. The signed delivery to the matching address supports the seller, and the buyer's 2 prior disputes give no goodwill reason to refund. This recommendation depends on verification: before sending, pull the USPS scan history. If USPS does not show delivery to this address, or the shop record is wrong, switch to ACCEPT (refund $189) rather than submit evidence that PayPal can contradict.",
+      "offer_amount": null,
+      "offer_type": null,
+      "evidence_type": "PROOF_OF_FULFILLMENT",
+      "evidence_notes": "Order 2M700992FS736383K (capture 2CK934370T3998057): 1 x Merino wool throw, oat (SKU THROW-OAT), $189.00, captured 2026-10-28. The item was shipped via USPS, tracking 9400179320009232893696, and shipped on 2026-10-28. The shipping address is Rue de Bourgogne 5, Case postale 12, 1211 Geneva, CH, which is the address on the PayPal order and matches the payer's country. Our fulfillment record shows delivery on 2026-10-28, signed for by JOHN DOE. Because the order total is over $150, our policy requires signature confirmation, and the record shows a signature was obtained. We ask PayPal to find that the item was delivered to the buyer's address and to decline the claim that it was not received.",
+      "buyer_message": "Hello John, thank you for contacting us about your Merino wool throw (oat), order 2M700992FS736383K. Our records show USPS tracking 9400179320009232893696 and a delivery on 28 October 2026 to the address on your order, signed for by JOHN DOE. We want to find your parcel for you. Could you check with the people at your address, your building reception, and the Case postale box, and let us know what you find? If it still cannot be located, reply to this message and we will work with you on next steps.",
+      "risk_flags": [
+        "CRITICAL: Verify the USPS delivery scan before sending. The shop record shows delivery 12 seconds after shipment (shipped 15:08:12, delivered 15:08:24 UTC) for a Geneva address, which is implausible. If USPS shows a different date or no delivery, do not submit these notes; accept the claim instead.",
+        "PayPal's tracker for 9400179320009232893696 still shows SHIPPED with no delivery event, so it does not match the shop's 'delivered' record. PayPal reviewers will see this mismatch.",
+        "Refund 25N66593SC893360M ($182.27, PENDING) is a PayPal HOLD_PLACED entry, not a refund to the buyer. Do not describe it as a refund. The $6.73 gap from $189.00 is unexplained.",
+        "The buyer history is internally inconsistent: firstOrderAt (15:01:01) is after the disputed order (15:00:14) even though the history should exclude it. Verify before relying on the '2 prior disputes' point.",
+        "The shipping address is 'Case postale 12' (a PO box) and the admin_area_1 field is malformed ('CH_zip = 1211'). Confirm with USPS where the parcel was delivered.",
+        "The dispute lists the seller as 'Test Store' and the emails are sandbox-style (sb-…@example.com). Confirm the dispute is routed to the Lumen & Loom merchant account.",
+        "No response deadline appears in the dispute data. Check the deadline in PayPal and respond promptly. Losing the dispute costs $189 plus a $15 fee.",
+        "The FIGHT action attaches tracking and any refund IDs from shop records. Make sure no misleading refund ID is attached as proof of refund."
+      ]
+    },
+    "economics": {
+      "acceptCost": 189,
+      "fightExpectedCost": 85.6,
+      "timeCost": 4,
+      "expectedSavingsFromFighting": 103.4,
+      "cheaperOption": "FIGHT"
+    },
+    "breakEven": 0.09313725490196079,
+    "toolCalls": [
+      "get_dispute",
+      "get_payment",
+      "get_shipment_tracking",
+      "get_shop_records",
+      "get_buyer_history",
+      "get_store_policy",
+      "get_evidence_checklist",
+      "estimate_economics",
+      "record_assessment"
+    ],
+    "usage": {
+      "input": 10,
+      "output": 10818,
+      "cacheRead": 21225,
+      "cacheWrite": 17761
+    }
+  },
+  "PP-R-IJZ-10194964": {
+    "disputeId": "PP-R-IJZ-10194964",
+    "disputeUpdatedAt": "2026-10-28T15:37:33.953Z",
+    "createdAt": "2026-10-28T15:43:22.854Z",
+    "model": "claude-haiku-5-5",
+    "assessment": {
+      "summary": "Buyer says a $12.00 tealight order never arrived. The shop shipped it by Royal Mail with no tracking, so there is no delivery proof; I recommend accepting the claim and refunding the buyer in full.",
+      "buyer_claim": "The buyer says they never received their $12.00 beeswax tealights (6 pack), two weeks after purchase, and is disputing it as merchandise not received.",
+      "key_facts": [
+        {
+          "fact": "Dispute reason is MERCHANDISE_OR_SERVICE_NOT_RECEIVED for $12.00 on capture 28A73920SJ282125Y; buyer message says 'Never got my tealights, it's been two weeks.'",
+          "source": "paypal_dispute",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "No tracking records are attached to the PayPal transaction; the tracking list is empty.",
+          "source": "paypal_tracking",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Shop record notes say the order was 'Sent without tracking to keep shipping cheap.' Carrier is listed as Royal Mail, shipped 2026-10-28 at 15:05 UTC.",
+          "source": "shop_records",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Evidence checklist: tracking on the PayPal transaction is missing, and there is no carrier delivery scan on file.",
+          "source": "paypal_tracking",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Store policy says orders ship within 2 business days with tracking. The untracked shipment does not follow this policy.",
+          "source": "store_policy",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Ship-to address on the PayPal order and the shop record both point to Geneva, CH, the same address as the payer, so the address matches the payment.",
+          "source": "shop_records",
+          "supports": "SELLER"
+        },
+        {
+          "fact": "Dispute allows full refund of $12.00. The PayPal fund movement shows an $11.29 HOLD_PLACED debit, and refund 8R3120707W3311110 for $11.29 is PENDING.",
+          "source": "paypal_payment",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Estimated expected cost of fighting is $29.65 (including the $15 dispute fee if lost) versus $12.00 to accept. Break-even win probability is 70.4%.",
+          "source": "store_policy",
+          "supports": "BUYER"
+        },
+        {
+          "fact": "Buyer history shows 2 other orders, $284.00 total spent, and 2 prior disputes.",
+          "source": "buyer_history",
+          "supports": "NEUTRAL"
+        },
+        {
+          "fact": "Seller response is due 2026-11-17. The merchant has not been contacted yet.",
+          "source": "paypal_dispute",
+          "supports": "NEUTRAL"
+        }
+      ],
+      "missing_evidence": [
+        "Carrier proof of delivery or delivery scan from Royal Mail. None exists because no tracking number was recorded.",
+        "Any proof of posting (postage receipt or dispatch record) with a tracking or reference number. Nothing on file shows the parcel was actually sent via a traceable route.",
+        "Confirmation of whether the pending $11.29 refund (8R3120707W3311110) was created by the shop or by PayPal's hold, and whether it conflicts with a full $12.00 refund."
+      ],
+      "win_probability": 0.05,
+      "win_probability_reasoning": "The shop has no tracking, no delivery scan and no signature, and its own records say the parcel was sent untracked to save on shipping. Those facts contradict the shop's stated policy. A PayPal reviewer would side with the buyer on item-not-received, so fighting is very unlikely to succeed.",
+      "recommended_action": "ACCEPT",
+      "action_reasoning": "Accepting costs $12.00 (the sale amount), while fighting has an expected cost of about $29.65 and needs a 70% win chance to break even. The shop can't prove delivery and the shipment broke its own tracking policy, so the claim is fair and fighting would just add the $15 dispute fee. Accepting also protects the relationship: the buyer gets their money back quickly. The shop should first confirm the pending $11.29 refund so the buyer isn't refunded twice or left with a mismatch.",
+      "offer_amount": null,
+      "offer_type": null,
+      "evidence_type": null,
+      "evidence_notes": "",
+      "buyer_message": "Hello John, thank you for letting us know your tealights haven't arrived, and I'm sorry for the wait. Your parcel was sent by Royal Mail to Geneva without tracking, so we can't confirm delivery on our side. We're refunding your $12.00 in full to your original PayPal payment. Our policy is to ship with tracking, and we are fixing that for future orders. We hope to make candles for you again soon.",
+      "risk_flags": [
+        "The shop record shows the order was sent without tracking. This is the shop's own mistake under its published policy. Do not describe the delivery as confirmed or imply that the buyer is at fault.",
+        "There is already a PENDING refund 8R3120707W3311110 for $11.29 on the capture, plus an $11.29 HOLD_PLACED debit. Check this before accepting the full $12.00 claim to avoid a double refund or a mismatch.",
+        "Buyer history shows 2 prior disputes, but the buyer's firstOrderAt timestamp (15:00:14 on 2026-10-28) is only about 3 minutes before this order, which doesn't fit with 2 earlier orders. Verify the history before relying on it.",
+        "The shop record gives only 'GENEVA 5, CH' as the ship-to. The PayPal order has the full street address, but its admin_area_1 field reads 'CH_zip = 1211', which looks like a data error. Review the address for future shipments.",
+        "The payment record marks seller protection as ELIGIBLE for item-not-received, but no tracking exists. Don't count on that protection to change the outcome.",
+        "Seller response is due 2026-11-17. Accepting closes the dispute automatically once submitted, so review before sending."
+      ]
+    },
+    "economics": {
+      "acceptCost": 12,
+      "fightExpectedCost": 29.65,
+      "timeCost": 4,
+      "expectedSavingsFromFighting": -17.65,
+      "cheaperOption": "ACCEPT"
+    },
+    "breakEven": 0.7037037037037037,
+    "toolCalls": [
+      "get_dispute",
+      "get_payment",
+      "get_shipment_tracking",
+      "get_shop_records",
+      "get_buyer_history",
+      "get_store_policy",
+      "get_evidence_checklist",
+      "estimate_economics",
+      "record_assessment"
+    ],
+    "usage": {
+      "input": 10,
+      "output": 4813,
+      "cacheRead": 19635,
+      "cacheWrite": 11866
+    }
+  }
+}

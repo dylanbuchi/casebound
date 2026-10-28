@@ -1,7 +1,7 @@
 import "server-only";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { env } from "@/lib/env";
+import { env, isLive } from "@/lib/env";
 
 // Tiny JSON file store. One instance, one merchant: enough for a sandbox demo.
 // lean-ctx: single-process JSON files, upgrade to a database when there is more than one instance.
@@ -12,11 +12,25 @@ function file(name: string) {
   return path.join(process.cwd(), env.dataDir, `${name}.json`);
 }
 
+// Committed, secret-free starting state for the hosted demo. Hosts with ephemeral disks
+// (Render free tier) wipe DATA_DIR on restart; reads then fall back to the seed, and the
+// first write copies seed plus change into DATA_DIR. PayPal stays the source of truth for disputes.
+const SEEDED = new Set(["fulfillment", "analyses", "audit"]);
+
+function seedFile(name: string) {
+  return path.join(process.cwd(), "seed", `${name}.json`);
+}
+
 export async function readJson<T>(name: string, fallback: T): Promise<T> {
   try {
     return JSON.parse(await readFile(file(name), "utf8")) as T;
   } catch {
-    return fallback;
+    if (!isLive() || !SEEDED.has(name)) return fallback;
+    try {
+      return JSON.parse(await readFile(seedFile(name), "utf8")) as T;
+    } catch {
+      return fallback;
+    }
   }
 }
 

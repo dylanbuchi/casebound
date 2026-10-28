@@ -1,0 +1,68 @@
+[
+  {
+    "orderId": "2M700992FS736383K",
+    "captureId": "2CK934370T3998057",
+    "createdAt": "2026-10-28T15:00:14.929Z",
+    "buyerName": "John Doe",
+    "buyerEmail": "sb-p6fqk53592396@personal.example.com",
+    "shipTo": "GENEVA 5, CH",
+    "items": [
+      {
+        "name": "Merino wool throw, oat",
+        "quantity": 1,
+        "unitPrice": "189.00"
+      }
+    ],
+    "total": "189.00",
+    "carrier": "USPS",
+    "trackingNumber": "9400179320009232893696",
+    "shippedAt": "2026-10-28T15:08:12.328Z",
+    "deliveredAt": "2026-10-28T15:08:24.539Z",
+    "signedBy": "JOHN DOE"
+  },
+  {
+    "orderId": "4S574517GM370804C",
+    "captureId": "4R460908NX2882124",
+    "createdAt": "2026-10-28T15:01:01.334Z",
+    "buyerName": "John Doe",
+    "buyerEmail": "sb-p6fqk53592396@personal.example.com",
+    "shipTo": "GENEVA 5, CH",
+    "items": [
+      {
+        "name": "Ceramic table lamp, sage",
+        "quantity": 1,
+        "unitPrice": "95.00"
+      }
+    ],
+    "total": "95.00",
+    "carrier": "USPS",
+    "trackingNumber": "9400111202061111222233",
+    "shippedAt": "2026-10-28T15:08:01.617Z",
+    "deliveredAt": "2026-10-28T15:08:26.537Z",
+    "deliveryPhoto": true,
+    "notes": [
+      "Packed in a single box without double-boxing."
+    ]
+  },
+  {
+    "orderId": "3V095933SF2457219",
+    "captureId": "28A73920SJ282125Y",
+    "createdAt": "2026-10-28T15:03:21.385Z",
+    "buyerName": "John Doe",
+    "buyerEmail": "sb-p6fqk53592396@personal.example.com",
+    "shipTo": "GENEVA 5, CH",
+    "items": [
+      {
+        "name": "Beeswax tealights, 6 pack",
+        "quantity": 1,
+        "unitPrice": "12.00"
+      }
+    ],
+    "total": "12.00",
+    "carrier": "Royal Mail",
+    "shippedAt": "2026-10-28T15:05:22.816Z",
+    "notes": [
+      "Sent without tracking to keep shipping cheap."
+    ]
+  }
+]

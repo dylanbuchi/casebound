@@ -50,12 +50,27 @@ export async function paypal<T>(path: string, opts: RequestOptions = {}): Promis
   if (opts.json !== undefined) headers["Content-Type"] = "application/json";
   if (opts.requestId) headers["PayPal-Request-Id"] = opts.requestId;
 
-  const res = await fetch(url, {
-    method: opts.method ?? "GET",
-    headers,
-    body: opts.form ?? (opts.json !== undefined ? JSON.stringify(opts.json) : undefined),
-    cache: "no-store",
-  });
+  const send = () =>
+    fetch(url, {
+      method: opts.method ?? "GET",
+      headers,
+      body: opts.form ?? (opts.json !== undefined ? JSON.stringify(opts.json) : undefined),
+      cache: "no-store",
+    });
+  // Reads retry once on transient failures; writes do not (a repeat could double-apply without a request id).
+  const retryable = (opts.method ?? "GET") === "GET" || Boolean(opts.requestId);
+  let res: Response;
+  try {
+    res = await send();
+    if (retryable && (res.status === 429 || res.status >= 500)) {
+      await new Promise((r) => setTimeout(r, 400));
+      res = await send();
+    }
+  } catch (e) {
+    if (!retryable) throw e;
+    await new Promise((r) => setTimeout(r, 400));
+    res = await send();
+  }
 
   if (res.status === 204) return undefined as T;
   const body = await res.json().catch(() => null);
