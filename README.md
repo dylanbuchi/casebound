@@ -68,6 +68,30 @@ Method and limits:
 - The 45 minutes by hand is an assumption about how long a seller takes to gather records and write a response. It was not measured.
 - The cases are synthetic and were written by the same team that built the agent. This shows the pipeline behaves sensibly, not that real merchants win more disputes.
 
+## Held-out eval (messy cases written apart from the prompt)
+
+`EVAL_SET=heldout pnpm eval` runs 15 messier disputes from [eval/heldout.ts](eval/heldout.ts): missing or partial tracking, foreign carriers (Swiss Post, Deutsche Post, La Poste, Royal Mail, Poste Italiane), buyer messages in German, French and Italian, empty or contradictory shop records, duplicate charges, and partial refunds already paid. Full table in [eval/heldout-results.md](eval/heldout-results.md).
+
+| | Result |
+|---|---|
+| Right call | **12 of 15 (80%)**, lower than the first set |
+| Cost | **$0.089** for the whole run on Claude Haiku 5.5, from the API's token counts |
+| Time | median **41 s** per case |
+| Source check | 7 claims sent back for a rewrite, 0 cut in code |
+
+How it was kept honest:
+
+- A separate agent wrote the cases, the right action and a one-line reason for each, from the dispute side only. It did not see the agent prompt, the checklist, the economics code or the first eval set.
+- The labels were committed before the first run. This is the first and only score: the prompt was not changed for this set.
+
+The three misses:
+
+- **HO-10, a real duplicate charge.** One order was captured twice and the shop's notes say so. The agent chose to fight at 55% odds. This is the most serious miss: it would argue against a refund the buyer is owed.
+- **HO-04, Royal Mail with no delivery scan** on an order over the signature limit. The agent made an offer at 10% odds; a full refund was the expected call, since nothing shows the parcel arrived.
+- **HO-11, a refund minus the return label**, issued within the return policy. The agent made an offer; the label expected fighting with proof of the refund. This one is closer to a judgment call.
+
+Still synthetic, still not a merchant pilot: it shows how the agent copes with untidy input, not how often real sellers win.
+
 ## Run it
 
 Requirements: Node 20+, pnpm.

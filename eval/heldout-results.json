@@ -1,0 +1,282 @@
+{
+  "summary": {
+    "model": "claude-haiku-5-5",
+    "ranAt": "2026-10-28T18:21:07.726Z",
+    "cases": 15,
+    "correct": 12,
+    "accuracy": 0.8,
+    "agentCases": 15,
+    "agentCorrect": 12,
+    "agentAccuracy": 0.8,
+    "quickCalls": 0,
+    "errors": 0,
+    "totalCostUsd": 0.0889,
+    "medianAgentSeconds": 41,
+    "manualMinutesEstimate": 45,
+    "reviewMinutesEstimate": 6,
+    "claimsSentBack": 7,
+    "claimsRemoved": 0,
+    "oddsLowered": 0,
+    "changedMind": 6
+  },
+  "rows": [
+    {
+      "id": "HO-01",
+      "title": "Swiss Post delivered, signed, German buyer says nothing arrived",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 27.749099708000003,
+      "cost": 0.003815045,
+      "winProbability": 0.8,
+      "modelEstimate": 0.8,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-02",
+      "title": "Deutsche Post number with no scans after 13 days to Germany",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 49.7459335,
+      "cost": 0.007398055000000001,
+      "winProbability": 0.2,
+      "modelEstimate": 0.2,
+      "removed": 0,
+      "sentBack": 1,
+      "changedMind": true
+    },
+    {
+      "id": "HO-03",
+      "title": "Shop record number has a typo, PayPal tracker shows La Poste delivered",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 40.832776458,
+      "cost": 0.00604433,
+      "winProbability": 0.45,
+      "modelEstimate": 0.45,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-04",
+      "title": "Royal Mail, only 'SHIPPED', over signature threshold, no signature",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "OFFER",
+      "correct": false,
+      "route": "agent",
+      "seconds": 40.812487875,
+      "cost": 0.005600475,
+      "winProbability": 0.1,
+      "modelEstimate": 0.1,
+      "removed": 0,
+      "sentBack": 1,
+      "changedMind": false
+    },
+    {
+      "id": "HO-05",
+      "title": "Record says 'delivered' without date or number, Italian chargeback",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 36.713820875,
+      "cost": 0.00469134,
+      "winProbability": 0.1,
+      "modelEstimate": 0.1,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": true
+    },
+    {
+      "id": "HO-06",
+      "title": "German buyer says lamp colour is different, delivered per DHL",
+      "expected": [
+        "OFFER"
+      ],
+      "got": "OFFER",
+      "correct": true,
+      "route": "agent",
+      "seconds": 41.486309250000005,
+      "cost": 0.00469523,
+      "winProbability": 0.3,
+      "modelEstimate": 0.3,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-07",
+      "title": "Unauthorised chargeback, signed delivery to the order address, repeat buyer",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 37.12066554100001,
+      "cost": 0.006020429999999999,
+      "winProbability": 0.7,
+      "modelEstimate": 0.7,
+      "removed": 0,
+      "sentBack": 3,
+      "changedMind": false
+    },
+    {
+      "id": "HO-08",
+      "title": "Unauthorised claim, parcel went to an address that is not the PayPal one",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "ACCEPT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 51.370962417,
+      "cost": 0.006814344999999999,
+      "winProbability": 0.15,
+      "modelEstimate": 0.15,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": true
+    },
+    {
+      "id": "HO-09",
+      "title": "'Duplicate' claim, but the second charge is a separate order with its own shipment",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 44.015659457999995,
+      "cost": 0.006568045,
+      "winProbability": 0.6,
+      "modelEstimate": 0.6,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-10",
+      "title": "Genuine duplicate: one order captured twice, second never refunded",
+      "expected": [
+        "ACCEPT"
+      ],
+      "got": "FIGHT",
+      "correct": false,
+      "route": "agent",
+      "seconds": 46.37527225000001,
+      "cost": 0.006556344999999999,
+      "winProbability": 0.55,
+      "modelEstimate": 0.55,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": true
+    },
+    {
+      "id": "HO-11",
+      "title": "Italian buyer returned item, got refund net of return label, disputes the difference",
+      "expected": [
+        "FIGHT"
+      ],
+      "got": "OFFER",
+      "correct": false,
+      "route": "agent",
+      "seconds": 38.896092291999985,
+      "cost": 0.005326915,
+      "winProbability": 0.6,
+      "modelEstimate": 0.6,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-12",
+      "title": "Cracked lampshade corner, small refund already paid, buyer wants all of it back and keeps the item",
+      "expected": [
+        "OFFER"
+      ],
+      "got": "OFFER",
+      "correct": true,
+      "route": "agent",
+      "seconds": 36.99996316700001,
+      "cost": 0.0056207,
+      "winProbability": 0.2,
+      "modelEstimate": 0.2,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-13",
+      "title": "High value, delivery scan only, no signature although shop policy requires it",
+      "expected": [
+        "FIGHT",
+        "ACCEPT"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 41.578708125000006,
+      "cost": 0.006653995000000001,
+      "winProbability": 0.5,
+      "modelEstimate": 0.5,
+      "removed": 0,
+      "sentBack": 1,
+      "changedMind": true
+    },
+    {
+      "id": "HO-14",
+      "title": "Delivered scan shows a different postcode than the address on the order",
+      "expected": [
+        "OFFER",
+        "ACCEPT"
+      ],
+      "got": "OFFER",
+      "correct": true,
+      "route": "agent",
+      "seconds": 31.882369166999997,
+      "cost": 0.0048089149999999995,
+      "winProbability": 0.15,
+      "modelEstimate": 0.15,
+      "removed": 0,
+      "sentBack": 0,
+      "changedMind": false
+    },
+    {
+      "id": "HO-15",
+      "title": "Poste Italiane parcel still in transit 6 days after dispatch, impatient buyer",
+      "expected": [
+        "FIGHT",
+        "OFFER"
+      ],
+      "got": "FIGHT",
+      "correct": true,
+      "route": "agent",
+      "seconds": 52.72602058399998,
+      "cost": 0.008260720000000001,
+      "winProbability": 0.3,
+      "modelEstimate": 0.3,
+      "removed": 0,
+      "sentBack": 1,
+      "changedMind": true
+    }
+  ]
+}
