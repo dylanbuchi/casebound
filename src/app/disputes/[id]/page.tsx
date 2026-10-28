@@ -72,6 +72,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           sent={history.some((h) => h.ok && h.at > analysis!.createdAt)}
           warning={conflicts.length > 0 ? "Some evidence conflicts. Open “The evidence disagrees” and check it before approving." : undefined}
           unlocked={unlocked}
+          simulated={isPractice(id)}
           steps={steps}
           evidenceNotes={a.evidence_notes}
           buyerMessage={a.buyer_message}
@@ -82,7 +83,9 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
 
       {history.length > 0 && (
         <section aria-label="Receipts" className="rounded-lg border-2 border-accept/60 bg-card p-5">
-          <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Receipts: what was sent to PayPal</h2>
+          <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+            {isPractice(id) ? "What would be sent to PayPal (simulated)" : "Receipts: what was sent to PayPal"}
+          </h2>
           <ul className="space-y-3">
             {history.map((h, i) => (
               <li key={i}>

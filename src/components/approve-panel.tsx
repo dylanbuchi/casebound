@@ -11,6 +11,8 @@ export function ApprovePanel(props: {
   sent?: boolean;
   warning?: string;
   unlocked: boolean;
+  // Practice case: the send is simulated in the app and nothing reaches PayPal.
+  simulated?: boolean;
   steps: PlannedStep[];
   evidenceNotes: string;
   buyerMessage: string;
@@ -64,7 +66,7 @@ export function ApprovePanel(props: {
         ) : props.sent || state?.ok ? (
           <span role="status" className="flex items-center gap-3">
             <span className="stamp stamp-in text-base text-accept">Sent</span>
-            <span className="text-sm font-medium text-accept">PayPal has it. The receipt is below.</span>
+            <span className="text-sm font-medium text-accept">{props.simulated ? "Simulated: nothing reached PayPal. The receipt is below." : "PayPal has it. The receipt is below."}</span>
           </span>
         ) : (
           <button
@@ -73,10 +75,14 @@ export function ApprovePanel(props: {
             className="btn btn-ink px-6 py-3 text-base"
           >
             {pending && <span className="spinner" aria-hidden />}
-            {pending ? "Sending to PayPal…" : props.actionable ? "Approve and send" : "Already handled"}
+            {pending ? (props.simulated ? "Simulating…" : "Sending to PayPal…") : props.actionable ? "Approve and send" : "Already handled"}
           </button>
         )}
-        <span className="text-xs text-ink-3">Sent through the PayPal Disputes API. Every call is kept as a receipt.</span>
+        <span className="text-xs text-ink-3">
+          {props.simulated
+            ? "Practice case: the send is simulated and nothing goes to PayPal. A receipt is still kept."
+            : "Sent through the PayPal Disputes API. Every call is kept as a receipt."}
+        </span>
       </div>
 
       {state &&
