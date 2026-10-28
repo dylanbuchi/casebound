@@ -34,7 +34,8 @@ describe("evidenceChecklist", () => {
     const items = evidenceChecklist({ dispute: dispute("MERCHANDISE_OR_SERVICE_NOT_RECEIVED"), trackers: [], record, history: null, signatureThreshold: 150 });
     expect(status(items, "Signature on delivery")).toBe("missing");
     expect(status(items, "Tracking on the PayPal transaction")).toBe("weak");
-    expect(status(items, "Carrier shows delivered")).toBe("have");
+    // A shop "delivered" date without a carrier DELIVERED scan is not carrier proof.
+    expect(status(items, "Delivery confirmed by the carrier")).toBe("weak");
   });
 
   it("treats signature as optional below the threshold", () => {
@@ -50,5 +51,32 @@ describe("evidenceChecklist", () => {
   it("warns that digital goods lack Seller Protection", () => {
     const items = evidenceChecklist({ dispute: dispute("MERCHANDISE_OR_SERVICE_NOT_RECEIVED", "20.00", "Digital pattern download"), trackers: [], record, history: null, signatureThreshold: 150 });
     expect(items.map((i) => i.label)).toContain("Seller Protection");
+  });
+});
+
+describe("evidence conflicts", () => {
+  it("flags a shop delivery date that PayPal tracking contradicts", () => {
+    const items = evidenceChecklist({
+      dispute: dispute("MERCHANDISE_OR_SERVICE_NOT_RECEIVED"),
+      trackers: [{ tracking_number: "9400", status: "SHIPPED" }],
+      record: { ...record, signedBy: "J DOE" },
+      history: null,
+      signatureThreshold: 150,
+    });
+    const delivered = items.find((i) => i.label === "Delivery confirmed by the carrier");
+    expect(delivered).toMatchObject({ status: "weak", source: "Shop record", conflict: true });
+    expect(status(items, "Signature on delivery")).toBe("weak");
+  });
+
+  it("trusts a carrier DELIVERED scan", () => {
+    const items = evidenceChecklist({
+      dispute: dispute("MERCHANDISE_OR_SERVICE_NOT_RECEIVED"),
+      trackers: [{ tracking_number: "9400", status: "DELIVERED" }],
+      record: { ...record, signedBy: "J DOE" },
+      history: null,
+      signatureThreshold: 150,
+    });
+    expect(items.find((i) => i.label === "Delivery confirmed by the carrier")).toMatchObject({ status: "have", source: "PayPal" });
+    expect(status(items, "Signature on delivery")).toBe("have");
   });
 });

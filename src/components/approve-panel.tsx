@@ -9,6 +9,7 @@ export function ApprovePanel(props: {
   disputeId: string;
   actionable: boolean;
   sent?: boolean;
+  warning?: string;
   unlocked: boolean;
   steps: PlannedStep[];
   evidenceNotes: string;
@@ -31,6 +32,9 @@ export function ApprovePanel(props: {
       <p className="mb-4 text-sm text-ink-2">Edit the wording, check the exact request, then approve. Nothing goes out before you click.</p>
       <input type="hidden" name="disputeId" value={props.disputeId} />
 
+      {props.warning && (
+        <p className="mb-4 rounded-md border border-fight bg-paper p-3 text-sm font-medium text-fight">{props.warning}</p>
+      )}
       {props.steps.length === 0 ? (
         <p className="mb-4 rounded-md border border-rule bg-paper p-3 text-sm text-ink-2">
           PayPal is not accepting this kind of response on the dispute right now.

@@ -6,7 +6,7 @@ import { QuickAccept } from "@/components/quick-accept";
 import { VerdictCard } from "@/components/verdict-card";
 import { checklistFor, quickCallFor } from "@/lib/case";
 import { allowedActions } from "@/lib/dispute-state";
-import type { CheckItem } from "@/lib/checklist";
+import { conflictsIn, type CheckItem } from "@/lib/checklist";
 import { isUnlocked } from "@/lib/auth";
 import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, windowUsed } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
@@ -44,6 +44,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
 
   const checklist = await checklistFor(src, dispute, trackers, fulfillment);
   const quickCall = quickCallFor(dispute);
+  const conflicts = conflictsIn(checklist);
   const tx = dispute.disputed_transactions?.[0];
   const due = daysUntil(dispute.seller_response_due_date);
   const allowed = allowedActions(dispute);
@@ -115,6 +116,19 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           </div>
         </section>
       ) : null}
+
+      {conflicts.length > 0 && (
+        <section role="alert" className="rise rounded-lg border-2 border-fight bg-card p-5">
+          <p className="font-semibold text-fight">The evidence disagrees. Verify before you send.</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-2">
+            {conflicts.map((c) => (
+              <li key={c.label}>
+                <span className="font-medium text-ink">{c.label}:</span> {c.detail}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
         {/* Case file: everything the agent can see */}
@@ -291,6 +305,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
               disputeId={id}
               actionable={actionable}
               sent={history.some((h) => h.ok && h.at > analysis!.createdAt)}
+              warning={conflicts.length > 0 ? "Some evidence conflicts (see the red box above). Check it before approving." : undefined}
               unlocked={unlocked}
               steps={steps}
               evidenceNotes={a.evidence_notes}
@@ -375,7 +390,9 @@ function Check({ item }: { item: CheckItem }) {
         {mark}
       </span>
       <span>
-        <span className="font-medium">{item.label}</span> <span className="text-ink-2">· {item.detail}</span>
+        <span className="font-medium">{item.label}</span>{" "}
+        <span className="rounded border border-rule px-1 py-px font-mono text-[10px] uppercase tracking-wider text-ink-3">{item.source}</span>
+        <span className="block text-ink-2">{item.detail}</span>
       </span>
     </li>
   );
