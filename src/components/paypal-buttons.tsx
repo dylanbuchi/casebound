@@ -88,9 +88,11 @@ export function PayPalButtons({ clientId, sku }: { clientId: string; sku: string
 
   return (
     <div>
-      <div ref={ref} className="min-h-[45px]" />
+      {!ready && !msg && <div className="skeleton h-[45px] w-full" role="status" aria-label="Loading PayPal checkout" />}
+      <div ref={ref} className={ready ? "min-h-[45px]" : ""} />
       {msg && (
-        <p role="status" className={`mt-2 text-sm ${msg.ok === null ? "text-offer" : msg.ok ? "text-accept font-medium" : "text-fight"}`}>
+        <p role="status" className={`mt-2 flex items-center gap-2 text-sm ${msg.ok === null ? "text-offer" : msg.ok ? "font-medium text-accept" : "text-fight"}`}>
+          {msg.ok === null && <span className="spinner" aria-hidden />}
           {msg.text}
         </p>
       )}

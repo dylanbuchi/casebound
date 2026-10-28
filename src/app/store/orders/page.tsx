@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StageButtons } from "@/components/stage-buttons";
+import { EmptyState } from "@/components/states";
 import { isUnlocked } from "@/lib/auth";
 import { fmtDate } from "@/lib/format";
 import { listFulfillment } from "@/lib/fulfillment";
@@ -11,8 +12,8 @@ export default async function StoreOrders() {
   const sorted = [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return (
     <div className="space-y-6">
-      <Link href="/store" className="text-sm text-ink-2 hover:underline">
-        ← Store
+      <Link href="/store" className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.18em] text-ink-3 hover:text-ink">
+        <span aria-hidden>←</span> Store
       </Link>
       <h1 className="font-display text-4xl font-semibold">Seller order tools</h1>
       <p className="max-w-2xl text-ink-2">
@@ -21,14 +22,20 @@ export default async function StoreOrders() {
       </p>
       {!unlocked && (
         <p className="text-sm">
-          <Link href="/unlock" className="underline">
+          <Link href="/unlock" className="font-medium underline">
             Unlock
           </Link>{" "}
           to use these tools.
         </p>
       )}
       {sorted.length === 0 ? (
-        <p className="text-ink-3">No orders yet.</p>
+        <EmptyState mark="No orders" title="No orders yet.">
+          Buy something in the{" "}
+          <Link href="/store" className="underline">
+            demo store
+          </Link>{" "}
+          with a PayPal sandbox buyer account and it shows up here.
+        </EmptyState>
       ) : (
         <ul className="space-y-3">
           {sorted.map((o) => (

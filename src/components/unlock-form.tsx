@@ -12,7 +12,7 @@ export function UnlockForm() {
   }, [state, router]);
 
   return (
-    <form action={action} className="space-y-3">
+    <form action={action} className="space-y-4">
       <label className="block">
         <span className="text-sm font-medium">Passcode</span>
         <input
@@ -20,14 +20,15 @@ export function UnlockForm() {
           type="password"
           required
           autoComplete="off"
-          className="mt-1 w-full rounded border border-rule bg-card p-2.5"
+          className="field mt-1.5 font-mono tracking-widest"
         />
       </label>
-      <button type="submit" disabled={pending} className="rounded-md bg-ink px-5 py-2.5 font-medium text-paper disabled:opacity-60">
-        {pending ? "Checking…" : "Unlock"}
+      <button type="submit" disabled={pending} className="btn btn-ink w-full">
+        {pending && <span className="spinner" aria-hidden />}
+        {pending ? "Checking…" : state?.ok ? "Unlocked ✓" : "Unlock"}
       </button>
       {state && !state.ok && (
-        <p role="alert" className="text-sm text-fight">
+        <p role="alert" className="rise rounded-md border border-fight/50 bg-paper px-3 py-2 text-sm text-fight">
           {state.message}
         </p>
       )}

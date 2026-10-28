@@ -21,7 +21,7 @@ export function StageButtons({ orderId }: { orderId: string }) {
             <input type="hidden" name="orderId" value={orderId} />
             <input type="hidden" name="step" value={s.step} />
             {"carrier" in s && <input type="hidden" name="carrier" value={s.carrier} />}
-            <button type="submit" disabled={pending} className="rounded border border-ink px-3 py-1 text-xs hover:bg-paper-2 disabled:opacity-50">
+            <button type="submit" disabled={pending} className="btn btn-line btn-sm">
               {s.label}
             </button>
           </form>
@@ -30,12 +30,13 @@ export function StageButtons({ orderId }: { orderId: string }) {
       <form action={action} className="flex gap-2">
         <input type="hidden" name="orderId" value={orderId} />
         <input type="hidden" name="step" value="note" />
-        <input name="note" maxLength={300} placeholder="Add a staff note" aria-label="Staff note" className="flex-1 rounded border border-rule bg-paper px-2 py-1 text-xs" />
-        <button type="submit" disabled={pending} className="rounded border border-ink px-3 py-1 text-xs disabled:opacity-50">
+        <input name="note" maxLength={300} placeholder="Add a staff note" aria-label="Staff note" className="field min-w-0 flex-1 px-2.5 py-1.5 text-sm" />
+        <button type="submit" disabled={pending} className="btn btn-line btn-sm">
           Add
         </button>
       </form>
-      {state && <p className={`text-xs ${state.ok ? "text-accept" : "text-fight"}`}>{state.message}</p>}
+      {pending && <p role="status" className="flex items-center gap-2 text-xs text-ink-3"><span className="spinner" aria-hidden />Saving…</p>}
+      {state && !pending && <p role="status" className={`text-xs ${state.ok ? "text-accept" : "text-fight"}`}>{state.ok ? "✓ " : ""}{state.message}</p>}
     </div>
   );
 }

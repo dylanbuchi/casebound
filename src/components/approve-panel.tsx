@@ -59,7 +59,7 @@ export function ApprovePanel(props: {
             onChange={(e) => setEvidenceNotes(e.target.value)}
             maxLength={2000}
             rows={7}
-            className="mt-1 w-full rounded border border-rule bg-paper p-3 text-sm leading-relaxed"
+            className="field mt-1.5 text-sm"
           />
         </label>
       ) : (
@@ -67,7 +67,7 @@ export function ApprovePanel(props: {
       )}
 
       {showMessage ? (
-      <label className="mt-3 block">
+        <label className="mt-4 block">
           <span className="text-sm font-medium">Message to the buyer</span>
           <textarea
             name="buyerMessage"
@@ -75,7 +75,7 @@ export function ApprovePanel(props: {
             onChange={(e) => setBuyerMessage(e.target.value)}
             maxLength={2000}
             rows={4}
-            className="mt-1 w-full rounded border border-rule bg-paper p-3 text-sm leading-relaxed"
+            className="field mt-1.5 text-sm"
           />
         </label>
       ) : (
@@ -83,7 +83,7 @@ export function ApprovePanel(props: {
       )}
 
       <details open className="mt-4 rounded-md border border-rule bg-paper">
-        <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
+        <summary className="px-3 py-2.5 text-sm font-medium">
           Exact PayPal request{previews.length > 1 ? "s" : ""} ({previews.length})
         </summary>
         <div className="space-y-3 px-3 pb-3">
@@ -104,26 +104,35 @@ export function ApprovePanel(props: {
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {!props.unlocked ? (
-          <Link href="/unlock" className="text-sm underline">
+          <Link href="/unlock" className="btn btn-line">
             Unlock to send
           </Link>
         ) : (
           <button
             type="submit"
             disabled={pending || props.sent || !props.actionable || props.steps.length === 0 || state?.ok === true}
-            className="rounded-md bg-ink px-6 py-3 text-base font-semibold text-paper transition hover:bg-ink-2 disabled:opacity-50"
+            className="btn btn-ink px-6 py-3 text-base"
           >
+            {pending && <span className="spinner" aria-hidden />}
             {pending ? "Sending to PayPal…" : props.sent || state?.ok ? "Sent ✓" : props.actionable ? "Approve and send" : "Already handled"}
           </button>
         )}
         <span className="text-xs text-ink-3">Sent through the PayPal Disputes API. Every call is kept as a receipt.</span>
       </div>
 
-      {state && (
-        <p role="status" className={`mt-3 text-sm ${state.ok ? "text-accept" : "text-fight"}`}>
-          {state.message}
-        </p>
-      )}
+      {state &&
+        (state.ok ? (
+          <div role="status" className="rise mt-4 flex items-center gap-4 rounded-md border border-accept/50 bg-paper px-4 py-3">
+            <span className="stamp stamp-in text-sm text-accept" aria-hidden>
+              Sent
+            </span>
+            <p className="text-sm text-ink-2">{state.message} The receipt is below.</p>
+          </div>
+        ) : (
+          <p role="alert" className="rise mt-4 rounded-md border border-fight/50 bg-paper px-3 py-2 text-sm text-fight">
+            {state.message}
+          </p>
+        ))}
     </form>
   );
 }

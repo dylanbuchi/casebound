@@ -119,7 +119,7 @@ export function DisputeQueue({ rows }: { rows: QueueRow[] }) {
         rowData={rows}
         domLayout="autoHeight"
         columnDefs={columns}
-        defaultColDef={{ sortable: true, resizable: true, filter: true }}
+        defaultColDef={{ sortable: true, resizable: true, suppressMovable: true }}
         getRowId={(p) => p.data.id}
         onRowClicked={(e) => e.data && router.push(`/disputes/${encodeURIComponent(e.data.id)}`)}
         onCellKeyDown={(e) => {

@@ -63,8 +63,8 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
 
   return (
     <div className="space-y-8">
-      <Link href="/" className="text-sm text-ink-2 hover:underline">
-        ← Inbox
+      <Link href="/" className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.18em] text-ink-3 hover:text-ink">
+        <span aria-hidden>←</span> Inbox
       </Link>
 
       <header className="rise border-b border-rule pb-6">
@@ -126,7 +126,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
             {unlocked ? (
               <QuickAccept disputeId={id} label={`Accept and refund ${fmtMoney(dispute.dispute_amount)}`} />
             ) : (
-              <Link href="/unlock" className="text-sm underline">
+              <Link href="/unlock" className="btn btn-line">
                 Unlock to accept
               </Link>
             )}

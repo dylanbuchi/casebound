@@ -16,7 +16,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
 
   if (!unlocked) {
     return (
-      <Link href="/unlock" className="text-sm underline">
+      <Link href="/unlock" className={again ? "text-sm underline" : "btn btn-line"}>
         Unlock to run the analysis
       </Link>
     );
@@ -61,7 +61,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
 
   if (again && finished && !running) {
     return (
-      <span role="status" className="font-medium text-accept">
+      <span role="status" className="rise font-medium text-accept">
         Fresh analysis ✓ just now
       </span>
     );
@@ -69,7 +69,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
 
   if (again && !running && steps.length === 0) {
     return (
-      <button type="button" onClick={run} className="underline hover:text-ink">
+      <button type="button" onClick={run} className="btn btn-line btn-sm">
         Re-analyze
       </button>
     );
@@ -78,30 +78,40 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
   return (
     <div className="space-y-3">
       {!again && (
-        <button
-          type="button"
-          onClick={run}
-          disabled={running}
-          className="rounded-md bg-ink px-5 py-2.5 font-medium text-paper transition hover:bg-ink-2 disabled:opacity-60"
-        >
-          {running ? "Investigating…" : "Investigate this dispute"}
+        <button type="button" onClick={run} disabled={running} className="btn btn-ink px-6 py-3 text-base">
+          {running && <span className="spinner" aria-hidden />}
+          {running ? "Investigating…" : error ? "Try the investigation again" : "Investigate this dispute"}
         </button>
       )}
-      {steps.length > 0 && (
-        <ol className="space-y-1.5 font-mono text-sm" aria-live="polite">
-          {steps.map((s, i) => (
-            <li key={i} className="rise flex items-center gap-2">
-              <span className={i === steps.length - 1 && running ? "animate-pulse text-offer" : "text-accept"}>
-                {i === steps.length - 1 && running ? "●" : "✓"}
-              </span>
-              {s.label}
-            </li>
-          ))}
-        </ol>
+      {(running || steps.length > 0) && (
+        <div className="rounded-md border border-rule bg-paper px-4 py-3">
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+            {running ? "The agent is working the case" : finished ? "Investigation done" : "Investigation stopped"}
+          </p>
+          <ol className="space-y-1.5 font-mono text-sm" aria-live="polite">
+            {steps.map((s, i) => {
+              const live = i === steps.length - 1 && running;
+              return (
+                <li key={i} className="rise flex items-center gap-2.5">
+                  <span className={`flex h-4 w-4 shrink-0 items-center justify-center ${live ? "text-offer" : "text-accept"}`} aria-hidden>
+                    {live ? <span className="spinner" /> : "✓"}
+                  </span>
+                  {s.label}
+                </li>
+              );
+            })}
+            {running && steps.length === 0 && (
+              <li className="flex items-center gap-2.5 text-ink-3">
+                <span className="spinner" aria-hidden />
+                Reading the dispute
+              </li>
+            )}
+          </ol>
+        </div>
       )}
       {error && (
-        <p role="alert" className="text-sm text-fight">
-          {error}
+        <p role="alert" className="rise rounded-md border border-fight/50 bg-paper px-3 py-2 text-sm text-fight">
+          <strong>The investigation stopped.</strong> {error} Nothing was sent to PayPal.
         </p>
       )}
     </div>

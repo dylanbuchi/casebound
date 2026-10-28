@@ -3,12 +3,21 @@ import { PRODUCT } from "@/lib/brand";
 
 export default function Unlock() {
   return (
-    <div className="mx-auto max-w-sm space-y-4 py-10">
-      <h1 className="font-display text-3xl font-semibold">Unlock {PRODUCT}</h1>
-      <p className="text-sm text-ink-2">
-        Running analyses and sending responses needs the passcode. Judges: it is in the testing instructions.
-      </p>
-      <UnlockForm />
+    <div className="rise mx-auto max-w-md py-6 sm:py-12">
+      <div className="relative rounded-xl border-2 border-ink bg-card p-6 sm:p-8">
+        <span className="stamp absolute -top-4 right-5 bg-card text-sm text-fight" aria-hidden>
+          Sealed
+        </span>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Passcode required</p>
+        <h1 className="mt-1 font-display text-3xl font-semibold">Unlock {PRODUCT}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-2">
+          Reading cases is open. Running an analysis and sending responses to PayPal need the passcode. Judges: it is in the
+          testing instructions.
+        </p>
+        <div className="mt-6">
+          <UnlockForm />
+        </div>
+      </div>
     </div>
   );
 }

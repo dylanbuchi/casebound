@@ -9,6 +9,7 @@ import { getAnalyses, getAudit } from "@/lib/records";
 import { isUnlocked, passcodeRequired } from "@/lib/auth";
 import { isPractice, source } from "@/lib/source";
 import { PRODUCT } from "@/lib/brand";
+import { EmptyState, ErrorNotice } from "@/components/states";
 
 export const dynamic = "force-dynamic";
 
@@ -66,12 +67,12 @@ export default async function Inbox() {
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {next && (
-            <Link href={`/disputes/${encodeURIComponent(next.id)}`} className="rounded-md bg-ink px-5 py-3 font-semibold text-paper hover:bg-ink-2">
+            <Link href={`/disputes/${encodeURIComponent(next.id)}`} className="btn btn-ink px-6 py-3">
               Open the next case →
             </Link>
           )}
           {passcodeRequired() && !unlocked && (
-            <Link href="/unlock" className="rounded-md border-2 border-ink px-5 py-2.5 font-semibold hover:bg-paper-2">
+            <Link href="/unlock" className="btn btn-line px-6 py-3">
               Unlock to analyze and send
             </Link>
           )}
@@ -84,9 +85,9 @@ export default async function Inbox() {
       </section>
 
       {error && (
-        <p role="alert" className="rounded border border-fight bg-card p-4 text-fight">
-          PayPal error: {error}
-        </p>
+        <ErrorNotice title="PayPal did not answer, so the live disputes are missing.">
+          {error}. Practice cases still work. Reload in a minute to try again.
+        </ErrorNotice>
       )}
 
       <section className="grid gap-px overflow-hidden rounded-lg border border-rule bg-rule sm:grid-cols-4" aria-label="Summary">
@@ -97,7 +98,16 @@ export default async function Inbox() {
       </section>
 
       <section aria-label="Dispute queue">
-        <div className="hidden sm:block">
+        {rows.length === 0 && (
+          <EmptyState mark="Clear" title="Your inbox is empty.">
+            When a buyer opens a PayPal dispute, it shows up here with a deadline and a recommendation. Try it from the{" "}
+            <Link href="/store" className="underline">
+              demo store
+            </Link>
+            .
+          </EmptyState>
+        )}
+        <div className={rows.length === 0 ? "hidden" : "hidden sm:block"}>
           <DisputeQueue rows={rows} />
         </div>
         {/* Phones get one card per case instead of a wide table. */}
@@ -106,7 +116,7 @@ export default async function Inbox() {
             .sort((x, y) => Number(y.needsResponse) - Number(x.needsResponse) || (x.dueInDays ?? 99) - (y.dueInDays ?? 99))
             .map((r) => (
               <li key={r.id}>
-                <Link href={`/disputes/${encodeURIComponent(r.id)}`} className="block rounded-lg border border-rule bg-card p-4 active:bg-paper-2">
+                <Link href={`/disputes/${encodeURIComponent(r.id)}`} className="block rounded-lg border border-rule bg-card p-4 transition-colors active:bg-paper-2">
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-medium">
                       {r.reason}
