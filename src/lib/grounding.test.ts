@@ -60,7 +60,14 @@ describe("problemWith", () => {
     expect(problemWith("Refund RF9999999999 was issued.", withRefund)).toMatch(/not in PayPal/);
   });
 
+  it("still checks a claim when the hedge word comes after it", () => {
+    expect(problemWith("The carrier confirmed delivery and signature, if you check tracking.", shopOnly)).toMatch(/shop record, not the carrier/);
+    expect(problemWith("UPS shows it was delivered, whether or not the buyer agrees.", shopOnly)).toMatch(/IN_TRANSIT/);
+    expect(problemWith("The buyer claims it never arrived, but UPS tracking shows delivered.", shopOnly)).toMatch(/IN_TRANSIT/);
+  });
+
   it("leaves hedged or negated sentences alone", () => {
+    expect(problemWith("If UPS had confirmed delivery, we would fight.", shopOnly)).toBeNull();
     expect(problemWith("The carrier has not confirmed delivery yet.", shopOnly)).toBeNull();
     expect(problemWith("Please verify the signature with UPS before sending.", shopOnly)).toBeNull();
     expect(problemWith("The buyer claims it was never delivered.", shopOnly)).toBeNull();

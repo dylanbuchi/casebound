@@ -11,12 +11,23 @@ export type Unsupported = { where: string; text: string; reason: string };
 
 const CARRIER = /\b(carrier|usps|ups|fedex|dhl|royal mail|tracking|tracker)\b|\bpaypal (?:shows|confirms|tracking)\b/i;
 const SHOP = /\b(our|shop|store)(?:'s)? (?:own )?(?:fulfillment |shipping )?(?:record|records|log|notes)\b/i;
-const DELIVERED = /\b(delivered|delivery (?:was |is )?confirmed|confirm(?:s|ed) delivery|delivery scan|proof of delivery)\b/i;
-const SIGNED = /\b(signed|signature)\b/i;
+const DELIVERED = /\b(delivered|delivery (?:was |is )?confirmed|confirm(?:s|ed) delivery|delivery scan|proof of delivery)\b/gi;
+const SIGNED = /\b(signed|signature)\b/gi;
 const HEDGED =
   /\b(not|never|without|unverified|unconfirmed|pending|yet to|isn't|hasn't|doesn't|wasn't|didn't|cannot|can't|unable|claims?|claimed|alleges?|whether|if|verify)\b|\bno (?:delivery|signature|scan|tracking|record|confirmation|proof)\b/i;
 
 const norm = (s: string) => s.replace(/\s+/g, "").toUpperCase();
+
+// True when the sentence states the claim outright: some mention of it has no negation or hedge
+// earlier in its own clause. "Not delivered" and "if it was delivered" are skipped;
+// "Delivered and signed, if you check tracking" is still a claim.
+function asserts(sentence: string, claim: RegExp) {
+  return [...sentence.matchAll(claim)].some((m) => {
+    const before = sentence.slice(0, m.index);
+    const clauseStart = Math.max(...[...before.matchAll(/[,;:()]|\b(?:but|although|though|while|whereas)\b/gi)].map((b) => b.index + b[0].length), 0);
+    return !HEDGED.test(before.slice(clauseStart));
+  });
+}
 const sentences = (s: string) => s.split(/(?<=[.!?])\s+/).filter((x) => x.trim());
 
 function knownNumbers({ trackers, record, ids = [] }: Facts) {
@@ -43,15 +54,14 @@ export function problemWith(sentence: string, facts: Facts, opts: { carrierSourc
   // A digit run inside a known ID (such as the number in PP-D-123456789012) is that ID, not a new one.
   const unknown = numbers.find((n) => !known.has(n) && ![...known].some((k) => k.includes(n)));
   if (unknown) return `Reference number ${unknown} is not in PayPal or the shop record`;
-  if (HEDGED.test(sentence)) return null;
 
   const carrierDelivered = facts.trackers.some((t) => t.status === "DELIVERED");
   const toCarrier = opts.carrierSource || (CARRIER.test(sentence) && !SHOP.test(sentence));
-  if (SIGNED.test(sentence)) {
+  if (asserts(sentence, SIGNED)) {
     if (!facts.record?.signedBy) return "No signature is on file";
     if (toCarrier) return "The signature comes from the shop record, not the carrier";
   }
-  if (DELIVERED.test(sentence)) {
+  if (asserts(sentence, DELIVERED)) {
     if (toCarrier && !carrierDelivered) {
       const status = facts.trackers.find((t) => t.status)?.status;
       return `PayPal tracking ${status ? `shows ${status}` : "has no delivery scan"}, so the carrier has not confirmed delivery`;
