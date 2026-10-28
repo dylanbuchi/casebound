@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DisputeQueue, type QueueRow } from "@/components/dispute-queue";
 import { quickCallFor } from "@/lib/case";
 import { needsSellerResponse } from "@/lib/dispute-state";
@@ -5,10 +6,13 @@ import { isLive } from "@/lib/env";
 import { daysUntil, fmtUsd, reasonLabel, statusLabel } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
 import { getAnalyses, getAudit } from "@/lib/records";
+import { isUnlocked, passcodeRequired } from "@/lib/auth";
 import { isPractice, source } from "@/lib/source";
 import { PRODUCT } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
+
+const verdictBg = { FIGHT: "bg-fight", ACCEPT: "bg-accept", OFFER: "bg-offer" } as const;
 
 export default async function Inbox() {
   const src = source();
@@ -18,7 +22,7 @@ export default async function Inbox() {
   );
   const disputes = listed.items;
   const error = listed.error;
-  const [analyses, audit] = await Promise.all([getAnalyses(), getAudit()]);
+  const [analyses, audit, unlocked] = await Promise.all([getAnalyses(), getAudit(), isUnlocked()]);
 
   const rows: QueueRow[] = disputes.map((d) => {
     const a = analyses[d.dispute_id];
@@ -40,6 +44,7 @@ export default async function Inbox() {
   });
 
   const open = rows.filter((r) => r.needsResponse);
+  const next = [...open].sort((x, y) => (x.dueInDays ?? 99) - (y.dueInDays ?? 99))[0] ?? rows[0];
   const atRisk = open.reduce((s, r) => s + r.amount, 0);
   const analyzedCount = rows.filter((r) => r.verdict).length;
   const hoursSaved = (analyzedCount * (merchant.minutesWithoutDraft - merchant.minutesWithDraft)) / 60;
@@ -59,6 +64,18 @@ export default async function Inbox() {
           {PRODUCT} reads each PayPal dispute, checks tracking and your shop records, works out whether fighting is
           worth it, and drafts the reply. Nothing is sent until you approve it.
         </p>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {next && (
+            <Link href={`/disputes/${encodeURIComponent(next.id)}`} className="rounded-md bg-ink px-5 py-3 font-semibold text-paper hover:bg-ink-2">
+              Open the next case →
+            </Link>
+          )}
+          {passcodeRequired() && !unlocked && (
+            <Link href="/unlock" className="rounded-md border-2 border-ink px-5 py-2.5 font-semibold hover:bg-paper-2">
+              Unlock to analyze and send
+            </Link>
+          )}
+        </div>
         <ul className="mt-4 flex flex-wrap gap-2 text-sm" aria-label="How it works">
           <li className="rounded-full border border-rule bg-card px-3 py-1">Fight, accept or offer, with the math shown</li>
           <li className="rounded-full border border-rule bg-card px-3 py-1">You approve every send, with a receipt</li>
@@ -80,7 +97,40 @@ export default async function Inbox() {
       </section>
 
       <section aria-label="Dispute queue">
-        <DisputeQueue rows={rows} />
+        <div className="hidden sm:block">
+          <DisputeQueue rows={rows} />
+        </div>
+        {/* Phones get one card per case instead of a wide table. */}
+        <ul className="space-y-3 sm:hidden">
+          {[...rows]
+            .sort((x, y) => Number(y.needsResponse) - Number(x.needsResponse) || (x.dueInDays ?? 99) - (y.dueInDays ?? 99))
+            .map((r) => (
+              <li key={r.id}>
+                <Link href={`/disputes/${encodeURIComponent(r.id)}`} className="block rounded-lg border border-rule bg-card p-4 active:bg-paper-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium">
+                      {r.reason}
+                      {r.practice && <span className="ml-2 rounded-full border border-offer px-2 py-0.5 text-[11px] text-offer">Practice</span>}
+                    </p>
+                    <p className="font-mono">{fmtUsd(r.amount, r.currency)}</p>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-2">
+                    {r.verdict ? (
+                      <span className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold text-paper ${verdictBg[r.verdict]}`}>{r.verdict}</span>
+                    ) : r.quickCall && r.needsResponse ? (
+                      <span className="text-accept">Quick call: accept</span>
+                    ) : (
+                      <span className="text-ink-3">Not analyzed</span>
+                    )}
+                    <span>{r.status}</span>
+                    {r.needsResponse && r.dueInDays !== null && (
+                      <span className={r.dueInDays <= 3 ? "font-semibold text-fight" : ""}>· {r.dueInDays} days left</span>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+        </ul>
         {!isLive() && (
           <p className="mt-3 text-sm text-ink-3">
             Showing bundled demo disputes. Add PayPal sandbox credentials to work with real sandbox disputes.

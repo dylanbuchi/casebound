@@ -18,6 +18,8 @@ const shots = [
   { name: "3-send-and-receipt", path: "/disputes/PP-R-ZIV-10194962", crop: ["form[aria-label='Review and send']", "section[aria-label='Receipts']"] },
   { name: "4-offer-resolved", path: "/disputes/PP-R-GDD-10194963", fullPage: false },
   { name: "5-demo-store", path: "/store", fullPage: false },
+  { name: "6-phone-inbox", path: "/", fullPage: true, viewport: { width: 390, height: 844 } },
+  { name: "7-practice-case", path: "/disputes/PP-D-DEMO-1", fullPage: false },
 ];
 
 await mkdir(out, { recursive: true });
@@ -27,6 +29,7 @@ if (passcode) await context.addCookies([{ name: "dd_pass", value: cookie, url: b
 const page = await context.newPage();
 
 for (const s of shots) {
+  await page.setViewportSize(s.viewport ?? { width: 1440, height: 900 });
   await page.goto(base + s.path, { waitUntil: "networkidle" });
   await page.waitForTimeout(600);
   if (s.crop) {

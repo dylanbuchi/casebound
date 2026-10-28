@@ -61,6 +61,8 @@ export function DisputeQueue({ rows }: { rows: QueueRow[] }) {
         headerName: "Due",
         width: 110,
         sort: "asc",
+        // Cases with no deadline (resolved or under review) sort after the ones waiting on you.
+        comparator: (a: number | null, b: number | null) => (a ?? Number.MAX_SAFE_INTEGER) - (b ?? Number.MAX_SAFE_INTEGER),
         valueFormatter: (p) => (p.value === null ? "-" : p.value <= 0 ? "Today" : `${p.value} days`),
         cellClass: (p) => (p.data?.needsResponse && (p.value ?? 99) <= 3 ? "text-fight font-semibold" : ""),
       },

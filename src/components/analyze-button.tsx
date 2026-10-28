@@ -12,6 +12,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
   const [steps, setSteps] = useState<Step[]>([]);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [finished, setFinished] = useState(false);
 
   if (!unlocked) {
     return (
@@ -23,6 +24,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
 
   async function run() {
     setRunning(true);
+    setFinished(false);
     setError(null);
     setSteps([]);
     try {
@@ -44,7 +46,10 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
           const ev = JSON.parse(line);
           if (ev.type === "tool") setSteps((s) => [...s, { name: ev.name, label: ev.label }]);
           if (ev.type === "error") throw new Error(ev.message);
-          if (ev.type === "done") router.refresh();
+          if (ev.type === "done") {
+            setFinished(true);
+            router.refresh();
+          }
         }
       }
     } catch (e) {
@@ -52,6 +57,14 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
     } finally {
       setRunning(false);
     }
+  }
+
+  if (again && finished && !running) {
+    return (
+      <span role="status" className="font-medium text-accept">
+        Fresh analysis ✓ just now
+      </span>
+    );
   }
 
   if (again && !running && steps.length === 0) {

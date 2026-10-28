@@ -370,7 +370,8 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           {a && (
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
               <span>
-                Analyzed {fmtDate(analysis!.createdAt)} by {analysis!.model} · {analysis!.toolCalls.length} tool calls
+                Analyzed {new Date(analysis!.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} by{" "}
+                {analysis!.model} · {analysis!.toolCalls.length} tool calls
               </span>
               {actionable && <AnalyzeButton disputeId={id} unlocked={unlocked} again />}
             </div>
