@@ -44,7 +44,7 @@ export function VerdictCard({
       key: "FIGHT",
       label: "Fight",
       keep: amount - e.fightExpectedCost,
-      note: `expected, at ${pct(p)} win odds`,
+      note: `expected; win odds ${band(p)}, about ${pct(p)}`,
     },
     { key: "ACCEPT", label: "Refund now", keep: amount - e.acceptCost, note: `you return ${fmtUsd(e.acceptCost, currency)}, certain` },
     ...(a.recommended_action === "OFFER"
@@ -203,6 +203,8 @@ export function VerdictCard({
 }
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
+// The win estimate as a plain band first; the number is a model estimate, not a measured rate.
+const band = (n: number) => (n >= 0.65 ? "likely" : n >= 0.35 ? "toss-up" : "unlikely");
 
 const toolNames: Record<string, string> = {
   get_dispute: "the dispute",
@@ -313,6 +315,9 @@ function OddsBasis({ c }: { c: NonNullable<AnalysisResult["calibration"]> }) {
           </>
         )}
       </p>
+      <p className="mt-1 text-ink-3">
+        This is an estimate, not calibrated on real outcomes: no merchant data has measured how often cases like this are won.
+      </p>
       <details className="mt-1">
         <summary className="cursor-pointer text-ink-3">Based on</summary>
         <ul className="mt-1 space-y-0.5">
@@ -351,7 +356,7 @@ function OddsSplit({
       <div
         className="relative flex h-1.5 overflow-visible rounded-full bg-paper-2"
         role="img"
-        aria-label={`Win odds ${pct(win)}, break-even ${pct(breakEven)}: fighting ${pays ? "pays off" : "does not pay off"}`}
+        aria-label={`Win odds ${band(win)}, about ${pct(win)}, break-even ${pct(breakEven)}: fighting ${pays ? "pays off" : "does not pay off"}`}
       >
         <div className={`h-full rounded-l-full ${pays ? "bg-accept" : "bg-fight/70"}`} style={{ width: `${Math.max(1, win * 100)}%` }} />
         {/* What the agent claimed before the evidence cap, drawn as an empty dashed stretch. */}
@@ -366,11 +371,12 @@ function OddsSplit({
       </div>
       <p className="mt-1.5 flex flex-wrap justify-between gap-x-4 gap-y-0.5">
         <span>
-          <strong className="font-mono text-ink">{pct(win)}</strong> win{said !== undefined && <span className="text-ink-3"> (agent said {pct(said)})</span>}: keep {ifWin}
+          Win odds <strong className="text-ink">{band(win)}</strong> <span className="font-mono text-ink-3">(about {pct(win)}
+          {said !== undefined && `, agent said ${pct(said)}`})</span>: keep {ifWin}
         </span>
         <span className="text-ink-3">break-even {pct(breakEven)}</span>
         <span>
-          <strong className="font-mono text-ink">{pct(1 - win)}</strong> lose: {ifLose} with the fee
+          If you lose: {ifLose} with the fee
         </span>
       </p>
     </div>
