@@ -43,7 +43,7 @@ A small demo store (Lumen & Loom, a fictional shop) creates real sandbox payment
 ## AI
 
 - Model: set by `AI_MODEL`, default `claude-haiku-5-5`. Local development, the saved analyses in `seed/` and the eval all use Claude Haiku 5.5. For the hosted demo, set `AI_MODEL=claude-opus-5-5` on the host to use Claude Opus 5.5. Every analysis records the model that made it, and the case page shows it. Calls go through the Anthropic TypeScript SDK tool runner with adaptive thinking, prompt caching, and server-side refusal fallback where the model supports it.
-- Cost guard: `AI_DAILY_CAP` limits analyses per day, and saved analyses are reused.
+- Cost guard: the passcode gates every analysis, at most 2 run at once, one network can start at most 5 per hour, and `AI_DAILY_CAP` limits analyses per day. Saved analyses are reused. These limits live in the server's memory and its data folder, so they reset when the process restarts (on Render's free tier, after every cold start). The hard backstop is the monthly spend limit set in the Anthropic console.
 - Tools: eight read-only investigation tools (including the evidence checklist and an economics calculator) plus one strict-schema `record_assessment` tool. The agent cannot move money; actions are built on the server from the seller's approval.
 - Buyer messages are treated as untrusted data in the system prompt.
 - Source check (`src/lib/grounding.ts`): code checks three kinds of claim in the summary, the reasoning, both drafts and the evidence list. A delivery claim needs a delivery on file, and a carrier delivery claim needs a PayPal tracker marked DELIVERED. A signature needs a signer in the shop record and is never credited to the carrier. A reference number must appear in PayPal or the shop record. Hedged sentences are skipped. The agent gets one chance to rewrite; anything still unsupported is cut and shown to the seller. Other statements are not checked by code.
@@ -119,7 +119,7 @@ pnpm dev
 
 - Disputes always come live from PayPal. Shop records, saved analyses and receipts live in JSON files under `DATA_DIR`.
 - On hosts with an ephemeral disk (for example Render's free tier), the app falls back to the committed snapshot in `seed/` whenever a data file is missing, so a restart shows the same orders, analyses and receipts. Refresh the snapshot with `node scripts/export-seed.mjs` (it refuses anything that looks like a secret).
-- Set `APP_PASSCODE`, and keep `AI_DAILY_CAP` low (30 per day for the public demo). Saved analyses are shown without spending credits.
+- Set `APP_PASSCODE`, keep `AI_DAILY_CAP` low (30 per day for the public demo), and set a low monthly spend limit in the Anthropic console: the in-app cap resets whenever the host restarts. Saved analyses are shown without spending credits.
 
 ## Tests
 
