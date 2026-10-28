@@ -34,7 +34,7 @@ const AssessmentSchema = z.object({
         supports: z.enum(["SELLER", "BUYER", "NEUTRAL"]),
       }),
     )
-    .describe("Only facts you read through a tool. Never invent tracking numbers, dates or names."),
+    .describe("6 to 10 short facts (one sentence each) you read through a tool. Never invent tracking numbers, dates or names."),
   missing_evidence: z.array(z.string()).describe("Evidence that would change the outcome but is not on file."),
   win_probability: z.number().describe("Chance the seller wins if they fight, 0 to 1."),
   win_probability_reasoning: z.string(),
@@ -50,7 +50,7 @@ const AssessmentSchema = z.object({
     .string()
     .describe("Seller's response to PayPal when fighting: factual, specific, under 1500 characters. Empty otherwise."),
   buyer_message: z.string().describe("Short, warm message to the buyer that matches the recommended action."),
-  risk_flags: z.array(z.string()).describe("Anything the seller should double-check before sending."),
+  risk_flags: z.array(z.string()).describe("At most 4 short items the seller should double-check before sending, most important first."),
 });
 
 export type Assessment = z.infer<typeof AssessmentSchema>;

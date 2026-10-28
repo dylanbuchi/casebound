@@ -34,15 +34,18 @@ const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#efe6d3",
   accentColor: "#1f4fa8",
   wrapperBorderRadius: 8,
-  rowHeight: 52,
+  rowHeight: 56,
+  fontSize: 15,
 });
 
-const verdictClass = { FIGHT: "text-fight", ACCEPT: "text-accept", OFFER: "text-offer" } as const;
+const verdictClass = { FIGHT: "bg-fight", ACCEPT: "bg-accept", OFFER: "bg-offer" } as const;
 
 function Verdict({ value, data }: ICellRendererParams<QueueRow, QueueRow["verdict"]>) {
   if (!value && data?.quickCall && data.needsResponse) return <span className="text-accept">Quick call: accept</span>;
   if (!value) return <span className="text-ink-3">Not analyzed</span>;
-  return <span className={`stamp text-[11px] ${verdictClass[value]}`}>{value}</span>;
+  return (
+    <span className={`rounded-full px-2.5 py-1 font-mono text-[11px] font-bold tracking-wider text-paper ${verdictClass[value]}`}>{value}</span>
+  );
 }
 
 const money = (v: number, currency = "USD") =>
@@ -94,10 +97,11 @@ export function DisputeQueue({ rows }: { rows: QueueRow[] }) {
   );
 
   return (
-    <div className="h-[420px] w-full">
+    <div className="w-full">
       <AgGridReact<QueueRow>
         theme={theme}
         rowData={rows}
+        domLayout="autoHeight"
         columnDefs={columns}
         defaultColDef={{ sortable: true, resizable: true, filter: true }}
         getRowId={(p) => p.data.id}

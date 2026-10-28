@@ -6,11 +6,11 @@
   --card: #fbf8f2;
   --ink: #1b1a17;
   --ink-2: #57524a;
-  --ink-3: #8a8376;
+  --ink-3: #6b6457;
   --rule: #d8cfbf;
   --fight: #b3261e;
   --accept: #2f6b45;
-  --offer: #a8640c;
+  --offer: #8f5208;
   --focus: #1f4fa8;
 }
 
@@ -32,6 +32,8 @@
 
 html {
   background-color: var(--paper);
+  /* Slightly larger base size so screens read well in a 1080p recording. */
+  font-size: 106.25%;
 }
 
 body {

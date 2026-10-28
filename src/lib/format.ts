@@ -42,3 +42,11 @@ export const verdictColor = {
   ACCEPT: "text-accept",
   OFFER: "text-offer",
 } as const;
+
+// Share of the response window already used, 0..1.
+export function windowUsed(createdIso: string, dueIso?: string) {
+  if (!dueIso) return 0;
+  const start = new Date(createdIso).getTime();
+  const total = new Date(dueIso).getTime() - start;
+  return total > 0 ? Math.min(1, Math.max(0, (Date.now() - start) / total)) : 0;
+}

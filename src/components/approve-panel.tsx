@@ -8,6 +8,7 @@ import { describeRequest, withEdits, type PlannedStep } from "@/lib/plan";
 export function ApprovePanel(props: {
   disputeId: string;
   actionable: boolean;
+  sent?: boolean;
   unlocked: boolean;
   steps: PlannedStep[];
   evidenceNotes: string;
@@ -16,7 +17,8 @@ export function ApprovePanel(props: {
   const [state, action, pending] = useActionState<ActionState, FormData>(executePlan, null);
   const [evidenceNotes, setEvidenceNotes] = useState(props.evidenceNotes);
   const [buyerMessage, setBuyerMessage] = useState(props.buyerMessage);
-  const showEvidence = props.steps.some((s) => s.action.kind === "provide_evidence");
+  const showEvidence = props.steps.some((s) => s.action.kind === "provide_evidence" || s.action.kind === "provide_supporting_info");
+  const showMessage = props.steps.some((s) => s.action.kind !== "provide_evidence" && s.action.kind !== "provide_supporting_info");
   // Same edit logic the server applies, so the preview is exactly what gets sent.
   const previews = props.steps.map((s) => ({
     label: s.label,
@@ -24,15 +26,25 @@ export function ApprovePanel(props: {
   }));
 
   return (
-    <form action={action} className="rise rounded-lg border-2 border-ink bg-card p-5">
-      <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Review and send</h2>
+    <form action={action} className="rise rounded-lg border-2 border-ink bg-card p-5" aria-label="Review and send">
+      <h2 className="font-display text-2xl font-semibold">Review and send</h2>
+      <p className="mb-4 text-sm text-ink-2">Edit the wording, check the exact request, then approve. Nothing goes out before you click.</p>
       <input type="hidden" name="disputeId" value={props.disputeId} />
 
-      <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm font-medium">
-        {props.steps.map((s) => (
-          <li key={s.label}>{s.label}</li>
-        ))}
-      </ol>
+      {props.steps.length === 0 ? (
+        <p className="mb-4 rounded-md border border-rule bg-paper p-3 text-sm text-ink-2">
+          PayPal is not accepting this kind of response on the dispute right now.
+        </p>
+      ) : (
+        <ol className="mb-4 space-y-1.5">
+          {props.steps.map((s, i) => (
+            <li key={s.label} className="flex items-center gap-2 text-sm font-medium">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink font-mono text-[11px] text-paper">{i + 1}</span>
+              {s.label}
+            </li>
+          ))}
+        </ol>
+      )}
 
       {showEvidence ? (
         <label className="block">
@@ -50,30 +62,35 @@ export function ApprovePanel(props: {
         <input type="hidden" name="evidenceNotes" value={evidenceNotes} />
       )}
 
+      {showMessage ? (
       <label className="mt-3 block">
-        <span className="text-sm font-medium">Message to the buyer</span>
-        <textarea
-          name="buyerMessage"
-          value={buyerMessage}
-          onChange={(e) => setBuyerMessage(e.target.value)}
-          maxLength={2000}
-          rows={4}
-          className="mt-1 w-full rounded border border-rule bg-paper p-3 text-sm leading-relaxed"
-        />
-      </label>
+          <span className="text-sm font-medium">Message to the buyer</span>
+          <textarea
+            name="buyerMessage"
+            value={buyerMessage}
+            onChange={(e) => setBuyerMessage(e.target.value)}
+            maxLength={2000}
+            rows={4}
+            className="mt-1 w-full rounded border border-rule bg-paper p-3 text-sm leading-relaxed"
+          />
+        </label>
+      ) : (
+        <input type="hidden" name="buyerMessage" value={buyerMessage} />
+      )}
 
-      <details className="mt-4 rounded border border-rule bg-paper">
+      <details open className="mt-4 rounded-md border border-rule bg-paper">
         <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
           Exact PayPal request{previews.length > 1 ? "s" : ""} ({previews.length})
         </summary>
         <div className="space-y-3 px-3 pb-3">
           {previews.map((p) => (
             <div key={p.label}>
-              <p className="font-mono text-xs">
-                <span className="font-bold">{p.request.method}</span> {p.request.path}{" "}
-                <span className="text-ink-3">· {p.request.contentType}</span>
+              <p className="flex flex-wrap items-center gap-2 font-mono text-xs">
+                <span className="rounded bg-ink px-1.5 py-0.5 font-bold text-paper">{p.request.method}</span>
+                <span className="break-all">{p.request.path}</span>
+                <span className="text-ink-3">{p.request.contentType}</span>
               </p>
-              <pre className="mt-1 max-h-56 overflow-auto rounded bg-card p-2 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words">
+              <pre className="mt-1.5 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words text-paper">
                 {JSON.stringify(p.request.body, null, 2)}
               </pre>
             </div>
@@ -89,13 +106,13 @@ export function ApprovePanel(props: {
         ) : (
           <button
             type="submit"
-            disabled={pending || !props.actionable || state?.ok === true}
-            className="rounded-md bg-ink px-5 py-2.5 font-medium text-paper transition hover:bg-ink-2 disabled:opacity-50"
+            disabled={pending || props.sent || !props.actionable || props.steps.length === 0 || state?.ok === true}
+            className="rounded-md bg-ink px-6 py-3 text-base font-semibold text-paper transition hover:bg-ink-2 disabled:opacity-50"
           >
-            {pending ? "Sending to PayPal…" : props.actionable ? "Approve and send" : "Already handled"}
+            {pending ? "Sending to PayPal…" : props.sent || state?.ok ? "Sent ✓" : props.actionable ? "Approve and send" : "Already handled"}
           </button>
         )}
-        <span className="text-xs text-ink-3">Nothing is sent until you click. Every call is logged with PayPal&apos;s reply.</span>
+        <span className="text-xs text-ink-3">Sent through the PayPal Disputes API. Every call is kept as a receipt.</span>
       </div>
 
       {state && (

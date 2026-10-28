@@ -30,7 +30,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <span className="text-sm text-ink-2">
               for <span className="font-medium text-ink">{merchant.name}</span>
             </span>
-            <nav className="ml-auto flex items-center gap-4 text-sm">
+            <nav className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 whitespace-nowrap text-sm sm:ml-auto sm:w-auto">
               <Link href="/" className="hover:underline">
                 Inbox
               </Link>

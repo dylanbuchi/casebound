@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import { AnalyzeButton } from "@/components/analyze-button";
 import { ApprovePanel } from "@/components/approve-panel";
 import { QuickAccept } from "@/components/quick-accept";
+import { VerdictCard } from "@/components/verdict-card";
 import { checklistFor, quickCallFor } from "@/lib/case";
 import { allowedActions } from "@/lib/dispute-state";
 import type { CheckItem } from "@/lib/checklist";
 import { isUnlocked } from "@/lib/auth";
-import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, verdictColor } from "@/lib/format";
+import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, windowUsed } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
 import { planActions } from "@/lib/plan";
 import { getAnalysis, getAudit } from "@/lib/records";
@@ -52,52 +53,98 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
   const history = audit.filter((e) => e.disputeId === id);
   const currency = dispute.dispute_amount.currency_code;
 
+  const outcome = dispute.dispute_outcome ?? dispute.outcome;
+  const used = windowUsed(dispute.create_time, dispute.seller_response_due_date);
+  const urgent = actionable && due !== null && due <= 3;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Link href="/" className="text-sm text-ink-2 hover:underline">
         ← Inbox
       </Link>
 
-      <header className="rise flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-6">
-        <div>
-          <p className="font-mono text-xs tracking-wider text-ink-3">{dispute.dispute_id}</p>
-          <h1 className="mt-1 font-display text-4xl font-semibold">
-            {reasonLabel[dispute.reason]} · {fmtMoney(dispute.dispute_amount)}
-          </h1>
-          <p className="mt-2 text-ink-2">
-            {tx?.buyer?.name ?? "Buyer"} · {statusLabel(dispute.status)} · {dispute.dispute_life_cycle_stage?.toLowerCase()}
-            {actionable && due !== null && (
-              <span className={due <= 3 ? " font-semibold text-fight" : ""}> · respond within {due} days</span>
-            )}
-          </p>
+      <header className="rise border-b border-rule pb-6">
+        <p className="font-mono text-xs tracking-wider text-ink-3">{dispute.dispute_id}</p>
+        <h1 className="mt-1 font-display text-4xl font-semibold md:text-5xl">
+          {reasonLabel[dispute.reason]} · {fmtMoney(dispute.dispute_amount)}
+        </h1>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-ink-2">
+          <span>{tx?.buyer?.name ?? "Buyer"}</span>
+          <span aria-hidden>·</span>
+          <Pill tone={actionable ? "ink" : "muted"}>{statusLabel(dispute.status)}</Pill>
+          {dispute.dispute_life_cycle_stage && <Pill tone="muted">{dispute.dispute_life_cycle_stage.toLowerCase()}</Pill>}
+          {outcome?.outcome_code && (
+            <Pill tone={outcome.outcome_code.includes("SELLER") ? "accept" : "muted"}>
+              {outcome.outcome_code.includes("SELLER") ? "won" : "resolved for buyer"}
+              {outcome.amount_refunded ? ` · refunded ${fmtMoney(outcome.amount_refunded)}` : ""}
+            </Pill>
+          )}
         </div>
-        {a && (
-          <span className={`stamp stamp-in text-2xl ${verdictColor[a.recommended_action]}`}>{a.recommended_action}</span>
-        )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+      {/* The decision, first and full width */}
+      {a ? (
+        <VerdictCard analysis={analysis!} amount={Number(dispute.dispute_amount.value)} currency={currency} />
+      ) : quickCall && allowed.has("accept_claim") ? (
+        <section className="rise rounded-xl border-2 border-accept bg-card p-6 md:p-8" aria-label="Quick call">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-accept">Quick call, no AI needed</p>
+          <h2 className="mt-2 font-display text-3xl font-semibold">Refund it. Fighting can&apos;t pay off.</h2>
+          <p className="mt-3 max-w-3xl text-lg leading-relaxed">
+            Refunding {fmtMoney(dispute.dispute_amount)} is cheaper than fighting even if you would win 9 times out of 10: the{" "}
+            {fmtUsd(merchant.disputeFee, currency)} fee if you lose plus your time outweigh the amount.
+          </p>
+          <div className="mt-5">
+            {unlocked ? (
+              <QuickAccept disputeId={id} label={`Accept and refund ${fmtMoney(dispute.dispute_amount)}`} />
+            ) : (
+              <Link href="/unlock" className="text-sm underline">
+                Unlock to accept
+              </Link>
+            )}
+          </div>
+        </section>
+      ) : actionable ? (
+        <section className="rise rounded-xl border-2 border-ink bg-card p-6 md:p-8" aria-label="Investigate">
+          <h2 className="font-display text-3xl font-semibold">Should you fight this one?</h2>
+          <p className="mt-2 max-w-2xl text-lg text-ink-2">
+            {PRODUCT} reads the dispute, the payment, tracking and your shop records, works out your odds and the money at stake,
+            and drafts the response. Nothing is sent until you approve it.
+          </p>
+          <div className="mt-5">
+            <AnalyzeButton disputeId={id} unlocked={unlocked} />
+          </div>
+        </section>
+      ) : null}
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
         {/* Case file: everything the agent can see */}
-        <section aria-label="Case file" className="space-y-4">
-          <Card title="Deadline and evidence">
+        <section aria-label="Case file" className="min-w-0 space-y-4">
+          <div className={`rise rounded-lg border-2 bg-card p-5 ${urgent ? "border-fight" : "border-rule"}`}>
+            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Deadline and evidence</h2>
             {actionable && dispute.seller_response_due_date ? (
               <>
-                <p className={`font-mono text-2xl ${due !== null && due <= 3 ? "text-fight" : ""}`}>
-                  {due !== null && due <= 0 ? "Due today" : `${due} days left`}
-                </p>
-                <p className="text-sm text-ink-3">
-                  Respond by {fmtDate(dispute.seller_response_due_date)}. Missing it means an automatic loss.
-                </p>
+                <div className="flex flex-wrap items-baseline gap-x-3">
+                  <p className={`font-mono text-4xl font-bold ${urgent ? "text-fight" : ""}`}>
+                    {due !== null && due <= 0 ? "Due today" : `${due} days`}
+                  </p>
+                  <p className="text-sm text-ink-2">
+                    to respond, by {fmtDate(dispute.seller_response_due_date)}. Missing it is an automatic loss.
+                  </p>
+                </div>
+                <div className="mt-3 h-2 rounded-full bg-paper-2" role="img" aria-label={`${Math.round(used * 100)}% of the response window used`}>
+                  <div className={`h-full rounded-full ${urgent ? "bg-fight" : "bg-ink"}`} style={{ width: `${Math.max(2, used * 100)}%` }} />
+                </div>
               </>
             ) : (
-              <p className="text-ink-2">{statusLabel(dispute.status)}: no response due.</p>
+              <p className="text-ink-2">{statusLabel(dispute.status)}: no response due from you right now.</p>
             )}
-            <ul className="mt-3 space-y-1.5">
+            <h3 className="mt-5 mb-2 text-sm font-semibold">What a PayPal reviewer will look for</h3>
+            <ul className="space-y-2">
               {checklist.map((c) => (
                 <Check key={c.label} item={c} />
               ))}
             </ul>
-          </Card>
+          </div>
 
           <Card title="Buyer's claim">
             {(dispute.messages ?? []).length === 0 ? (
@@ -105,40 +152,32 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
             ) : (
               <ol className="space-y-3">
                 {dispute.messages!.map((m, i) => (
-                  <li key={i} className={m.posted_by === "SELLER" ? "pl-6" : ""}>
+                  <li key={i} className={m.posted_by === "SELLER" ? "border-l-2 border-rule pl-4" : ""}>
                     <p className="font-mono text-[11px] uppercase text-ink-3">
                       {m.posted_by.toLowerCase()} · {fmtDate(m.time_posted)}
                     </p>
-                    <p className="mt-0.5">{m.content}</p>
+                    <p className="mt-0.5 text-[15px]">“{m.content}”</p>
                   </li>
                 ))}
               </ol>
             )}
           </Card>
 
-          <Card title="Payment (PayPal)">
+          <Card title="Payment and tracking (PayPal)">
             <Dl
               rows={[
                 ["Capture", payment.capture?.id ?? tx?.seller_transaction_id ?? "-"],
                 ["Order", payment.order?.id ?? "-"],
                 ["Paid", fmtDate(payment.capture?.create_time ?? tx?.create_time)],
                 ["Items", (tx?.items ?? []).map((i) => i.item_name).join(", ") || "-"],
+                [
+                  "Tracking",
+                  trackers.length === 0
+                    ? "None on the PayPal transaction"
+                    : trackers.map((t) => `${t.carrier ?? ""} ${t.tracking_number} · ${t.status}`.trim()).join(", "),
+                ],
               ]}
             />
-          </Card>
-
-          <Card title="Tracking (PayPal)">
-            {trackers.length === 0 ? (
-              <p className="text-ink-3">No tracking on the PayPal transaction.</p>
-            ) : (
-              <ul className="space-y-1 font-mono text-sm">
-                {trackers.map((t, i) => (
-                  <li key={i}>
-                    {t.carrier} {t.tracking_number} · <span className="font-semibold">{t.status}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
           </Card>
 
           <Card title="Shop records">
@@ -168,143 +207,145 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           </Card>
         </section>
 
-        {/* The agent's work */}
-        <section aria-label="Recommendation" className="space-y-4">
-          {!a && quickCall && allowed.has("accept_claim") ? (
-            <Card title="Quick call">
-              <p className="text-lg leading-relaxed">
-                Refunding {fmtMoney(dispute.dispute_amount)} is cheaper than fighting even if you would win 9 times out of 10.
-                No agent needed.
+        {/* The agent's evidence, the send step and the receipts */}
+        <section aria-label="Response" className="min-w-0 space-y-4">
+          {a && (
+            <Card title="Evidence the agent used">
+              <ul className="space-y-2.5">
+                {a.key_facts.slice(0, 6).map((f, i) => (
+                  <li key={i} className="flex gap-3 text-sm leading-snug">
+                    <span
+                      className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                        f.supports === "SELLER" ? "bg-accept" : f.supports === "BUYER" ? "bg-fight" : "bg-ink-3"
+                      }`}
+                      role="img"
+                      aria-label={`supports ${f.supports.toLowerCase()}`}
+                    />
+                    <span>
+                      {f.fact} <span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {a.key_facts.length > 6 && (
+                <details className="mt-2.5">
+                  <summary className="cursor-pointer text-sm text-ink-2">Show all {a.key_facts.length} facts</summary>
+                  <ul className="mt-2.5 space-y-2.5">
+                    {a.key_facts.slice(6).map((f, i) => (
+                      <li key={i} className="flex gap-3 text-sm leading-snug">
+                        <span
+                          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                            f.supports === "SELLER" ? "bg-accept" : f.supports === "BUYER" ? "bg-fight" : "bg-ink-3"
+                          }`}
+                          role="img"
+                          aria-label={`supports ${f.supports.toLowerCase()}`}
+                        />
+                        <span>
+                          {f.fact} <span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+              <p className="mt-3 flex flex-wrap gap-4 text-xs text-ink-3">
+                <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-accept" />helps you</span>
+                <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-fight" />helps the buyer</span>
+                <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-ink-3" />neutral</span>
               </p>
-              <p className="mt-2 text-sm text-ink-2">
-                The {fmtUsd(merchant.disputeFee, currency)} fee if you lose plus your time outweigh the amount. Accept it, or handle it
-                yourself with the buyer.
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-4">
-                {unlocked ? (
-                  <QuickAccept disputeId={id} label={`Accept and refund ${fmtMoney(dispute.dispute_amount)}`} />
-                ) : (
-                  <Link href="/unlock" className="text-sm underline">
-                    Unlock to accept
-                  </Link>
-                )}
-              </div>
-            </Card>
-          ) : !a ? (
-            <Card title="Recommendation">
-              <p className="text-ink-2">
-                {PRODUCT} will investigate this dispute through PayPal and your shop records, estimate your odds, and
-                draft the response.
-              </p>
-              <div className="mt-4">
-                <AnalyzeButton disputeId={id} unlocked={unlocked} />
-              </div>
-            </Card>
-          ) : (
-            <>
-              <Card title="Recommendation">
-                <p className="text-lg leading-relaxed">{a.summary}</p>
-                <p className="mt-3 text-sm text-ink-2">{a.action_reasoning}</p>
-              </Card>
-
-              <Card title="The money">
-                <div className="grid grid-cols-2 gap-px overflow-hidden rounded border border-rule bg-rule">
-                  <Money
-                    label="Refund now"
-                    value={fmtUsd(analysis!.economics.acceptCost, currency)}
-                    note="certain"
-                    highlight={analysis!.economics.cheaperOption === "ACCEPT"}
-                  />
-                  <Money
-                    label="Fight (expected)"
-                    value={fmtUsd(analysis!.economics.fightExpectedCost, currency)}
-                    note={`${Math.round(a.win_probability * 100)}% win odds`}
-                    highlight={analysis!.economics.cheaperOption === "FIGHT"}
-                  />
+              {a.risk_flags.length > 0 && (
+                <div className="mt-4 rounded-md border border-offer/40 bg-paper p-3">
+                  <p className="text-sm font-semibold text-offer">Check before sending</p>
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-ink-2">
+                    {a.risk_flags.slice(0, 3).map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                  {a.risk_flags.length > 3 && (
+                    <details className="mt-1 text-sm text-ink-2">
+                      <summary className="cursor-pointer">{a.risk_flags.length - 3} more</summary>
+                      <ul className="mt-1 list-disc space-y-1 pl-5">
+                        {a.risk_flags.slice(3).map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                 </div>
-                <p className="mt-3 text-sm text-ink-2">
-                  Fighting pays off above {Math.round(analysis!.breakEven * 100)}% odds. Includes the{" "}
-                  {fmtUsd(merchant.disputeFee, currency)} fee if you lose and {merchant.minutesWithDraft} minutes of your
-                  time. {a.win_probability_reasoning}
-                </p>
-                {a.recommended_action === "FIGHT" && (
-                  <p className="mt-2 text-sm text-ink-2">
-                    A service that keeps {Math.round(merchant.typicalSuccessFee * 100)}% of won disputes would take{" "}
-                    {fmtUsd(Number(dispute.dispute_amount.value) * merchant.typicalSuccessFee, currency)} of this one. Here you keep
-                    all of it.
-                  </p>
-                )}
-              </Card>
+              )}
+              {a.missing_evidence.length > 0 && (
+                <details className="mt-3 text-sm text-ink-2">
+                  <summary className="cursor-pointer font-medium">Missing evidence ({a.missing_evidence.length})</summary>
+                  <ul className="mt-1 list-disc space-y-1 pl-5">
+                    {a.missing_evidence.map((m, i) => (
+                      <li key={i}>{m}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </Card>
+          )}
 
-              <Card title="Evidence the agent used">
-                <ul className="space-y-2">
-                  {a.key_facts.map((f, i) => (
-                    <li key={i} className="flex gap-3 text-sm">
-                      <span
-                        className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                          f.supports === "SELLER" ? "bg-accept" : f.supports === "BUYER" ? "bg-fight" : "bg-ink-3"
-                        }`}
-                        aria-label={`supports ${f.supports.toLowerCase()}`}
-                      />
-                      <span>
-                        {f.fact} <span className="font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                {a.missing_evidence.length > 0 && (
-                  <p className="mt-3 text-sm text-ink-2">
-                    <span className="font-medium">Missing:</span> {a.missing_evidence.join("; ")}
-                  </p>
-                )}
-                {a.risk_flags.length > 0 && (
-                  <p className="mt-2 text-sm text-offer">
-                    <span className="font-medium">Check before sending:</span> {a.risk_flags.join("; ")}
-                  </p>
-                )}
-              </Card>
-
-              <ApprovePanel
-                disputeId={id}
-                actionable={actionable}
-                unlocked={unlocked}
-                steps={steps}
-                evidenceNotes={a.evidence_notes}
-                buyerMessage={a.buyer_message}
-              />
-
-              <div className="flex items-center justify-between text-xs text-ink-3">
-                <span>
-                  Analyzed {fmtDate(analysis!.createdAt)} by {analysis!.model} · {analysis!.toolCalls.length} tool calls
-                </span>
-                {actionable && <AnalyzeButton disputeId={id} unlocked={unlocked} again />}
-              </div>
-            </>
+          {a && (actionable || history.length === 0) && (
+            <ApprovePanel
+              disputeId={id}
+              actionable={actionable}
+              sent={history.some((h) => h.ok && h.at > analysis!.createdAt)}
+              unlocked={unlocked}
+              steps={steps}
+              evidenceNotes={a.evidence_notes}
+              buyerMessage={a.buyer_message}
+            />
           )}
 
           {history.length > 0 && (
-            <Card title="Receipts">
-              <ul className="space-y-2 text-sm">
+            <section aria-label="Receipts" className="rise rounded-lg border-2 border-accept/60 bg-card p-5">
+              <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Receipts: what was sent to PayPal</h2>
+              <ul className="space-y-3">
                 {history.map((h, i) => (
-                  <li key={i} className={h.ok ? "" : "text-fight"}>
-                    <details>
-                      <summary className="cursor-pointer">
-                        <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US")} </span>
-                        {h.detail} {h.ok ? (h.mode === "demo" ? "· simulated (demo data) ✓" : "· PayPal accepted ✓") : `· failed: ${h.error}`}
-                      </summary>
-                      <pre className="mt-1 max-h-56 overflow-auto rounded bg-paper p-2 font-mono text-[11px] whitespace-pre-wrap break-words text-ink">
+                  <li key={i}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Pill tone={h.ok ? "accept" : "fight"}>
+                        {h.ok ? (h.mode === "demo" ? "simulated ✓" : "PayPal accepted ✓") : "PayPal rejected"}
+                      </Pill>
+                      <span className="font-medium">{h.detail}</span>
+                      <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US")}</span>
+                    </div>
+                    {!h.ok && <p className="mt-1 text-sm text-fight">{h.error}</p>}
+                    <details className="mt-1">
+                      <summary className="cursor-pointer text-sm text-ink-2">Request and PayPal&apos;s reply</summary>
+                      <pre className="mt-1 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words text-paper">
                         {JSON.stringify({ request: h.request, response: h.response }, null, 2)}
                       </pre>
                     </details>
                   </li>
                 ))}
               </ul>
-            </Card>
+            </section>
+          )}
+
+          {a && (
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
+              <span>
+                Analyzed {fmtDate(analysis!.createdAt)} by {analysis!.model} · {analysis!.toolCalls.length} tool calls
+              </span>
+              {actionable && <AnalyzeButton disputeId={id} unlocked={unlocked} again />}
+            </div>
           )}
         </section>
       </div>
     </div>
   );
+}
+
+function Pill({ tone, children }: { tone: "ink" | "muted" | "accept" | "fight"; children: React.ReactNode }) {
+  const cls = {
+    ink: "border-ink text-ink",
+    muted: "border-rule text-ink-2",
+    accept: "border-accept bg-accept text-paper",
+    fight: "border-fight bg-fight text-paper",
+  }[tone];
+  return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${cls}`}>{children}</span>;
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -316,13 +357,21 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-const checkMark = { have: ["✓", "text-accept"], weak: ["!", "text-offer"], missing: ["✗", "text-fight"] } as const;
+const checkMark = {
+  have: ["✓", "bg-accept text-paper", "on file"],
+  weak: ["!", "bg-offer text-paper", "weak"],
+  missing: ["✗", "bg-fight text-paper", "missing"],
+} as const;
 
 function Check({ item }: { item: CheckItem }) {
-  const [mark, color] = checkMark[item.status];
+  const [mark, color, label] = checkMark[item.status];
   return (
-    <li className="flex gap-2 text-sm">
-      <span className={`w-4 shrink-0 font-mono font-bold ${color}`} aria-label={item.status}>
+    <li className="flex gap-3 text-sm">
+      <span
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold ${color}`}
+        role="img"
+        aria-label={label}
+      >
         {mark}
       </span>
       <span>
@@ -334,7 +383,7 @@ function Check({ item }: { item: CheckItem }) {
 
 function Dl({ rows }: { rows: [string, string][] }) {
   return (
-    <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1 text-sm">
+    <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
       {rows.map(([k, v]) => (
         <div key={k} className="contents">
           <dt className="text-ink-3">{k}</dt>
@@ -342,18 +391,5 @@ function Dl({ rows }: { rows: [string, string][] }) {
         </div>
       ))}
     </dl>
-  );
-}
-
-function Money({ label, value, note, highlight }: { label: string; value: string; note: string; highlight: boolean }) {
-  return (
-    <div className={`px-4 py-3 ${highlight ? "bg-paper-2" : "bg-card"}`}>
-      <p className="text-xs uppercase tracking-wider text-ink-3">{label}</p>
-      <p className={`font-mono text-2xl ${highlight ? "font-bold" : ""}`}>{value}</p>
-      <p className="text-xs text-ink-3">
-        {note}
-        {highlight && " · cheaper"}
-      </p>
-    </div>
   );
 }

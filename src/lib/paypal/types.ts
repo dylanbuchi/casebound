@@ -61,6 +61,8 @@ export type Dispute = DisputeSummary & {
   disputed_transactions?: DisputedTransaction[];
   messages?: DisputeMessage[];
   outcome?: { outcome_code?: string; amount_refunded?: Money };
+  // Live API name for the outcome; demo fixtures use `outcome`.
+  dispute_outcome?: { outcome_code?: string; outcome_reason?: string; amount_refunded?: Money };
   adjudications?: { type: string; adjudication_time: string; reason?: string }[];
   offer?: { buyer_requested_amount?: Money; seller_offered_amount?: Money; offer_type?: string };
   evidences?: { evidence_type: string; notes?: string; date?: string }[];

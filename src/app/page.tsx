@@ -4,7 +4,7 @@ import { needsSellerResponse } from "@/lib/dispute-state";
 import { isLive } from "@/lib/env";
 import { daysUntil, fmtUsd, reasonLabel, statusLabel } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
-import { getAnalyses } from "@/lib/records";
+import { getAnalyses, getAudit } from "@/lib/records";
 import { source } from "@/lib/source";
 import { PRODUCT } from "@/lib/brand";
 
@@ -18,7 +18,7 @@ export default async function Inbox() {
   );
   const disputes = listed.items;
   const error = listed.error;
-  const analyses = await getAnalyses();
+  const [analyses, audit] = await Promise.all([getAnalyses(), getAudit()]);
 
   const rows: QueueRow[] = disputes.map((d) => {
     const a = analyses[d.dispute_id];
@@ -40,8 +40,9 @@ export default async function Inbox() {
 
   const open = rows.filter((r) => r.needsResponse);
   const atRisk = open.reduce((s, r) => s + r.amount, 0);
-  const analyzed = open.filter((r) => r.verdict);
-  const hoursSaved = (analyzed.length * (merchant.minutesWithoutDraft - merchant.minutesWithDraft)) / 60;
+  const analyzedCount = rows.filter((r) => r.verdict).length;
+  const hoursSaved = (analyzedCount * (merchant.minutesWithoutDraft - merchant.minutesWithDraft)) / 60;
+  const sent = audit.filter((e) => e.ok && rows.some((r) => r.id === e.disputeId)).length;
   const soonest = open.map((r) => r.dueInDays).filter((n): n is number => n !== null).sort((a, b) => a - b)[0];
 
   return (
@@ -57,6 +58,11 @@ export default async function Inbox() {
           {PRODUCT} reads each PayPal dispute, checks tracking and your shop records, works out whether fighting is
           worth it, and drafts the reply. Nothing is sent until you approve it.
         </p>
+        <ul className="mt-4 flex flex-wrap gap-2 text-sm" aria-label="How it works">
+          <li className="rounded-full border border-rule bg-card px-3 py-1">Fight, accept or offer, with the math shown</li>
+          <li className="rounded-full border border-rule bg-card px-3 py-1">You approve every send, with a receipt</li>
+          <li className="rounded-full border border-rule bg-card px-3 py-1">Deadlines and evidence gaps up front</li>
+        </ul>
       </section>
 
       {error && (
@@ -68,7 +74,7 @@ export default async function Inbox() {
       <section className="grid gap-px overflow-hidden rounded-lg border border-rule bg-rule sm:grid-cols-4" aria-label="Summary">
         <Stat label="Money at risk" value={fmtUsd(atRisk)} />
         <Stat label="Soonest deadline" value={soonest === undefined ? "-" : soonest <= 0 ? "Today" : `${soonest} days`} />
-        <Stat label="Analyzed" value={`${analyzed.length} of ${open.length}`} />
+        <Stat label="Responses sent" value={String(sent)} />
         <Stat label="Time saved (est.)" value={`${hoursSaved.toFixed(1)} h`} />
       </section>
 
