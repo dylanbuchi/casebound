@@ -1,69 +1,94 @@
-import Image from "next/image";
+import { DisputeQueue, type QueueRow } from "@/components/dispute-queue";
+import { quickCallFor } from "@/lib/case";
+import { needsSellerResponse } from "@/lib/dispute-state";
+import { isLive } from "@/lib/env";
+import { daysUntil, fmtUsd, reasonLabel, statusLabel } from "@/lib/format";
+import { merchant } from "@/lib/merchant";
+import { getAnalyses } from "@/lib/records";
+import { source } from "@/lib/source";
+import { PRODUCT } from "@/lib/brand";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Inbox() {
+  const src = source();
+  const listed = await src.listDisputes().then(
+    (items) => ({ items, error: null }),
+    (e: unknown) => ({ items: [], error: e instanceof Error ? e.message : "Could not reach PayPal" }),
+  );
+  const disputes = listed.items;
+  const error = listed.error;
+  const analyses = await getAnalyses();
+
+  const rows: QueueRow[] = disputes.map((d) => {
+    const a = analyses[d.dispute_id];
+    return {
+      id: d.dispute_id,
+      amount: Number(d.dispute_amount.value),
+      currency: d.dispute_amount.currency_code,
+      reason: reasonLabel[d.reason] ?? d.reason,
+      stage: d.dispute_life_cycle_stage ?? "-",
+      status: statusLabel(d.status),
+      needsResponse: needsSellerResponse(d),
+      dueInDays: daysUntil(d.seller_response_due_date),
+      verdict: a?.assessment.recommended_action ?? null,
+      quickCall: !a && quickCallFor(d),
+      winProbability: a?.assessment.win_probability ?? null,
+      savings: a ? a.economics.expectedSavingsFromFighting : null,
+    };
+  });
+
+  const open = rows.filter((r) => r.needsResponse);
+  const atRisk = open.reduce((s, r) => s + r.amount, 0);
+  const analyzed = open.filter((r) => r.verdict);
+  const hoursSaved = (analyzed.length * (merchant.minutesWithoutDraft - merchant.minutesWithDraft)) / 60;
+  const soonest = open.map((r) => r.dueInDays).filter((n): n is number => n !== null).sort((a, b) => a - b)[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="space-y-8">
+      <section className="rise">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-3">Dispute inbox</p>
+        <h1 className="mt-1 max-w-3xl font-display text-4xl leading-tight font-semibold sm:text-5xl">
+          {open.length === 0
+            ? "No disputes need you right now."
+            : `${open.length} dispute${open.length === 1 ? "" : "s"} need${open.length === 1 ? "s" : ""} an answer.`}
+        </h1>
+        <p className="mt-3 max-w-2xl text-ink-2">
+          {PRODUCT} reads each PayPal dispute, checks tracking and your shop records, works out whether fighting is
+          worth it, and drafts the reply. Nothing is sent until you approve it.
+        </p>
+      </section>
+
+      {error && (
+        <p role="alert" className="rounded border border-fight bg-card p-4 text-fight">
+          PayPal error: {error}
+        </p>
+      )}
+
+      <section className="grid gap-px overflow-hidden rounded-lg border border-rule bg-rule sm:grid-cols-4" aria-label="Summary">
+        <Stat label="Money at risk" value={fmtUsd(atRisk)} />
+        <Stat label="Soonest deadline" value={soonest === undefined ? "-" : soonest <= 0 ? "Today" : `${soonest} days`} />
+        <Stat label="Analyzed" value={`${analyzed.length} of ${open.length}`} />
+        <Stat label="Time saved (est.)" value={`${hoursSaved.toFixed(1)} h`} />
+      </section>
+
+      <section aria-label="Dispute queue">
+        <DisputeQueue rows={rows} />
+        {!isLive() && (
+          <p className="mt-3 text-sm text-ink-3">
+            Showing bundled demo disputes. Add PayPal sandbox credentials to work with real sandbox disputes.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-card px-5 py-4">
+      <p className="text-xs uppercase tracking-wider text-ink-3">{label}</p>
+      <p className="mt-1 font-mono text-2xl">{value}</p>
     </div>
   );
 }
