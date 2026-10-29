@@ -6,7 +6,7 @@ import { ExpandAll } from "@/components/expand-all";
 import { QuickAccept } from "@/components/quick-accept";
 import { VerdictCard } from "@/components/verdict-card";
 import { checklistFor, quickCallFor } from "@/lib/case";
-import { allowedActions } from "@/lib/dispute-state";
+import { allowedActions, outcomeOf } from "@/lib/dispute-state";
 import { conflictsIn, type CheckItem } from "@/lib/checklist";
 import { isUnlocked } from "@/lib/auth";
 import { daysUntil, fmtDate, fmtMoney, fmtUsd, reasonLabel, statusLabel, windowUsed } from "@/lib/format";
@@ -63,7 +63,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
   const used = windowUsed(dispute.create_time, dispute.seller_response_due_date);
   const urgent = actionable && due !== null && due <= 3;
   const resolved = dispute.status === "RESOLVED";
-  const wonBySeller = Boolean(outcome?.outcome_code?.includes("SELLER"));
+  const ended = outcomeOf(outcome?.outcome_code);
 
   // The send column: source check, approval and receipts. Sits beside the verdict so Approve is in the first view.
   const sendColumn = (
@@ -156,8 +156,8 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           {dispute.dispute_life_cycle_stage && <Pill tone="muted">{dispute.dispute_life_cycle_stage.toLowerCase()}</Pill>}
           <ExpandAll />
           {outcome?.outcome_code && (
-            <Pill tone={outcome.outcome_code.includes("SELLER") ? "accept" : "muted"}>
-              {outcome.outcome_code.includes("SELLER") ? "won" : "resolved for buyer"}
+            <Pill tone={ended.sellerKept ? "accept" : "muted"}>
+              {ended.pill}
               {outcome.amount_refunded ? ` · refunded ${fmtMoney(outcome.amount_refunded)}` : ""}
             </Pill>
           )}
@@ -169,12 +169,12 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         <section aria-label="Outcome" className="rounded-xl border-2 border-ink bg-card p-6 md:p-8">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">Final outcome</p>
           <h2 className="mt-2 font-display text-3xl font-semibold md:text-4xl">
-            {wonBySeller ? "Won: PayPal decided for you" : "Closed in the buyer's favour"}
+            {ended.title}
           </h2>
           <p className="mt-3 max-w-3xl text-lg leading-relaxed text-ink-2">
             {outcome?.amount_refunded
               ? `${fmtMoney(outcome.amount_refunded)} was refunded to the buyer${outcome && "outcome_reason" in outcome && outcome.outcome_reason ? ` (${String(outcome.outcome_reason).toLowerCase().replaceAll("_", " ")})` : ""}.`
-              : wonBySeller
+              : ended.sellerKept
                 ? "You keep the payment."
                 : "No refund amount was reported."}{" "}
             {history.length > 0 && `${PRODUCT} sent ${history.filter((h) => h.ok).length} response${history.filter((h) => h.ok).length === 1 ? "" : "s"} for you; the receipts are below.`}
