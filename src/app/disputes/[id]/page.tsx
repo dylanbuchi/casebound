@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AnalyzeButton } from "@/components/analyze-button";
 import { ApprovePanel } from "@/components/approve-panel";
+import { ExpandAll } from "@/components/expand-all";
 import { QuickAccept } from "@/components/quick-accept";
 import { VerdictCard } from "@/components/verdict-card";
 import { checklistFor, quickCallFor } from "@/lib/case";
@@ -150,6 +151,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
             <Pill tone={urgent ? "fight" : "muted"}>{due <= 0 ? "respond today" : `${due} day${due === 1 ? "" : "s"} to respond`}</Pill>
           )}
           {dispute.dispute_life_cycle_stage && <Pill tone="muted">{dispute.dispute_life_cycle_stage.toLowerCase()}</Pill>}
+          <ExpandAll />
           {outcome?.outcome_code && (
             <Pill tone={outcome.outcome_code.includes("SELLER") ? "accept" : "muted"}>
               {outcome.outcome_code.includes("SELLER") ? "won" : "resolved for buyer"}
@@ -217,7 +219,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       ) : null}
 
       {conflicts.length > 0 && (
-        <details aria-label="Conflicting evidence" className="rounded-lg border-2 border-fight bg-card px-5 py-3">
+        <details aria-label="Conflicting evidence" className="rounded-lg border-2 border-fight bg-card px-5 py-3" open>
           <summary className="cursor-pointer font-semibold text-fight">
             The evidence disagrees on {conflicts.length} point{conflicts.length === 1 ? "" : "s"}. Verify before you send.
           </summary>
@@ -392,7 +394,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                 </div>
               )}
               {a.missing_evidence.length > 0 && (
-                <details className="mt-3 text-sm text-ink-2">
+                <details className="mt-3 text-sm text-ink-2" open>
                   <summary className="cursor-pointer font-medium">Missing evidence ({a.missing_evidence.length})</summary>
                   <ul className="mt-1 list-disc space-y-1 pl-5">
                     {a.missing_evidence.map((m, i) => (
@@ -431,7 +433,7 @@ function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
     );
   }
   return (
-    <details aria-label="Removed claims" className="rounded-lg border-2 border-offer bg-card px-5 py-3">
+    <details aria-label="Removed claims" className="rounded-lg border-2 border-offer bg-card px-5 py-3" open>
       <summary className="cursor-pointer font-semibold text-offer">
         Removed {g.removed.length} claim{g.removed.length === 1 ? "" : "s"} no record backs
       </summary>
