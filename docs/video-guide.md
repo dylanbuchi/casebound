@@ -20,12 +20,12 @@ Move the mouse slowly. Wait ~2 seconds after every click before the next one.
 ### Scene 1: The inbox (≈20 s)
 - Start on the **Inbox** page, at the top.
 - Hover slowly over **"Money at risk"**, then **"Soonest deadline"**.
-- Move down over the table rows (don't click yet). Hover the **"Quick call: accept"** text on the $6 row.
+- Move down over the table rows (don't click yet). Hover the **"Quick call: refund"** text on the $6 row.
 
 ### Scene 2: The quick call, no AI (≈20 s)
 - Click the **$6.00 Duplicate charge** row.
 - Hover the green box **"Quick call, no AI needed: Refund it. Fighting can't pay off."** and let it be read (3 s).
-- Click **"Accept and refund $6.00"**. Wait for the confirmation.
+- Click **"Refund $6.00"**. Wait for the confirmation.
 - Click **"← Inbox"** at the top left.
 
 ### Scene 3: The big case (≈80 s, the heart of the video)

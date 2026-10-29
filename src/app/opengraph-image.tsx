@@ -23,7 +23,6 @@ export default function OpengraphImage() {
           color: "#1b1a17",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`data:image/svg+xml;utf8,${encodeURIComponent(mark)}`} width={128} height={128} alt="" />
         <div style={{ marginTop: 40, fontSize: 92, fontWeight: 700, letterSpacing: -2 }}>{PRODUCT}</div>
         <div style={{ marginTop: 16, fontSize: 40, color: "#57524a", maxWidth: 960 }}>
