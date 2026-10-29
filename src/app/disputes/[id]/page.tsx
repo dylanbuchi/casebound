@@ -97,7 +97,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                     {h.ok ? (h.mode === "demo" ? "simulated ✓" : "PayPal accepted ✓") : "PayPal rejected"}
                   </Pill>
                   <span className="font-medium">{h.detail}</span>
-                  <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US")}</span>
+                  <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US", { timeZone: "UTC", timeZoneName: "short" })}</span>
                 </div>
                 {!h.ok && <p className="mt-1 text-sm text-fight">{h.error}</p>}
                 <details className="mt-1">
@@ -115,7 +115,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
       {a && (
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
           <span>
-            Analyzed {new Date(analysis!.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} by{" "}
+            Analyzed {new Date(analysis!.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC by{" "}
             {analysis!.model} · {analysis!.toolCalls.length} tool calls
           </span>
           {actionable && <AnalyzeButton disputeId={id} unlocked={unlocked} again />}

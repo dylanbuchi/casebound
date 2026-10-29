@@ -52,7 +52,7 @@ async function historyFrom(records: FulfillmentRecord[], email: string, excludeO
 }
 
 // Demo state survives restarts so a recorded walkthrough stays consistent.
-type DemoState = Record<string, { status: Dispute["status"]; evidences?: Dispute["evidences"]; messages?: Dispute["messages"]; outcome?: Dispute["outcome"] }>;
+type DemoState = Record<string, { status: Dispute["status"]; update_time?: string; evidences?: Dispute["evidences"]; messages?: Dispute["messages"]; outcome?: Dispute["outcome"] }>;
 
 const demo: Source = {
   mode: "demo",
@@ -67,6 +67,7 @@ const demo: Source = {
     return {
       ...f.dispute,
       status: state.status,
+      update_time: state.update_time ?? f.dispute.update_time,
       evidences: state.evidences ?? f.dispute.evidences,
       messages: [...(f.dispute.messages ?? []), ...(state.messages ?? [])],
       outcome: state.outcome,
@@ -121,7 +122,8 @@ const demo: Source = {
   async act(id, action) {
     const now = new Date().toISOString();
     const updated = await updateJson<DemoState>("demo-state", {}, (all) => {
-      const cur = all[id] ?? { status: "WAITING_FOR_SELLER_RESPONSE" as const };
+      // Any send moves update_time, as on PayPal, so an older analysis cannot be sent twice.
+      const cur = { ...(all[id] ?? { status: "WAITING_FOR_SELLER_RESPONSE" as const }), update_time: now };
       switch (action.kind) {
         case "provide_supporting_info":
           return {

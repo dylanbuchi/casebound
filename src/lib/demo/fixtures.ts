@@ -5,9 +5,12 @@ import type { FulfillmentRecord } from "@/lib/fulfillment";
 // Names and addresses are invented.
 
 const day = 86_400_000;
+// Anchored to the start of the UTC day, so every server bundle and every restart that day
+// sees the same timestamps (a millisecond drift would mark saved analyses as stale).
+const today = Math.floor(Date.now() / day) * day;
 // Vary the time of day per date so records do not share identical timestamps.
 const at = (daysFromNow: number) =>
-  new Date(Date.now() + (daysFromNow + (((daysFromNow * 7919) % 13) - 6) / 30) * day).toISOString();
+  new Date(today + (daysFromNow + (((daysFromNow * 7919) % 13) - 6) / 30) * day).toISOString();
 
 type Fixture = { dispute: Dispute; trackers: Tracker[]; fulfillment: FulfillmentRecord };
 
