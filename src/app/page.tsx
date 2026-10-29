@@ -7,7 +7,7 @@ import { daysUntil, fmtUsd, reasonLabel, statusLabel } from "@/lib/format";
 import { merchant } from "@/lib/merchant";
 import { getAnalyses, getAudit } from "@/lib/records";
 import { isUnlocked, passcodeRequired } from "@/lib/auth";
-import { isPractice, source } from "@/lib/source";
+import { isPractice, listPractice, source } from "@/lib/source";
 import { PRODUCT } from "@/lib/brand";
 import { EmptyState, ErrorNotice } from "@/components/states";
 
@@ -19,7 +19,10 @@ export default async function Inbox() {
   const src = source();
   const listed = await src.listDisputes().then(
     (items) => ({ items, error: null }),
-    (e: unknown) => ({ items: [], error: e instanceof Error ? e.message : "Could not reach PayPal" }),
+    async (e: unknown) => ({
+      items: await listPractice().catch(() => []),
+      error: e instanceof Error ? e.message : "Could not reach PayPal",
+    }),
   );
   const disputes = listed.items;
   const error = listed.error;

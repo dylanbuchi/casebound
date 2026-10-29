@@ -224,13 +224,13 @@ export const isPractice = (id: string) => id.startsWith("PP-D-DEMO-");
 
 const pick = (id: string): Source => (isPractice(id) ? demo : live);
 
+// Local fixtures only, so the inbox can still show them when PayPal does not answer.
+export const listPractice = () => Promise.all(PRACTICE_IDS.map((id) => demo.getDispute(id)));
+
 const withPractice: Source = {
   mode: "live",
   async listDisputes() {
-    const [real, practice] = await Promise.all([
-      live.listDisputes(),
-      Promise.all(PRACTICE_IDS.map((id) => demo.getDispute(id))),
-    ]);
+    const [real, practice] = await Promise.all([live.listDisputes(), listPractice()]);
     return [...practice, ...real];
   },
   getDispute: (id) => pick(id).getDispute(id),
