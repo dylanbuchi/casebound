@@ -6,7 +6,7 @@ export default function Unlock() {
   return (
     <div className="rise mx-auto max-w-md py-6 sm:py-12">
       <div className="relative rounded-xl border-2 border-ink bg-card p-6 sm:p-8">
-        <span className="stamp absolute -top-4 right-5 bg-card text-sm text-fight" aria-hidden>
+        <span className="stamp absolute -top-4 right-5 bg-card text-sm text-fight" style={{ mixBlendMode: "normal" }} aria-hidden>
           Sealed
         </span>
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Passcode required</p>

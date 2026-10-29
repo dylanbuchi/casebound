@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: PRODUCT,
   description,
   openGraph: { title: PRODUCT, description, url: SITE_URL, siteName: PRODUCT, type: "website" },
-  twitter: { card: "summary", title: PRODUCT, description },
+  twitter: { card: "summary_large_image", title: PRODUCT, description },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
