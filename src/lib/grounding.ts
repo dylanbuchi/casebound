@@ -1,7 +1,7 @@
 import type { Assessment } from "@/lib/agent";
 import type { CheckItem } from "@/lib/checklist";
 import type { FulfillmentRecord } from "@/lib/fulfillment";
-import type { Tracker } from "@/lib/paypal/types";
+import type { Dispute, Tracker } from "@/lib/paypal/types";
 
 // Code-side guard on what the agent writes: every delivery, signature and reference-number claim must be
 // backed by the source it names. The prompt asks for this too, but the check below is what enforces it.
@@ -44,6 +44,14 @@ function knownNumbers({ trackers, record, ids = [] }: Facts) {
       .map(norm),
   );
 }
+
+// Reference numbers PayPal itself returned for this dispute, so citing them counts as grounded.
+export const disputeIds = (d: Dispute, trackers: Tracker[] = []) =>
+  [
+    d.dispute_id,
+    ...(d.disputed_transactions ?? []).flatMap((t) => [t.seller_transaction_id, t.buyer_transaction_id, t.invoice_number]),
+    ...trackers.map((t) => t.transaction_id),
+  ].filter((x): x is string => Boolean(x));
 
 // Why a sentence claims more than the records support, or null when it is fine.
 export function problemWith(sentence: string, facts: Facts, opts: { carrierSource?: boolean } = {}): string | null {

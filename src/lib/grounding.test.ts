@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Assessment } from "./agent";
 import type { CheckItem } from "./checklist";
 import type { FulfillmentRecord } from "./fulfillment";
-import { calibrate, enforceGrounding, findUnsupported, leakIn, problemWith, type Facts } from "./grounding";
+import { calibrate, disputeIds, enforceGrounding, findUnsupported, leakIn, problemWith, type Facts } from "./grounding";
 
 const record: FulfillmentRecord = {
   orderId: "DEMO-ORDER-7",
@@ -178,5 +178,22 @@ describe("calibrate", () => {
 
   it("never raises a low estimate and ignores dispute-side items", () => {
     expect(calibrate(0.2, [check("missing", "Dispute"), check("have", "PayPal")]).calibrated).toBe(0.2);
+  });
+});
+
+describe("disputeIds", () => {
+  it("lets a draft cite PayPal's own transaction id, but not an invented one", () => {
+    const d = {
+      dispute_id: "PP-R-1",
+      create_time: "",
+      update_time: "",
+      reason: "MERCHANDISE_OR_SERVICE_NOT_RECEIVED" as const,
+      status: "WAITING_FOR_SELLER_RESPONSE" as const,
+      dispute_amount: { currency_code: "USD", value: "10.00" },
+      disputed_transactions: [{ seller_transaction_id: "5TY05013RG002845M" }],
+    };
+    const facts = { trackers: [], record: null, ids: disputeIds(d) };
+    expect(problemWith("The payment 5TY05013RG002845M was for one item.", facts)).toBeNull();
+    expect(problemWith("The payment 9ZZ99999RG999999M was for one item.", facts)).toMatch(/not in PayPal/);
   });
 });

@@ -4,7 +4,7 @@ import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { breakEvenProbability, computeEconomics, type Economics } from "@/lib/economics";
 import { checklistFor, econBaseFor } from "@/lib/case";
-import { calibrate, enforceGrounding, findUnsupported, type Calibration, type Unsupported } from "@/lib/grounding";
+import { calibrate, disputeIds, enforceGrounding, findUnsupported, type Calibration, type Unsupported } from "@/lib/grounding";
 import { merchant } from "@/lib/merchant";
 import { stripMarkup } from "@/lib/sanitize";
 import type { Source } from "@/lib/source";
@@ -145,7 +145,7 @@ export async function analyzeDispute(
   let ground: Promise<{ facts: { trackers: Tracker[]; record: FulfillmentRecord | null; ids: string[] }; checklist: CheckItem[] }> | undefined;
   const grounds = () =>
     (ground ??= Promise.all([src.getTrackers(dispute).catch(() => []), fulfillmentPromise]).then(async ([trackers, record]) => ({
-      facts: { trackers, record, ids: [dispute.dispute_id] },
+      facts: { trackers, record, ids: disputeIds(dispute, trackers) },
       checklist: await checklistFor(src, dispute, trackers, record),
     })));
   let lastInput: Assessment | null = null;
