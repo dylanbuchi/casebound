@@ -58,7 +58,7 @@ describe("evidence conflicts", () => {
   it("flags a shop delivery date that PayPal tracking contradicts", () => {
     const items = evidenceChecklist({
       dispute: dispute("MERCHANDISE_OR_SERVICE_NOT_RECEIVED"),
-      trackers: [{ tracking_number: "9400", status: "SHIPPED" }],
+      trackers: [{ tracking_number: "9400", status: "RETURNED" }],
       record: { ...record, signedBy: "J DOE" },
       history: null,
       signatureThreshold: 150,
@@ -66,6 +66,19 @@ describe("evidence conflicts", () => {
     const delivered = items.find((i) => i.label === "Delivery confirmed by the carrier");
     expect(delivered).toMatchObject({ status: "weak", source: "Shop record", conflict: true });
     expect(status(items, "Signature on delivery")).toBe("weak");
+  });
+
+  it("treats tracking stuck at SHIPPED as unconfirmed, not as a conflict", () => {
+    const items = evidenceChecklist({
+      dispute: dispute("MERCHANDISE_OR_SERVICE_NOT_RECEIVED"),
+      trackers: [{ tracking_number: "9400", status: "SHIPPED" }],
+      record,
+      history: null,
+      signatureThreshold: 150,
+    });
+    const delivered = items.find((i) => i.label === "Delivery confirmed by the carrier");
+    expect(delivered).toMatchObject({ status: "weak", source: "Shop record" });
+    expect(delivered?.conflict).toBeUndefined();
   });
 
   it("trusts a carrier DELIVERED scan", () => {
@@ -78,5 +91,14 @@ describe("evidence conflicts", () => {
     });
     expect(items.find((i) => i.label === "Delivery confirmed by the carrier")).toMatchObject({ status: "have", source: "PayPal" });
     expect(status(items, "Signature on delivery")).toBe("have");
+  });
+});
+
+describe("practice cases", () => {
+  it("still shows the deliberate conflict on PP-D-DEMO-7 (RETURNED tracking, shop says delivered)", async () => {
+    const { demoFixtures } = await import("./demo/fixtures");
+    const f = demoFixtures.find((x) => x.dispute.dispute_id === "PP-D-DEMO-7")!;
+    const items = evidenceChecklist({ dispute: f.dispute, trackers: f.trackers, record: f.fulfillment, history: null, signatureThreshold: 150 });
+    expect(items.some((i) => i.conflict)).toBe(true);
   });
 });

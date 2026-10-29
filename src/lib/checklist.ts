@@ -27,6 +27,9 @@ const item = (label: string, status: CheckStatus, detail: string, source: CheckS
 });
 
 const carrierConfirmed = ({ trackers }: Ctx) => trackers.some((t) => t.status === "DELIVERED");
+// Tracker states that say the parcel did not reach the buyer. Anything else (often SHIPPED, which sandbox
+// tracking never moves past) is just unconfirmed, not a contradiction of the shop's delivery date.
+const NOT_DELIVERED = new Set(["RETURNED", "INRETURN", "CANCELLED", "VOID", "DELIVERY_FAILED", "NOT_SHIPPED"]);
 
 function delivery(ctx: Ctx): CheckItem[] {
   const { trackers, record } = ctx;
@@ -48,7 +51,7 @@ function delivery(ctx: Ctx): CheckItem[] {
       "weak",
       `Only the shop record says delivered (${record.deliveredAt.slice(0, 10)}); PayPal tracking shows ${status}. Verify with the carrier before relying on it.`,
       "Shop record",
-      Boolean(onPayPal),
+      trackers.some((t) => NOT_DELIVERED.has(t.status ?? "")),
     );
   } else {
     delivered = item("Delivery confirmed by the carrier", "missing", "No delivery scan on file", "PayPal");
