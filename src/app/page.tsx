@@ -38,6 +38,7 @@ export default async function Inbox() {
       dueInDays: daysUntil(d.seller_response_due_date),
       verdict: a?.assessment.recommended_action ?? null,
       quickCall: !a && quickCallFor(d),
+      quickAccepted: !a && audit.some((e) => e.ok && e.disputeId === d.dispute_id && e.action === "accept_claim"),
       practice: isPractice(d.dispute_id),
       winProbability: a?.assessment.win_probability ?? null,
       savings: a ? a.economics.expectedSavingsFromFighting : null,
@@ -129,6 +130,8 @@ export default async function Inbox() {
                       <span className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold text-paper ${verdictBg[r.verdict]}`}>{r.verdict}</span>
                     ) : r.quickCall && r.needsResponse ? (
                       <span className="text-accept">Quick call: accept</span>
+                    ) : r.quickAccepted ? (
+                      <span className="text-accept">Quick call: refunded</span>
                     ) : (
                       <span className="text-ink-3">Not analyzed</span>
                     )}

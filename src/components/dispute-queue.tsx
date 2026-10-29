@@ -18,6 +18,8 @@ export type QueueRow = {
   dueInDays: number | null;
   verdict: "FIGHT" | "ACCEPT" | "OFFER" | null;
   quickCall: boolean;
+  // Refunded through the quick call, so there is no AI analysis to show.
+  quickAccepted: boolean;
   practice: boolean;
   winProbability: number | null;
   savings: number | null;
@@ -43,6 +45,7 @@ const verdictClass = { FIGHT: "bg-fight", ACCEPT: "bg-accept", OFFER: "bg-offer"
 
 function Verdict({ value, data }: ICellRendererParams<QueueRow, QueueRow["verdict"]>) {
   if (!value && data?.quickCall && data.needsResponse) return <span className="text-accept">Quick call: accept</span>;
+  if (!value && data?.quickAccepted) return <span className="text-accept">Quick call: refunded</span>;
   if (!value) return <span className="text-ink-3">Not analyzed</span>;
   return (
     <span className={`rounded-full px-2.5 py-1 font-mono text-[11px] font-bold tracking-wider text-paper ${verdictClass[value]}`}>{value}</span>
