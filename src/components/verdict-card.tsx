@@ -107,7 +107,7 @@ export function VerdictCard({
           <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
             What you keep of the {fmtUsd(amount, currency)} payment
           </h3>
-          <Legend />
+          <Legend loss={options.some((o) => o.keep !== null && o.keep < 0)} />
         </div>
         <ol className="space-y-4">
           {options.map((o) => {
@@ -288,10 +288,9 @@ function KeepBar({
       <div className="lost-hatch absolute inset-y-0 rounded-r-sm" style={{ left: `${lostFrom}%`, width: `${at(amount) - lostFrom}%` }} />
       <div
         className={`absolute inset-y-0 ${keep >= 0 ? fill : "bg-fight"} ${keep >= 0 ? "rounded-r-sm" : "rounded-l-sm"}`}
-        style={{ left: `${kept.left}%`, width: `${Math.max(kept.width, keep === 0 ? 0 : 0.6)}%`, transformOrigin: keep >= 0 ? "left" : "right" }}
+        // A small amount still shows as a visible stub; the exact figure sits beside the bar.
+        style={{ left: `${kept.left}%`, width: `${Math.max(kept.width, keep === 0 ? 0 : 1.5)}%`, transformOrigin: keep >= 0 ? "left" : "right" }}
       />
-      {/* Zero line, only when the scale reaches below it */}
-      {zero > 0 && <div className="absolute -inset-y-1 w-px bg-ink" style={{ left: `${zero}%` }} />}
     </div>
   );
 }
@@ -319,7 +318,9 @@ function OddsBasis({ c }: { c: NonNullable<AnalysisResult["calibration"]> }) {
         This is an estimate, not calibrated on real outcomes: no merchant data has measured how often cases like this are won.
       </p>
       <details className="mt-1">
-        <summary className="cursor-pointer text-ink-3">Based on</summary>
+        <summary className="cursor-pointer text-ink-3">
+          Based on {c.basis.length} evidence check{c.basis.length === 1 ? "" : "s"}
+        </summary>
         <ul className="mt-1 space-y-0.5">
           {c.basis.map((b) => (
             <li key={b.label} className="flex justify-between gap-3">
@@ -383,9 +384,9 @@ function OddsSplit({
   );
 }
 
-function Legend() {
+function Legend({ loss }: { loss: boolean }) {
   return (
-    <p className="flex gap-4 text-xs text-ink-3" aria-hidden>
+    <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-3" aria-hidden>
       <span className="flex items-center gap-1.5">
         <span className="inline-block h-2.5 w-4 rounded-sm bg-ink-3" />
         you keep
@@ -394,6 +395,12 @@ function Legend() {
         <span className="lost-hatch inline-block h-2.5 w-4 rounded-sm" />
         goes to the buyer
       </span>
+      {loss && (
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-4 rounded-sm bg-fight" />
+          you pay (fee and time)
+        </span>
+      )}
     </p>
   );
 }
