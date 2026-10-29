@@ -49,7 +49,9 @@ export default async function StoreOrders() {
                 </p>
               </div>
               <p className="mt-1 text-sm text-ink-2">
-                {o.buyerName} ({o.buyerEmail}) · {o.shipTo} · paid {fmtDate(o.createdAt)}
+                {/* The buyer's email stays behind the passcode, with the tools. */}
+                {o.buyerName}
+                {unlocked && ` (${o.buyerEmail})`} · {o.shipTo} · paid {fmtDate(o.createdAt)}
                 {o.shippedAt && ` · shipped ${fmtDate(o.shippedAt)} via ${o.carrier}${o.trackingNumber ? ` ${o.trackingNumber}` : " (untracked)"}`}
                 {o.deliveredAt && ` · delivered ${fmtDate(o.deliveredAt)}${o.signedBy ? `, signed ${o.signedBy}` : ""}`}
               </p>

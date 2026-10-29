@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/states";
-import { fmtDate } from "@/lib/format";
+import { fmtUtc } from "@/lib/format";
 import { getAudit, type AuditEntry } from "@/lib/records";
 import { PRODUCT } from "@/lib/brand";
 
@@ -15,7 +15,10 @@ export default async function AuditLog() {
       <header className="rise">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-3">Receipts</p>
         <h1 className="mt-1 font-display text-4xl font-semibold sm:text-5xl">Audit log</h1>
-        <p className="mt-3 max-w-2xl text-ink-2">Every call {PRODUCT} sent to PayPal on your behalf, with the result.</p>
+        <p className="mt-3 max-w-2xl text-ink-2">
+          Every call {PRODUCT} sent to PayPal on your behalf, with the result. Practice sends are marked simulated: they
+          never reach PayPal. Times are UTC.
+        </p>
       </header>
       {entries.length === 0 ? (
         <EmptyState mark="Blank" title="Nothing sent yet.">
@@ -36,7 +39,7 @@ export default async function AuditLog() {
               <tbody>
                 {entries.map((e, i) => (
                   <tr key={i} className="border-t border-rule transition-colors hover:bg-paper">
-                    <td className="px-4 py-3 whitespace-nowrap">{fmtDate(e.at)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">{fmtUtc(e.at)}</td>
                     <td className="px-4 py-3 font-mono text-xs">
                       <Link href={`/disputes/${encodeURIComponent(e.disputeId)}`} className="underline underline-offset-2 hover:text-ink-2">
                         {e.disputeId}
@@ -56,7 +59,7 @@ export default async function AuditLog() {
                 <Link href={`/disputes/${encodeURIComponent(e.disputeId)}`} className="block rounded-lg border border-rule bg-card p-4 active:bg-paper-2">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="font-medium">{e.detail}</p>
-                    <p className="shrink-0 text-xs text-ink-3">{fmtDate(e.at)}</p>
+                    <p className="shrink-0 text-xs text-ink-3">{fmtUtc(e.at)}</p>
                   </div>
                   <p className="mt-1 font-mono text-xs text-ink-3">{e.disputeId}</p>
                   <p className={`mt-1 text-sm ${e.ok ? "text-accept" : "text-fight"}`}>{result(e)}</p>

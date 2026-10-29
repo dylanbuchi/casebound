@@ -32,6 +32,10 @@ export const fmtUsd = (n: number, currency = "USD") =>
 export const fmtDate = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
 
+// Date and time in UTC, labeled, so a receipt reads the same for everyone.
+export const fmtUtc = (iso: string) =>
+  `${new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC`;
+
 export function daysUntil(iso?: string) {
   if (!iso) return null;
   return Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000);

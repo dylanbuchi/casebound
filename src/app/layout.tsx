@@ -40,11 +40,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/" className="hover:underline">
                 Inbox
               </Link>
-              <Link href="/store" className="hover:underline">
+              <Link href="/store" aria-label="Demo store" className="hover:underline">
                 <span className="sm:hidden">Store</span>
                 <span className="hidden sm:inline">Demo store</span>
               </Link>
-              <Link href="/log" className="hover:underline">
+              <Link href="/log" aria-label="Audit log" className="hover:underline">
                 <span className="sm:hidden">Log</span>
                 <span className="hidden sm:inline">Audit log</span>
               </Link>

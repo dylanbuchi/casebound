@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fightSavings, statusLabel } from "./format";
+import { fightSavings, fmtUtc, statusLabel } from "./format";
 
 describe("fightSavings", () => {
   it("is good only when fighting is the pick", () => {
@@ -16,5 +16,11 @@ describe("fightSavings", () => {
 describe("statusLabel", () => {
   it("uses the short label for a dispute waiting on the seller", () => {
     expect(statusLabel("WAITING_FOR_SELLER_RESPONSE")).toBe("Needs reply");
+  });
+});
+
+describe("fmtUtc", () => {
+  it("shows date and time in UTC, labeled", () => {
+    expect(fmtUtc("2026-10-20T14:05:00.000Z")).toBe("Oct 20, 2026, 2:05 PM UTC");
   });
 });
