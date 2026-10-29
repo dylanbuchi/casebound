@@ -29,11 +29,22 @@ export async function POST(req: Request, ctx: RouteContext<"/api/analyze/[id]">)
       { status: 429 },
     );
   }
-  running.add(id);
-  const slot = await claimAnalysisSlot();
-  if (!slot.ok) {
+  // Release the slots on any early exit, including a failed save of the usage count.
+  const release = () => {
     running.delete(id);
     gate.leave();
+  };
+  running.add(id);
+  const slot = await claimAnalysisSlot().catch((e) => {
+    console.error("could not record AI usage", id, e);
+    return null;
+  });
+  if (!slot) {
+    release();
+    return Response.json({ error: "The analysis could not start. Try again in a minute." }, { status: 503 });
+  }
+  if (!slot.ok) {
+    release();
     return Response.json(
       { error: `Today's limit of ${slot.cap} AI analyses is used up. Saved analyses still work; try again tomorrow.` },
       { status: 429 },
@@ -58,8 +69,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/analyze/[id]">)
         console.error("analysis failed", id, e);
         send({ type: "error", message: "The analysis failed. Nothing was saved or sent; try again in a minute." });
       } finally {
-        running.delete(id);
-        gate.leave();
+        release();
         if (!abort.signal.aborted) controller.close();
       }
     },
