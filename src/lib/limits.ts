@@ -35,7 +35,13 @@ export function concurrencyGate(max: number) {
   };
 }
 
-// Best effort: the first X-Forwarded-For entry is the client on Render, but a client can forge it.
+// The visitor's address, read only from headers the client cannot pick freely. Render serves through
+// Cloudflare (responses carry cf-ray), which overwrites CF-Connecting-IP with the real client address.
+// Without it, take the right-most X-Forwarded-For entry, the one added by the nearest proxy; the
+// left-most entries are whatever the client sent.
 export function clientIp(headers: Headers) {
-  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip") || "local";
+  const cf = headers.get("cf-connecting-ip")?.trim();
+  if (cf) return cf;
+  const xff = headers.get("x-forwarded-for")?.split(",").map((s) => s.trim()).filter(Boolean);
+  return xff?.at(-1) || headers.get("x-real-ip") || "local";
 }

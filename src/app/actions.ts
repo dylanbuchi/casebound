@@ -19,10 +19,13 @@ export type ActionState = { ok: boolean; message: string } | null;
 
 // Five tries per network per 15 minutes, and each wrong one waits a second, to slow guessing down.
 const unlockTries = rateLimiter(5, 15 * 60 * 1000);
+// Backstop across all networks in case the per-network key is ever wrong: 50 tries per 15 minutes in total.
+const allUnlockTries = rateLimiter(50, 15 * 60 * 1000);
 
 export async function unlock(_prev: ActionState, form: FormData): Promise<ActionState> {
   const tries = unlockTries.take(clientIp(await headers()));
-  if (!tries.ok) return { ok: false, message: `Too many tries. Wait ${Math.ceil(tries.retryMs / 60000)} min and try again.` };
+  const all = tries.ok ? allUnlockTries.take("all") : tries;
+  if (!all.ok) return { ok: false, message: `Too many tries. Wait ${Math.ceil(all.retryMs / 60000)} min and try again.` };
   const code = String(form.get("passcode") ?? "").slice(0, 200);
   if (!checkPasscode(code)) {
     await new Promise((r) => setTimeout(r, 1000));

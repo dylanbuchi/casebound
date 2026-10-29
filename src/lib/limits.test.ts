@@ -28,8 +28,12 @@ describe("concurrencyGate", () => {
 });
 
 describe("clientIp", () => {
-  it("reads the first forwarded address", () => {
-    expect(clientIp(new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" }))).toBe("1.2.3.4");
+  it("prefers the address Cloudflare sets over anything the client sent", () => {
+    expect(clientIp(new Headers({ "cf-connecting-ip": "5.6.7.8", "x-forwarded-for": "1.1.1.1, 5.6.7.8" }))).toBe("5.6.7.8");
+  });
+  it("uses the right-most forwarded address, so a forged left-most one is ignored", () => {
+    expect(clientIp(new Headers({ "x-forwarded-for": "9.9.9.9, 1.2.3.4" }))).toBe("1.2.3.4");
+    expect(clientIp(new Headers({ "x-forwarded-for": "1.2.3.4" }))).toBe("1.2.3.4");
     expect(clientIp(new Headers())).toBe("local");
   });
 });
