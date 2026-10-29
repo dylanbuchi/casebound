@@ -127,6 +127,8 @@ pnpm dev
 
 ## Hosting the demo
 
+- The public demo at https://casebound.zycody.com runs on **Render** (a free Node web service: build `pnpm install --frozen-lockfile && pnpm build`, start `pnpm start`, secrets set as Render environment variables), with Cloudflare DNS for the custom domain.
+- Sponsor tools used: **Render** for hosting and **AG Grid** (Community) for the dispute inbox queue.
 - Disputes always come live from PayPal. Shop records, saved analyses and receipts live in JSON files under `DATA_DIR`.
 - On hosts with an ephemeral disk (for example Render's free tier), the app falls back to the committed snapshot in `seed/` whenever a data file is missing, so a restart shows the same orders, analyses and receipts. Refresh the snapshot with `node scripts/export-seed.mjs` (it refuses anything that looks like a secret).
 - Set `APP_PASSCODE`, keep `AI_DAILY_CAP` low (30 per day for the public demo), and set a low monthly spend limit in the Anthropic console: the in-app cap resets whenever the host restarts. Saved analyses are shown without spending credits.
