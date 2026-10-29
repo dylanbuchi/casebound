@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { executePlan, type ActionState } from "@/app/actions";
-import { describeRequest, withEdits, type PlannedStep } from "@/lib/plan";
+import { applyEdits, describeRequest, type PlannedStep } from "@/lib/plan";
 
 export function ApprovePanel(props: {
   disputeId: string;
@@ -27,9 +27,9 @@ export function ApprovePanel(props: {
   const showEvidence = props.steps.some((s) => s.action.kind === "provide_evidence" || s.action.kind === "provide_supporting_info");
   const showMessage = props.steps.some((s) => s.action.kind !== "provide_evidence" && s.action.kind !== "provide_supporting_info");
   // Same edit logic the server applies, so the preview is exactly what gets sent.
-  const previews = props.steps.map((s) => ({
+  const previews = applyEdits(props.steps, { evidenceNotes, buyerMessage }).steps.map((s) => ({
     label: s.label,
-    request: describeRequest(props.disputeId, withEdits(s.action, { evidenceNotes, buyerMessage })),
+    request: describeRequest(props.disputeId, s.action),
   }));
 
   return (

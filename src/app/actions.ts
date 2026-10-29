@@ -8,7 +8,7 @@ import { COOKIE_TTL_MS } from "@/lib/pass";
 import { clientIp, rateLimiter } from "@/lib/limits";
 import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
 import { allowedActions } from "@/lib/dispute-state";
-import { isStale, offerProblem, planActions, STALE_MESSAGE, withEdits, type PlannedStep } from "@/lib/plan";
+import { applyEdits, isStale, offerProblem, planActions, STALE_MESSAGE, type PlannedStep } from "@/lib/plan";
 import { appendAudit, deleteAnalysis, getAnalysis, type AuditEntry } from "@/lib/records";
 import { runSteps as sendSteps } from "@/lib/run-steps";
 import { updateJson } from "@/lib/store";
@@ -82,7 +82,10 @@ export async function executePlan(_prev: ActionState, form: FormData): Promise<A
   const dispute = await src.getDispute(disputeId);
   if (isStale(analysis.disputeUpdatedAt, dispute)) return { ok: false, message: STALE_MESSAGE };
   const fulfillment = await src.getFulfillment(dispute);
-  const steps = planActions(dispute, analysis.assessment, fulfillment).map((s) => ({ ...s, action: withEdits(s.action, edits) }));
+  const planned = planActions(dispute, analysis.assessment, fulfillment);
+  const { steps, problem: editProblem } = applyEdits(planned, edits);
+  if (editProblem) return { ok: false, message: editProblem };
+  if (planned.length > 0 && steps.length === 0) return { ok: false, message: "Write a message to the buyer first." };
   if (steps.length === 0) {
     const problem = offerProblem(dispute, analysis.assessment);
     if (problem) return { ok: false, message: problem };

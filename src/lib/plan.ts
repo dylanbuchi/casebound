@@ -154,3 +154,14 @@ export function withEdits(action: DisputeAction, edits: { evidenceNotes: string;
       return { ...action, message: edits.buyerMessage.slice(0, 2000) };
   }
 }
+
+// Applies the seller's edits to every step. A cleared buyer message drops the message step, since PayPal
+// rejects an empty one; an accept or offer needs its note, so a blank one is reported instead.
+export function applyEdits(steps: PlannedStep[], edits: { evidenceNotes: string; buyerMessage: string }) {
+  const edited = steps.map((s) => ({ ...s, action: withEdits(s.action, edits) }));
+  const blank = !edits.buyerMessage.trim();
+  const problem = blank && edited.some((s) => s.action.kind === "accept_claim" || s.action.kind === "make_offer")
+    ? "Write a short note to the buyer first; PayPal needs one with an acceptance or an offer."
+    : null;
+  return { steps: blank ? edited.filter((s) => s.action.kind !== "send_message") : edited, problem };
+}

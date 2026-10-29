@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Assessment } from "./agent";
 import type { FulfillmentRecord } from "./fulfillment";
 import type { Dispute } from "./paypal/types";
-import { isStale, offerProblem, planActions } from "./plan";
+import { applyEdits, isStale, offerProblem, planActions } from "./plan";
 
 const dispute = {
   dispute_id: "PP-D-1",
@@ -120,5 +120,22 @@ describe("PayPal-allowed actions", () => {
 
   it("plans nothing when PayPal allows nothing", () => {
     expect(planActions(withLinks(["self"]), { ...base, recommended_action: "ACCEPT" }, record)).toEqual([]);
+  });
+});
+
+describe("applyEdits", () => {
+  const evidence = { label: "Send proof", action: { kind: "provide_evidence" as const, evidences: [{ evidence_type: "PROOF_OF_FULFILLMENT" as const, notes: "x" }] } };
+  const message = { label: "Message the buyer", action: { kind: "send_message" as const, message: "Hi" } };
+
+  it("drops the message step when the seller clears the buyer message", () => {
+    const res = applyEdits([evidence, message], { evidenceNotes: "Proof", buyerMessage: "  " });
+    expect(res.problem).toBeNull();
+    expect(res.steps.map((s) => s.action.kind)).toEqual(["provide_evidence"]);
+  });
+
+  it("blocks an accept with a blank note instead of sending it", () => {
+    const accept = { label: "Accept", action: { kind: "accept_claim" as const, note: "Sorry" } };
+    expect(applyEdits([accept], { evidenceNotes: "", buyerMessage: "" }).problem).toMatch(/note/);
+    expect(applyEdits([accept], { evidenceNotes: "", buyerMessage: "Refunding you" }).steps[0].action).toEqual({ kind: "accept_claim", note: "Refunding you" });
   });
 });
