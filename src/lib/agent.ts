@@ -12,6 +12,7 @@ import type { CheckItem } from "@/lib/checklist";
 import type { FulfillmentRecord } from "@/lib/fulfillment";
 import type { Tracker } from "@/lib/paypal/types";
 import { PRODUCT } from "@/lib/brand";
+import { toolLabel } from "@/lib/progress";
 
 // Haiku for development; set AI_MODEL=claude-opus-5-5 for the recorded demo.
 const MODEL = process.env.AI_MODEL || "claude-haiku-5-5";
@@ -84,19 +85,6 @@ export type AgentEvent =
   | { type: "hypothesis"; lean: Lean; because: string; changed: boolean }
   | { type: "thinking" };
 
-const toolLabels: Record<string, string> = {
-  get_dispute: "Reading the dispute on PayPal",
-  get_payment: "Pulling the PayPal capture and order",
-  get_shipment_tracking: "Checking PayPal shipment tracking",
-  get_shop_records: "Opening the shop's fulfillment record",
-  get_buyer_history: "Looking up this buyer's history",
-  get_store_policy: "Reading the store policy",
-  get_evidence_checklist: "Checking what evidence is on file",
-  estimate_economics: "Running the money math",
-  record_assessment: "Writing the recommendation",
-  grounding_check: "Checking delivery, signature and reference claims against their source",
-};
-
 const SYSTEM = `You are ${PRODUCT}, a dispute analyst for a small online shop that sells through PayPal.
 You help the seller decide, for one PayPal dispute, whether to fight it, accept it, or offer a partial refund, and you draft the response.
 
@@ -131,8 +119,9 @@ export async function analyzeDispute(
   let recorded: Assessment | null = null;
 
   const track = <T,>(name: string, fn: () => Promise<T>) => {
+    const repeat = toolCalls.includes(name);
     toolCalls.push(name);
-    onEvent({ type: "tool", name, label: toolLabels[name] ?? name });
+    onEvent({ type: "tool", name, label: toolLabel(name, { repeat, afterRewrite: sentBack > 0 }) });
     return fn().then(
       (v) => JSON.stringify(v ?? null),
       (e: unknown) => JSON.stringify({ error: e instanceof Error ? e.message : "lookup failed" }),
@@ -259,7 +248,8 @@ export async function analyzeDispute(
                 }
               : {}),
             ...computeEconomics({ ...econBase, winProbability: cal.calibrated }),
-            break_even_probability: Math.round(breakEvenProbability(econBase) * 1000) / 1000,
+            // Whole percents, as the verdict card shows it, so the reasoning text quotes the same break-even.
+            break_even_probability: Math.round(breakEvenProbability(econBase) * 100) / 100,
           };
         }),
     }),
@@ -322,7 +312,7 @@ export async function analyzeDispute(
   const final = (recorded ?? lastInput) as Assessment | null;
   if (!final) throw new Error("The agent finished without recording an assessment.");
   const { facts, checklist } = await grounds();
-  onEvent({ type: "tool", name: "grounding_check", label: toolLabels.grounding_check });
+  onEvent({ type: "tool", name: "grounding_check", label: toolLabel("grounding_check") });
   const { assessment, removed } = enforceGrounding(stripMarkup(final), facts);
   const calibration = calibrate(assessment.win_probability, checklist);
   const winProbability = calibration.calibrated;
