@@ -21,7 +21,8 @@ export async function POST(_req: Request, ctx: RouteContext<"/api/store/orders/[
     const full = await getOrder(order.id).catch(() => null);
     const items = full?.purchase_units?.[0]?.items ?? unit.items ?? [];
     const addr = unit.shipping?.address;
-    await upsertFulfillment({
+    // The money has moved now, so a failed save must not be reported as a failed payment.
+    const saved = await upsertFulfillment({
       orderId: order.id,
       captureId: capture.id,
       createdAt: new Date().toISOString(),
@@ -30,8 +31,14 @@ export async function POST(_req: Request, ctx: RouteContext<"/api/store/orders/[
       shipTo: [addr?.admin_area_2, addr?.country_code].filter(Boolean).join(", ") || "Unknown",
       items: items.map((i) => ({ name: i.name, quantity: Number(i.quantity), unitPrice: i.unit_amount?.value ?? "0" })),
       total: capture.amount.value,
-    });
-    return Response.json({ orderId: order.id, captureId: capture.id, status: capture.status });
+    }).then(
+      () => true,
+      (e) => {
+        console.error("captured but not saved", order.id, e);
+        return false;
+      },
+    );
+    return Response.json({ orderId: order.id, captureId: capture.id, status: capture.status, saved });
   } catch (e) {
     console.error("capture failed", e);
     return Response.json({ error: e instanceof PayPalError ? e.message : "Could not capture payment" }, { status: 502 });

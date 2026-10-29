@@ -1,6 +1,5 @@
 "use server";
 
-import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { z } from "zod";
@@ -8,10 +7,10 @@ import { checkPasscode, isUnlocked, newCookie, PASS_COOKIE } from "@/lib/auth";
 import { COOKIE_TTL_MS } from "@/lib/pass";
 import { clientIp, rateLimiter } from "@/lib/limits";
 import { QUICK_ACCEPT_MESSAGE, quickCallFor } from "@/lib/case";
-import { PayPalError } from "@/lib/paypal/client";
 import { allowedActions } from "@/lib/dispute-state";
-import { describeRequest, isStale, offerProblem, planActions, STALE_MESSAGE, withEdits, type PlannedStep } from "@/lib/plan";
+import { isStale, offerProblem, planActions, STALE_MESSAGE, withEdits, type PlannedStep } from "@/lib/plan";
 import { appendAudit, deleteAnalysis, getAnalysis, type AuditEntry } from "@/lib/records";
+import { runSteps as sendSteps } from "@/lib/run-steps";
 import { updateJson } from "@/lib/store";
 import { isPractice, modeOf, source, type Source } from "@/lib/source";
 
@@ -51,28 +50,13 @@ const ExecuteInput = z.object({
 });
 
 
-// Sends the steps in order, logging the exact request and PayPal's response for each.
+// Runs the steps, then refreshes every page that shows this dispute or the log.
 async function runSteps(src: Source, disputeId: string, steps: PlannedStep[], idSeed: string): Promise<ActionState> {
-  for (const step of steps) {
-    // Same seed + same step = same request id, so a retried click is not applied twice.
-    const requestId = createHash("sha256").update(`${disputeId}:${idSeed}:${step.action.kind}`).digest("hex").slice(0, 36);
-    const request = describeRequest(disputeId, step.action);
-    const base = { at: new Date().toISOString(), disputeId, mode: modeOf(disputeId), action: step.action.kind, detail: step.label, request };
-    try {
-      const response = await src.act(disputeId, step.action, requestId);
-      await appendAudit({ ...base, ok: true, response: response ?? { status: 204 } });
-    } catch (e) {
-      const message = e instanceof PayPalError ? `${e.message}${e.debugId ? ` (debug id ${e.debugId})` : ""}` : "Unexpected error";
-      console.error("action failed", disputeId, step.action.kind, e);
-      await appendAudit({ ...base, ok: false, error: message, response: e instanceof PayPalError ? e.details : undefined });
-      revalidatePath(`/disputes/${disputeId}`);
-      return { ok: false, message: `PayPal rejected "${step.label}": ${message}` };
-    }
-  }
+  const result = await sendSteps(src, disputeId, modeOf(disputeId), steps, idSeed, appendAudit);
   revalidatePath("/");
   revalidatePath("/log");
   revalidatePath(`/disputes/${disputeId}`);
-  return { ok: true, message: `Done: ${steps.map((s) => s.label).join(" · ")}.` };
+  return result;
 }
 
 // Runs the approved plan. The client sends only edited wording; the structure

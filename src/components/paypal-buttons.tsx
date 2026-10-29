@@ -73,8 +73,13 @@ export function PayPalButtons({ clientId, sku }: { clientId: string; sku: string
         const body = await res.json().catch(() => ({}));
         setMsg(
           res.ok
-            ? { ok: true, text: `Payment confirmed (order ${body.orderId}). You can leave this page.` }
-            : { ok: false, text: body.error ?? "Payment failed. You have not been charged." },
+            ? {
+                ok: true,
+                text: body.saved === false
+                  ? `Payment confirmed (order ${body.orderId}), but the shop could not record it. Keep the order id.`
+                  : `Payment confirmed (order ${body.orderId}). You can leave this page.`,
+              }
+            : { ok: false, text: body.error ?? "Payment could not be confirmed. Check your PayPal account before trying again." },
         );
       },
       onError: () => setMsg({ ok: false, text: "PayPal checkout failed. Try again." }),
