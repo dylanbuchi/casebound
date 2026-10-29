@@ -39,7 +39,7 @@ Move the mouse slowly. Wait ~2 seconds after every click before the next one.
   - Hover the money bars: **"Refund now $0.00"** vs **"Fight $14.75"** (3 s).
   - Move to the right panel, **"Review and send"**. Hover the message to the buyer (3 s).
   - Click **"Technical details: the exact PayPal request"** to open it, hover 2 s.
-  - Click **"Approve and send"**. Wait for the confirmation.
+  - Click **"Approve and send"**, let the question ("Refund 210.00 USD to Rosa Diaz?") be read for 2 s, then click **"Yes, send"**. Wait for the confirmation.
 
 ### Scene 4: Proof it's real PayPal (≈20 s)
 - Click **"Audit log"** in the top menu.
