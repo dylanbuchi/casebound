@@ -57,7 +57,10 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
   const steps = a && !stale ? planActions(dispute, a, fulfillment) : [];
   const history = audit.filter((e) => e.disputeId === id);
   const sentSinceAnalysis = Boolean(analysis) && history.some((h) => h.ok && h.at > analysis!.createdAt);
+  // A send that went out before this analysis: the new draft would be a follow-up, so say so (newest first).
+  const sentBefore = analysis ? history.find((h) => h.ok && h.at <= analysis.createdAt) : undefined;
   const currency = dispute.dispute_amount.currency_code;
+  const fileOnly = !a && history.length === 0;
 
   const outcome = dispute.dispute_outcome ?? dispute.outcome;
   const used = windowUsed(dispute.create_time, dispute.seller_response_due_date);
@@ -83,6 +86,9 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           steps={steps}
           evidenceNotes={a.evidence_notes}
           buyerMessage={a.buyer_message}
+          amount={`${dispute.dispute_amount.value} ${currency}`}
+          buyerName={tx?.buyer?.name}
+          sentBefore={sentBefore && { at: fmtDate(sentBefore.at), detail: sentBefore.detail }}
         />
       )}
 
@@ -200,10 +206,10 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           </p>
           <div className="mt-5">
             {unlocked ? (
-              <QuickAccept disputeId={id} label={`Accept and refund ${fmtMoney(dispute.dispute_amount)}`} />
+              <QuickAccept disputeId={id} label={`Refund ${fmtMoney(dispute.dispute_amount)}`} />
             ) : (
               <Link href="/unlock" className="btn btn-line">
-                Unlock to accept
+                Unlock to refund
               </Link>
             )}
           </div>
@@ -236,9 +242,13 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
         </details>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+      {/* Before an analysis or any send there is nothing for the right column, so the case file takes the full width. */}
+      <div className={`grid gap-6 lg:items-start ${fileOnly ? "" : "lg:grid-cols-[1fr_1.1fr]"}`}>
         {/* Case file: everything the agent can see */}
-        <section aria-label="Case file" className="min-w-0 space-y-4">
+        <section
+          aria-label="Case file"
+          className={`min-w-0 ${fileOnly ? "gap-6 *:mb-4 *:break-inside-avoid lg:columns-2" : "space-y-4"}`}
+        >
           <details className={`rounded-lg border-2 bg-card px-5 py-4 ${urgent ? "border-fight" : "border-rule"}`} open={!a}>
             <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
               Deadline and what a PayPal reviewer looks for
@@ -312,7 +322,12 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                     ["Shipped", fmtDate(fulfillment.shippedAt)],
                     ["Delivered", fmtDate(fulfillment.deliveredAt)],
                     ["Signed by", fulfillment.signedBy ?? "-"],
-                    ["Refunds", fulfillment.refunds?.map((r) => `${r.refundId} (${r.amount})`).join(", ") || "-"],
+                    [
+                      "Refunds",
+                      fulfillment.refunds?.map((r) => `${r.refundId} (${r.amount})`).join(", ") ||
+                        // No refund in the shop record, but the dispute itself refunded the buyer.
+                        (outcome?.amount_refunded ? `${fmtMoney(outcome.amount_refunded)} through the PayPal dispute` : "-"),
+                    ],
                   ]}
                 />
                 {fulfillment.notes?.length ? (
@@ -345,7 +360,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                       aria-label={`supports ${f.supports.toLowerCase()}`}
                     />
                     <span>
-                      {f.fact} <span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
+                      {f.fact}{"\u00a0"}<span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
                     </span>
                   </li>
                 ))}
@@ -364,7 +379,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                           aria-label={`supports ${f.supports.toLowerCase()}`}
                         />
                         <span>
-                          {f.fact} <span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
+                          {f.fact}{"\u00a0"}<span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
                         </span>
                       </li>
                     ))}

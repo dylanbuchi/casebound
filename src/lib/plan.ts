@@ -165,3 +165,24 @@ export function applyEdits(steps: PlannedStep[], edits: { evidenceNotes: string;
     : null;
   return { steps: blank ? edited.filter((s) => s.action.kind !== "send_message") : edited, problem };
 }
+
+// The one-line question the seller confirms before a send, built from the exact steps that will go out.
+export function confirmQuestion(steps: PlannedStep[], o: { amount: string; buyer?: string }): string {
+  const buyer = o.buyer?.trim() || "the buyer";
+  const parts = steps.map(({ action: a }) => {
+    switch (a.kind) {
+      case "accept_claim":
+        return `refund ${o.amount} to ${buyer}`;
+      case "make_offer":
+        return a.amount ? `offer ${a.amount.value} ${a.amount.currency_code} to ${buyer}` : `offer ${buyer} a free replacement`;
+      case "provide_evidence":
+        return "send your evidence to PayPal";
+      case "provide_supporting_info":
+        return "send supporting information to PayPal";
+      case "send_message":
+        return `message ${buyer}`;
+    }
+  });
+  const text = parts.length < 2 ? parts.join("") : `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}`;
+  return text ? `${text[0].toUpperCase()}${text.slice(1)}?` : "";
+}

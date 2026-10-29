@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Assessment } from "./agent";
 import type { FulfillmentRecord } from "./fulfillment";
 import type { Dispute } from "./paypal/types";
-import { applyEdits, isStale, offerProblem, planActions } from "./plan";
+import { applyEdits, confirmQuestion, isStale, offerProblem, planActions } from "./plan";
 
 const dispute = {
   dispute_id: "PP-D-1",
@@ -137,5 +137,27 @@ describe("applyEdits", () => {
     const accept = { label: "Accept", action: { kind: "accept_claim" as const, note: "Sorry" } };
     expect(applyEdits([accept], { evidenceNotes: "", buyerMessage: "" }).problem).toMatch(/note/);
     expect(applyEdits([accept], { evidenceNotes: "", buyerMessage: "Refunding you" }).steps[0].action).toEqual({ kind: "accept_claim", note: "Refunding you" });
+  });
+});
+
+describe("confirmQuestion", () => {
+  it("asks about the refund for an accept", () => {
+    const steps = planActions(dispute, { ...base, recommended_action: "ACCEPT" }, record);
+    expect(confirmQuestion(steps, { amount: "95.00 USD", buyer: "Rosa Diaz" })).toBe("Refund 95.00 USD to Rosa Diaz?");
+  });
+
+  it("lists every step of a fight, and falls back to 'the buyer'", () => {
+    const steps = planActions(dispute, base, record);
+    expect(confirmQuestion(steps, { amount: "95.00 USD" })).toBe("Send your evidence to PayPal and message the buyer?");
+  });
+
+  it("names the offer amount", () => {
+    const steps = planActions(dispute, { ...base, recommended_action: "OFFER", offer_type: "REFUND", offer_amount: 40 }, record, new Set(["make_offer"]));
+    expect(confirmQuestion(steps, { amount: "95.00 USD", buyer: "Rosa" })).toBe("Offer 40.00 USD to Rosa?");
+  });
+
+  it("follows the edits: a cleared message drops the message step", () => {
+    const { steps } = applyEdits(planActions(dispute, base, record), { evidenceNotes: "x", buyerMessage: " " });
+    expect(confirmQuestion(steps, { amount: "95.00 USD" })).toBe("Send your evidence to PayPal?");
   });
 });

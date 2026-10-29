@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { executePlan, type ActionState } from "@/app/actions";
-import { applyEdits, describeRequest, type PlannedStep } from "@/lib/plan";
+import { applyEdits, confirmQuestion, describeRequest, type PlannedStep } from "@/lib/plan";
 
 export function ApprovePanel(props: {
   disputeId: string;
@@ -20,6 +20,11 @@ export function ApprovePanel(props: {
   steps: PlannedStep[];
   evidenceNotes: string;
   buyerMessage: string;
+  // For the confirm question: "Refund 210.00 USD to Rosa Diaz?"
+  amount: string;
+  buyerName?: string;
+  // An earlier send on this case, made before this analysis: this draft would go out as a follow-up.
+  sentBefore?: { at: string; detail: string };
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(executePlan, null);
   const [evidenceNotes, setEvidenceNotes] = useState(props.evidenceNotes);
@@ -27,13 +32,27 @@ export function ApprovePanel(props: {
   const showEvidence = props.steps.some((s) => s.action.kind === "provide_evidence" || s.action.kind === "provide_supporting_info");
   const showMessage = props.steps.some((s) => s.action.kind !== "provide_evidence" && s.action.kind !== "provide_supporting_info");
   // Same edit logic the server applies, so the preview is exactly what gets sent.
-  const previews = applyEdits(props.steps, { evidenceNotes, buyerMessage }).steps.map((s) => ({
+  const edited = applyEdits(props.steps, { evidenceNotes, buyerMessage }).steps;
+  const previews = edited.map((s) => ({
     label: s.label,
     request: describeRequest(props.disputeId, s.action),
   }));
+  // Approve first asks once, inline, so a send is never one stray click. The server still re-checks everything.
+  const [confirming, setConfirming] = useState(false);
+  const approveRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLDivElement>(null);
+  const question = confirmQuestion(edited, { amount: props.amount, buyer: props.buyerName });
+  useEffect(() => {
+    if (confirming) confirmRef.current?.focus();
+  }, [confirming]);
+  const cancel = () => {
+    setConfirming(false);
+    // Wait for the button to come back before moving focus to it.
+    requestAnimationFrame(() => approveRef.current?.focus());
+  };
 
   return (
-    <form action={action} className="rounded-lg border-2 border-ink bg-card p-5" aria-label="Review and send">
+    <form action={action} onSubmit={() => setConfirming(false)} className="rounded-lg border-2 border-ink bg-card p-5" aria-label="Review and send">
       <h2 className="font-display text-2xl font-semibold">Review and send</h2>
       <p className="mb-4 text-sm text-ink-2">Nothing goes out before you click.</p>
       <input type="hidden" name="disputeId" value={props.disputeId} />
@@ -41,6 +60,12 @@ export function ApprovePanel(props: {
 
       {props.warning && (
         <p className="mb-4 rounded-md border border-fight bg-paper p-3 text-sm font-medium text-fight">{props.warning}</p>
+      )}
+      {props.sentBefore && !props.sent && props.steps.length > 0 && (
+        <p className="mb-4 rounded-md border border-rule bg-paper p-3 text-sm text-ink-2">
+          <strong className="text-ink">Already answered on {props.sentBefore.at}:</strong> {props.sentBefore.detail}. Approving adds the
+          steps below as a follow-up; the earlier response stays with PayPal.
+        </p>
       )}
       {props.steps.length === 0 ? (
         <p role={props.blocked ? "alert" : undefined} className={`mb-4 rounded-md border bg-paper p-3 text-sm ${props.blocked ? "border-fight font-medium text-fight" : "border-rule text-ink-2"}`}>
@@ -73,9 +98,36 @@ export function ApprovePanel(props: {
             <span className="stamp stamp-in text-base text-accept">Sent</span>
             <span className="text-sm font-medium text-accept">{props.simulated ? "Simulated: nothing reached PayPal. The receipt is below." : "PayPal has it. The receipt is below."}</span>
           </span>
+        ) : confirming ? (
+          <div
+            ref={confirmRef}
+            tabIndex={-1}
+            role="group"
+            aria-labelledby="confirm-send-question"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") cancel();
+            }}
+            className="rise w-full rounded-md border-2 border-ink bg-paper p-3 outline-none focus-visible:ring-2 focus-visible:ring-ink"
+          >
+            <p id="confirm-send-question" className="font-medium">
+              {question}
+            </p>
+            {props.warning && <p className="mt-1 text-sm text-fight">The evidence disagrees on this case. Sure it is right?</p>}
+            {props.simulated && <p className="mt-1 text-sm text-ink-3">Practice case: simulated, nothing reaches PayPal.</p>}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="submit" className="btn btn-ink">
+                {props.simulated ? "Yes, simulate the send" : "Yes, send"}
+              </button>
+              <button type="button" onClick={cancel} className="btn btn-line">
+                Cancel
+              </button>
+            </div>
+          </div>
         ) : (
           <button
-            type="submit"
+            ref={approveRef}
+            type="button"
+            onClick={() => setConfirming(true)}
             disabled={pending || !props.actionable || props.steps.length === 0}
             className="btn btn-ink px-6 py-3 text-base"
           >
