@@ -7,6 +7,8 @@ import { describeRequest, withEdits, type PlannedStep } from "@/lib/plan";
 
 export function ApprovePanel(props: {
   disputeId: string;
+  // Which analysis the draft came from; the server refuses the send if a newer one exists.
+  analysisAt: string;
   actionable: boolean;
   sent?: boolean;
   warning?: string;
@@ -35,6 +37,7 @@ export function ApprovePanel(props: {
       <h2 className="font-display text-2xl font-semibold">Review and send</h2>
       <p className="mb-4 text-sm text-ink-2">Nothing goes out before you click.</p>
       <input type="hidden" name="disputeId" value={props.disputeId} />
+      <input type="hidden" name="analysisAt" value={props.analysisAt} />
 
       {props.warning && (
         <p className="mb-4 rounded-md border border-fight bg-paper p-3 text-sm font-medium text-fight">{props.warning}</p>

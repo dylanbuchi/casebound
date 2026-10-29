@@ -45,6 +45,7 @@ const DisputeId = z.string().regex(/^[A-Za-z0-9-]{1,64}$/);
 
 const ExecuteInput = z.object({
   disputeId: DisputeId,
+  analysisAt: z.string().max(64),
   evidenceNotes: z.string().max(2000),
   buyerMessage: z.string().max(2000),
 });
@@ -65,15 +66,18 @@ export async function executePlan(_prev: ActionState, form: FormData): Promise<A
   if (!(await isUnlocked())) return { ok: false, message: "Enter the passcode first." };
   const parsed = ExecuteInput.safeParse({
     disputeId: form.get("disputeId"),
+    analysisAt: form.get("analysisAt") ?? "",
     evidenceNotes: form.get("evidenceNotes") ?? "",
     buyerMessage: form.get("buyerMessage") ?? "",
   });
   if (!parsed.success) return { ok: false, message: "Invalid request." };
-  const { disputeId, ...edits } = parsed.data;
+  const { disputeId, analysisAt, ...edits } = parsed.data;
 
   const src = source();
   const analysis = await getAnalysis(disputeId);
   if (!analysis) return { ok: false, message: "Run the analysis first." };
+  // Edited wording from an older draft must not go out with a newer plan (e.g. "fight" text with an "accept").
+  if (analysisAt !== analysis.createdAt) return { ok: false, message: "The analysis changed since this page loaded. Reload and review the new draft." };
 
   const dispute = await src.getDispute(disputeId);
   if (isStale(analysis.disputeUpdatedAt, dispute)) return { ok: false, message: STALE_MESSAGE };

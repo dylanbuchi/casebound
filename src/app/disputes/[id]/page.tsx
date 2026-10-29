@@ -70,6 +70,9 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
     <>
       {a && (actionable || history.length === 0) && (
         <ApprovePanel
+          // A new analysis remounts the panel, so edits made to the old draft cannot ride along with the new plan.
+          key={analysis!.createdAt}
+          analysisAt={analysis!.createdAt}
           disputeId={id}
           actionable={actionable}
           sent={sentSinceAnalysis}
