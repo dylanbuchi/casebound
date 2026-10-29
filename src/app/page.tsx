@@ -132,16 +132,19 @@ export default async function Inbox() {
                     {r.verdict ? (
                       <span className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold text-paper ${verdictBg[r.verdict]}`}>{r.verdict}</span>
                     ) : r.quickCall && r.needsResponse ? (
-                      <span className="text-accept">Quick call: accept</span>
+                      <span className="text-accept">Quick call: refund</span>
                     ) : r.quickAccepted ? (
                       <span className="text-accept">Quick call: refunded</span>
                     ) : (
                       <span className="text-ink-3">Not analyzed</span>
                     )}
-                    <span>{r.status}</span>
-                    {r.needsResponse && r.dueInDays !== null && (
-                      <span className={r.dueInDays <= 3 ? "font-semibold text-fight" : ""}>· {r.dueInDays} days left</span>
-                    )}
+                    {/* One unbreakable unit, so the separator never starts a line on its own. */}
+                    <span className="whitespace-nowrap">
+                      {r.status}
+                      {r.needsResponse && r.dueInDays !== null && (
+                        <span className={r.dueInDays <= 3 ? "font-semibold text-fight" : ""}> · {r.dueInDays} days left</span>
+                      )}
+                    </span>
                   </div>
                 </Link>
               </li>

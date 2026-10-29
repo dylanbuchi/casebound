@@ -16,7 +16,7 @@ export const reasonLabel: Record<DisputeReason, string> = {
 export const statusLabel = (s: DisputeStatus | string) =>
   ({
     OPEN: "Open",
-    WAITING_FOR_SELLER_RESPONSE: "Needs your response",
+    WAITING_FOR_SELLER_RESPONSE: "Needs reply",
     WAITING_FOR_BUYER_RESPONSE: "Waiting on buyer",
     UNDER_REVIEW: "PayPal reviewing",
     RESOLVED: "Resolved",
@@ -49,4 +49,11 @@ export function windowUsed(createdIso: string, dueIso?: string) {
   const start = new Date(createdIso).getTime();
   const total = new Date(dueIso).getTime() - start;
   return total > 0 ? Math.min(1, Math.max(0, (Date.now() - start) / total)) : 0;
+}
+
+// The inbox's "fighting saves" figure: the expected gain from fighting instead of refunding. It reads as good
+// (green) only when fighting is also the pick; otherwise a positive average would contradict the recommendation.
+export function fightSavings(savings: number | null, verdict: "FIGHT" | "ACCEPT" | "OFFER" | null, currency = "USD") {
+  if (savings === null) return { text: "-", good: false };
+  return { text: `${savings >= 0 ? "+" : ""}${fmtUsd(savings, currency)}`, good: savings > 0 && verdict === "FIGHT" };
 }
