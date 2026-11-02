@@ -9,7 +9,7 @@ export default function Unlock() {
         <span className="stamp absolute -top-4 right-5 bg-card text-sm text-fight" style={{ mixBlendMode: "normal" }} aria-hidden>
           Sealed
         </span>
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Passcode required</p>
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">Passcode required</p>
         <h1 className="mt-1 font-display text-3xl font-semibold">Unlock {PRODUCT}</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-2">
           Reading cases is open. Running an analysis and sending responses to PayPal need the passcode. Judges: it is in the

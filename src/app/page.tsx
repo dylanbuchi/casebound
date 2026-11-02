@@ -124,13 +124,13 @@ export default async function Inbox() {
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-medium">
                       {r.reason}
-                      {r.practice && <span className="ml-2 rounded-full border border-offer px-2 py-0.5 text-[11px] text-offer">Practice</span>}
+                      {r.practice && <span className="ml-2 rounded-full border border-offer px-2 py-0.5 text-xs text-offer">Practice</span>}
                     </p>
                     <p className="font-mono">{fmtUsd(r.amount, r.currency)}</p>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-2">
                     {r.verdict ? (
-                      <span className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold text-paper ${verdictBg[r.verdict]}`}>{r.verdict}</span>
+                      <span className={`rounded-full px-2.5 py-0.5 font-mono text-xs font-bold text-paper ${verdictBg[r.verdict]}`}>{r.verdict}</span>
                     ) : r.quickCall && r.needsResponse ? (
                       <span className="text-accept">Quick call: refund</span>
                     ) : r.quickAccepted ? (

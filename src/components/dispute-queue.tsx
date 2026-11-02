@@ -50,7 +50,7 @@ function Verdict({ value, data }: ICellRendererParams<QueueRow, QueueRow["verdic
   if (!value && data?.quickAccepted) return <span className="text-accept">Quick call: refunded</span>;
   if (!value) return <span className="text-ink-3">Not analyzed</span>;
   return (
-    <span className={`rounded-full px-2.5 py-1 font-mono text-[11px] font-bold tracking-wider text-paper ${verdictClass[value]}`}>{value}</span>
+    <span className={`rounded-full px-2.5 py-1 font-mono text-xs font-bold tracking-wider text-paper ${verdictClass[value]}`}>{value}</span>
   );
 }
 
@@ -99,7 +99,7 @@ export function DisputeQueue({ rows }: { rows: QueueRow[] }) {
               p.value
             )}
             {p.data?.practice && (
-              <span className="ml-2 rounded-full border border-offer px-2 py-0.5 text-[11px] font-medium text-offer">Practice</span>
+              <span className="ml-2 rounded-full border border-offer px-2 py-0.5 text-xs font-medium text-offer">Practice</span>
             )}
           </span>
         ),
@@ -163,7 +163,7 @@ export function DisputeQueue({ rows }: { rows: QueueRow[] }) {
 function GridPlaceholder({ rows }: { rows: number }) {
   return (
     <div className="overflow-hidden rounded-lg border border-rule bg-card" role="status">
-      <div className="flex h-12 items-center border-b border-rule bg-paper-2 px-4 font-mono text-[11px] uppercase tracking-wider text-ink-3">
+      <div className="flex h-12 items-center border-b border-rule bg-paper-2 px-4 font-mono text-xs uppercase tracking-wider text-ink-3">
         Loading cases…
       </div>
       {Array.from({ length: rows }, (_, i) => (

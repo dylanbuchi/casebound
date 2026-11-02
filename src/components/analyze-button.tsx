@@ -90,7 +90,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
       )}
       {(running || steps.length > 0) && (
         <div className="rounded-md border border-rule bg-paper px-4 py-3">
-          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+          <p className="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-ink-3">
             {running ? "The agent is working the case" : finished ? "Investigation done" : "Investigation stopped"}
           </p>
           <ol className="space-y-1.5 font-mono text-sm" aria-live="polite">
@@ -103,7 +103,7 @@ export function AnalyzeButton({ disputeId, unlocked, again }: { disputeId: strin
                     key={i}
                     className={`rise my-2 rounded-md border-l-4 bg-card px-3 py-2 font-sans ${s.changed ? "border-offer" : "border-rule"}`}
                   >
-                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+                    <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">
                       {s.changed ? "Changed my mind" : "Working lean"}{" "}
                       <span className={`font-bold ${leanColor[s.lean]}`}>→ {s.lean}</span>
                     </p>

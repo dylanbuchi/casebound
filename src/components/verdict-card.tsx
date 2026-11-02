@@ -82,7 +82,7 @@ export function VerdictCard({
       aria-label="Recommendation"
       className={`verdict-sheet relative overflow-hidden rounded-xl bg-card ${historical ? "border border-rule" : "border-2 border-ink"}`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-rule bg-paper-2/60 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3 md:px-8">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-rule bg-paper-2/60 px-5 py-2 font-mono text-xs uppercase tracking-[0.18em] text-ink-3 md:px-8">
         <span>{historical ? "Historical: the recommendation made before this case closed" : "Decision"}</span>
         {caseId && <span className="normal-case tracking-wider">{caseId}</span>}
       </div>
@@ -104,7 +104,7 @@ export function VerdictCard({
       {/* The money, as one picture: the full track is the payment, solid is what you keep, hatched is what you give up. */}
       <div className={`px-5 py-5 md:px-8 ${historical ? "opacity-85" : ""}`}>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+          <h3 className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">
             What you keep of the {fmtUsd(amount, currency)} payment
           </h3>
           <Legend loss={options.some((o) => o.keep !== null && o.keep < 0)} />
@@ -154,7 +154,7 @@ export function VerdictCard({
           })}
         </ol>
         <div className="mt-3 grid md:grid-cols-[8.75rem_1fr_8rem] md:gap-x-5" aria-hidden>
-          <div className="relative h-4 font-mono text-[11px] text-ink-3 md:col-start-2">
+          <div className="relative h-4 font-mono text-xs text-ink-3 md:col-start-2">
             {at(0) >= 15 && <span className="absolute left-0">{fmtUsd(floor, currency)}</span>}
             {floor < 0 && <span className="absolute -translate-x-1/2" style={{ left: `${at(0)}%` }}>$0</span>}
             <span className="absolute right-0">{fmtUsd(amount, currency)}</span>
@@ -182,7 +182,7 @@ export function VerdictCard({
         <summary className="cursor-pointer text-sm font-medium text-ink-2">Full reasoning, odds basis and break-even</summary>
         <div className="grid gap-4 pt-3 pb-2 md:grid-cols-[1fr_1fr] md:gap-8">
         <div className="border-l-4 border-rule pl-4">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Why</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">Why</p>
           <p className="mt-1 leading-relaxed text-ink-2">{a.action_reasoning}</p>
         </div>
         <div className="space-y-3 text-sm text-ink-2">
@@ -225,13 +225,13 @@ function Trail({ hs, final }: { hs: NonNullable<AnalysisResult["hypotheses"]>; f
     <div className="mt-4 max-w-3xl">
       {flip && (
         <p className="mb-2 rounded-md border-l-4 border-offer bg-paper px-4 py-2.5 leading-relaxed">
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-offer">Changed my mind</span>
+          <span className="font-mono text-xs uppercase tracking-[0.18em] text-offer">Changed my mind</span>
           <span className="mt-0.5 block text-ink">
             Leaned {hs[0].lean.toLowerCase()} at first, then switched to {flip.lean.toLowerCase()}. {flip.because}
           </span>
         </p>
       )}
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-ink-3" aria-label="How the agent got here">
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs uppercase tracking-wider text-ink-3" aria-label="How the agent got here">
         {hs.map((h, i) => (
           <li key={i} className="flex items-center gap-2">
             {i > 0 && <span aria-hidden>→</span>}

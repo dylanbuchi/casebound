@@ -96,7 +96,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
 
       {history.length > 0 && (
         <section aria-label="Receipts" className="rounded-lg border-2 border-accept/60 bg-card p-5">
-          <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+          <h2 className="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-ink-3">
             {isPractice(id) ? "What would be sent to PayPal (simulated)" : "Receipts: what was sent to PayPal"}
           </h2>
           <ul className="space-y-3">
@@ -107,12 +107,12 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                     {h.ok ? (h.mode === "demo" ? "simulated ✓" : "PayPal accepted ✓") : "PayPal rejected"}
                   </Pill>
                   <span className="font-medium">{h.detail}</span>
-                  <span className="font-mono text-[11px] text-ink-3">{new Date(h.at).toLocaleString("en-US", { timeZone: "UTC", timeZoneName: "short" })}</span>
+                  <span className="font-mono text-xs text-ink-3">{new Date(h.at).toLocaleString("en-US", { timeZone: "UTC", timeZoneName: "short" })}</span>
                 </div>
                 {!h.ok && <p className="mt-1 text-sm text-fight">{h.error}</p>}
                 <details className="mt-1">
                   <summary className="cursor-pointer text-sm text-ink-2">Request and PayPal&apos;s reply</summary>
-                  <pre className="mt-1 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words text-paper">
+                  <pre className="mt-1 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-xs leading-snug whitespace-pre-wrap break-words text-paper">
                     {JSON.stringify({ request: h.request, response: h.response }, null, 2)}
                   </pre>
                 </details>
@@ -250,7 +250,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
           className={`min-w-0 ${fileOnly ? "gap-6 *:mb-4 *:break-inside-avoid lg:columns-2" : "space-y-4"}`}
         >
           <details className={`rounded-lg border-2 bg-card px-5 py-4 ${urgent ? "border-fight" : "border-rule"}`} open={!a}>
-            <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">
+            <summary className="cursor-pointer font-mono text-xs uppercase tracking-[0.18em] text-ink-3">
               Deadline and what a PayPal reviewer looks for
             </summary>
             {actionable && dispute.seller_response_due_date ? (
@@ -285,7 +285,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
               <ol className="space-y-3">
                 {dispute.messages!.map((m, i) => (
                   <li key={i} className={m.posted_by === "SELLER" ? "border-l-2 border-rule pl-4" : ""}>
-                    <p className="font-mono text-[11px] uppercase text-ink-3">
+                    <p className="font-mono text-xs uppercase text-ink-3">
                       {m.posted_by.toLowerCase()} · {fmtDate(m.time_posted)}
                     </p>
                     <p className="mt-0.5 text-[15px]">“{m.content}”</p>
@@ -360,7 +360,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                       aria-label={`supports ${f.supports.toLowerCase()}`}
                     />
                     <span>
-                      {f.fact}{"\u00a0"}<span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
+                      {f.fact}{"\u00a0"}<span className="whitespace-nowrap font-mono text-xs text-ink-3">· {sourceLabel[f.source]}</span>
                     </span>
                   </li>
                 ))}
@@ -379,7 +379,7 @@ export default async function DisputePage({ params }: PageProps<"/disputes/[id]"
                           aria-label={`supports ${f.supports.toLowerCase()}`}
                         />
                         <span>
-                          {f.fact}{"\u00a0"}<span className="whitespace-nowrap font-mono text-[11px] text-ink-3">· {sourceLabel[f.source]}</span>
+                          {f.fact}{"\u00a0"}<span className="whitespace-nowrap font-mono text-xs text-ink-3">· {sourceLabel[f.source]}</span>
                         </span>
                       </li>
                     ))}
@@ -463,7 +463,7 @@ function GroundingNote({ g }: { g: NonNullable<AnalysisResult["grounding"]> }) {
           <li key={i} className="border-l-2 border-offer/50 pl-3">
             <p className="text-ink-3 line-through decoration-offer/60">“{r.text}”</p>
             <p className="text-ink-2">
-              <span className="font-mono text-[11px] uppercase text-ink-3">{fieldLabel[r.where] ?? "Evidence list"}</span> · {r.reason}
+              <span className="font-mono text-xs uppercase text-ink-3">{fieldLabel[r.where] ?? "Evidence list"}</span> · {r.reason}
             </p>
           </li>
         ))}
@@ -486,14 +486,14 @@ function Card({ title, folded = false, children }: { title: string; folded?: boo
   if (folded) {
     return (
       <details className="rounded-lg border border-rule bg-card px-5 py-4 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
-        <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{title}</summary>
+        <summary className="cursor-pointer font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{title}</summary>
         <div className="mt-3">{children}</div>
       </details>
     );
   }
   return (
     <div className="rounded-lg border border-rule bg-card p-5 shadow-[0_1px_0_rgba(27,26,23,0.04)]">
-      <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{title}</h2>
+      <h2 className="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{title}</h2>
       {children}
     </div>
   );
@@ -510,7 +510,7 @@ function Check({ item }: { item: CheckItem }) {
   return (
     <li className="flex gap-3 text-sm">
       <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold ${color}`}
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold ${color}`}
         role="img"
         aria-label={label}
       >

@@ -75,7 +75,7 @@ export function ApprovePanel(props: {
         <ol className="mb-4 space-y-1.5" aria-label="What will happen">
           {props.steps.map((s, i) => (
             <li key={s.label} className="flex items-center gap-2 text-sm font-medium">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink font-mono text-[11px] text-paper">{i + 1}</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink font-mono text-xs text-paper">{i + 1}</span>
               {s.label}
             </li>
           ))}
@@ -198,7 +198,7 @@ export function ApprovePanel(props: {
                 <span className="break-all">{p.request.path}</span>
                 <span className="text-ink-3">{p.request.contentType}</span>
               </p>
-              <pre className="mt-1.5 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-[11px] leading-snug whitespace-pre-wrap break-words text-paper">
+              <pre className="mt-1.5 max-h-64 overflow-auto rounded bg-ink p-3 font-mono text-xs leading-snug whitespace-pre-wrap break-words text-paper">
                 {JSON.stringify(p.request.body, null, 2)}
               </pre>
             </div>
@@ -213,7 +213,7 @@ export function ApprovePanel(props: {
 function Draft({ label, text }: { label: string; text: string }) {
   return (
     <figure className="border-l-2 border-rule pl-3">
-      <figcaption className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">{label}</figcaption>
+      <figcaption className="font-mono text-xs uppercase tracking-[0.18em] text-ink-3">{label}</figcaption>
       <blockquote className="mt-0.5 text-sm leading-relaxed whitespace-pre-line break-words text-ink-2">{text || "(empty)"}</blockquote>
     </figure>
   );

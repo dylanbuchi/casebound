@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <span className="hidden sm:inline">Audit log</span>
               </Link>
               <span
-                className={`rounded-full border px-2 py-0.5 font-mono text-[11px] sm:px-2.5 sm:text-xs ${
+                className={`rounded-full border px-2 py-0.5 font-mono text-xs sm:px-2.5 sm:text-xs ${
                   live ? "border-accept text-accept" : "border-offer text-offer"
                 }`}
                 title={live ? "Connected to the PayPal sandbox" : "No PayPal credentials: showing bundled demo disputes"}

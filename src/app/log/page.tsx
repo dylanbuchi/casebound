@@ -28,7 +28,7 @@ export default async function AuditLog() {
         <>
           <div className="rise hidden overflow-hidden rounded-lg border border-rule bg-card sm:block">
             <table className="w-full text-left text-sm">
-              <thead className="bg-paper-2 font-mono text-[11px] uppercase tracking-wider text-ink-3">
+              <thead className="bg-paper-2 font-mono text-xs uppercase tracking-wider text-ink-3">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">When</th>
                   <th className="px-4 py-2.5 font-medium">Dispute</th>
