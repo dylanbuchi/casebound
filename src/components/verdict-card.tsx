@@ -162,14 +162,16 @@ export function VerdictCard({
         </div>
         {override && (
           <p className="mt-4 rounded-md border-l-4 border-offer bg-paper px-4 py-2.5 text-sm leading-relaxed text-ink-2">
+            {override.cheaper.key === "FIGHT" && (
+              <strong className="text-ink">
+                If you fight, {p < 0.5 ? "you most likely lose" : `you lose ${pct(1 - p)} of the time`} and end at {fmtUsd(keepIfLose, currency)}.{" "}
+              </strong>
+            )}
             <strong className="text-ink">
               {override.cheaper.key === "FIGHT" ? "Fighting" : override.cheaper.key === "ACCEPT" ? "Refunding" : "The offer"} is{" "}
               {fmtUsd(override.gap, currency)} cheaper on average
             </strong>
             , but {a.recommended_action === "FIGHT" ? "fighting" : a.recommended_action === "ACCEPT" ? "refunding" : "the offer"} is the pick.{" "}
-            {override.cheaper.key === "FIGHT"
-              ? `That average hides the likely outcome: ${p < 0.5 ? "you most likely lose" : `you lose ${pct(1 - p)} of the time`} and end at ${fmtUsd(keepIfLose, currency)}. `
-              : ""}
             The agent also weighs fairness, the customer and how solid the evidence is. You decide.
           </p>
         )}
