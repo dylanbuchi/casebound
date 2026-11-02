@@ -208,7 +208,8 @@ body {
   &:is(textarea) {
     resize: vertical;
     field-sizing: content;
-    min-height: 6rem;
+    /* Firefox has no field-sizing: a taller floor keeps long drafts readable there. */
+    min-height: 12rem;
     max-height: 28rem;
   }
 }
