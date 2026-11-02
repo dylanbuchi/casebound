@@ -1,0 +1,18 @@
+# TEMPORARY: keeps the free Render service awake so judges don't hit a ~65s cold start.
+# Hackathon submissions close Nov 12 2026. Delete this file after judging.
+name: keep-awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping site
+        run: curl -sS -o /dev/null -w "%{http_code}\n" --max-time 120 --retry 2 https://casebound.zycody.com/ || true
