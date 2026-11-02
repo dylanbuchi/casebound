@@ -1,5 +1,6 @@
 import "server-only";
 import { env } from "@/lib/env";
+import { createTtlCache } from "@/lib/ttl-cache";
 
 export class PayPalError extends Error {
   constructor(
@@ -32,6 +33,9 @@ async function accessToken(): Promise<string> {
   return json.access_token;
 }
 
+// GET reads only; any write clears it so a page never shows pre-write state.
+const readCache = createTtlCache<unknown>(30_000);
+
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH";
   json?: unknown;
@@ -45,6 +49,12 @@ type RequestOptions = {
 export async function paypal<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const url = new URL(path, env.paypalApiBase);
   for (const [k, v] of Object.entries(opts.query ?? {})) if (v !== undefined) url.searchParams.set(k, v);
+
+  const isRead = (opts.method ?? "GET") === "GET";
+  if (isRead) {
+    const hit = readCache.get(url.href);
+    if (hit !== undefined) return hit as T;
+  } else readCache.clear();
 
   const headers: Record<string, string> = { ...opts.headers, Authorization: `Bearer ${await accessToken()}` };
   if (opts.json !== undefined) headers["Content-Type"] = "application/json";
@@ -72,6 +82,7 @@ export async function paypal<T>(path: string, opts: RequestOptions = {}): Promis
     res = await send();
   }
 
+  if (!isRead) readCache.clear();
   if (res.status === 204) return undefined as T;
   const body = await res.json().catch(() => null);
   if (!res.ok) {
@@ -86,5 +97,6 @@ export async function paypal<T>(path: string, opts: RequestOptions = {}): Promis
       b?.details,
     );
   }
+  if (isRead) readCache.set(url.href, body);
   return body as T;
 }
