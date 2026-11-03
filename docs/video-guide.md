@@ -5,7 +5,7 @@ Goal: about 2:30 of screen video, recorded silently. The voice (Kokoro "Heart") 
 ## Before you record (5 min)
 
 1. Open Chrome in a **normal window** (not the Claude tab group), and go to https://casebound.zycody.com
-2. Wake the server: if the page takes ~50 s to load, that's normal. Wait until it shows.
+2. Wake the server: if the page takes up to ~90 s to load, that's normal. Wait until it shows.
 3. Make sure it's unlocked: top right shows **"PayPal sandbox"** and no "Locked" link. If locked, click it and enter the passcode.
 4. Reset the practice cases you'll use: open each one, click **"Reset practice case"** at the top:
    - $210 "Item not received" (Rosa Diaz)

@@ -54,7 +54,7 @@ The most useful AI move is often "don't use AI": tiny disputes are better served
 A pilot with real sellers on live PayPal accounts, webhooks for instant dispute alerts, carrier tracking lookups beyond PayPal's tracker data, and support for more dispute reasons and marketplaces.
 
 ## Testing instructions (for judges)
-1. Open https://casebound.zycody.com. The free host may take up to 50 seconds to wake up on the first visit.
+1. Open https://casebound.zycody.com. The free host may take up to 90 seconds to wake up on the first visit.
 2. Reading cases is open to everyone. To run the AI and send responses, click "Unlock" and enter the passcode: **[PASSCODE]**
 3. Start with the practice cases (marked "Practice"; sends are simulated and never reach PayPal):
    - the $6 "Duplicate charge" shows the no-AI quick call;
